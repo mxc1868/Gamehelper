@@ -15,11 +15,10 @@ namespace Radar
         /// <summary>
         /// Map rotation in Radian format.
         /// </summary>
-        public static readonly double CameraAngle = 38.7 * Math.PI / 180;
+        public static readonly double CameraAngle = GameHelper.Utils.MapProjection.CameraAngle;
         private static double diagonalLength = 0x00;
         private static float scale = 0.5f;
-        private static float cos = 0x00;
-        private static float sin = 0x00;
+        private static GameHelper.Utils.MapProjection projection;
 
         /// <summary>
         /// Sets the diagonal length of the Mini/Large Map UiElement,
@@ -77,20 +76,12 @@ namespace Radar
         /// <returns>nothing.</returns>
         public static Vector2 DeltaInWorldToMapDelta(Vector2 delta, float deltaZ)
         {
-            // WorldPosition distance between 2 points
-            // divide it by GridPosition distance between 2 points.
-            // Rounded to 5 decimal points.
-            // reading game data shows that it's actually // 10.86957f
-            deltaZ /= 10.86957f;
-            return new Vector2((delta.X - delta.Y) * cos, (deltaZ - (delta.X + delta.Y)) * sin);
+            return projection.ProjectDelta(delta, deltaZ);
         }
 
         private static void UpdateCosSin()
         {
-            // Magic number that works with diagnonal length.
-            float mapScale = 240f / Scale;
-            cos = (float)(DiagonalLength * Math.Cos(CameraAngle) / mapScale);
-            sin = (float)(DiagonalLength * Math.Sin(CameraAngle) / mapScale);
+            projection = new GameHelper.Utils.MapProjection(DiagonalLength, Scale);
         }
     }
 }

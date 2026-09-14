@@ -1,0 +1,99 @@
+# WhereTheWispsAt 迁移：TODO 与接手上下文
+
+更新日期：2026-09-14。后续 agent 请先读本文，再读 [插件说明](Plugins/WhereTheWispsAt/README.md) 和 [Windows 调试说明](Plugins/WhereTheWispsAt/WINDOWS-DEBUG.zh-CN.md)。
+
+## 用户目标与当前交付
+
+把 [exCore2/WhereTheWispsAt](https://github.com/exCore2/WhereTheWispsAt) 的幽火标记功能迁移到 GameHelper，最终希望尽量只维护插件。用户在 Windows 玩游戏，没有编译环境；在 Linux 构建后从自己的 GitHub 下载完整 x64 包。
+
+- 当前仓库：<https://github.com/mxc1868/Gamehelper>，`origin` 指向这里，分支 `main`。
+- [Windows 调试预发布](https://github.com/mxc1868/Gamehelper/releases/tag/wisps-debug-2026-09-14)：完整 ZIP、SHA-256 文件。
+- 源码进入 Git；编译包放 GitHub Release，不把 DLL 和运行时逐个提交进源码历史。
+- 基础源码来自 `MordWraith/Gamehelper` 提交 `5e581b16c834bbdee831e28910f4786f9e22ab94`。与 Gordin/GameHelper2 共用大量核心及 offsets 源码，但不能推断未来版本始终兼容。
+- 用户已要求清理此前的 ExileCore2 / ExileApi 逆向研究，并转向 GameHelper；此前研究文档和临时目录已经清理。当前不做付费授权绕过或相关研究。
+
+## 已完成
+
+- [x] 原生 `PCore<WhereTheWispsAtSettings>` 插件，幽火颜色、地图标记、相邻 ID 连线、宝箱和事件、可选地面框、中英文设置。
+- [x] 显式标注未知颜色与不可用状态；没有凭空补燃料百分比或精确模型旋转。
+- [x] 新增核心定向扫描 API，按 metadata 过滤后建立新实体/组件对象；正常绘制读 awake，避免共享对象缓存影响该路线。
+- [x] 地图投影提取为 `GameHelper/Utils/MapProjection.cs`，Radar 复用相同公式。没有修改 `GameOffsets` 数值。
+- [x] 诊断日志：各扫描阶段计数、失败样本、组件父指针验证、路径、坐标、StateMachine 名称/值、渲染条件、投影参数、实体变化。
+- [x] 一次性 awake / sleeping 实体源对比。它与“原有 API / 新增 API 对比”是两个不同的功能。
+- [x] **完成三路 API 对照日志**：`public_lookup`、`public_component_recreate`、`fresh_entity_scan`；使用同一分类/状态读取代码，按实体 ID + 地址 + metadata 比较。
+- [x] API 对照记录缺失实体、不可用观测、组件/路径/分类/状态/坐标差异、过滤开关、时间/区域、耗时、截断标记、有限样本。空结果或两边都失败不计为可用观测一致。
+- [x] 60 秒录制内以最短 2 秒间隔进行 API 对照，也有手动单次按钮。公开集合读取使用 `shouldCache:false` 避免额外填充共享缓存；不会自动修改全局实体过滤设置。
+- [x] 日志轮换最多 3 × 2 MiB；自动停止、报告导出、写入失败展示。独立定时协程确保 F9 跳过 DrawUI 时仍可记录心跳和停止。
+- [x] Linux 可构建 Windows x64 自包含包，包含配套核心、WhereTheWispsAt、Radar、.NET 10 运行时、字体、语言文件、启动脚本及构建清单。
+- [x] 根目录 `AGENTS.md` 指向此接手文档；仓库首页提供本仓库下载与调试入口。
+
+## 已验证与尚未验证
+
+已完成 Linux 编译，当前 **63 项**不依赖游戏的回归检查通过。测试覆盖分类、连线、地图数学、配置边界、并发采样上限、日志轮换/超时/I/O 错误、API 差异比较。**测试输入是合成数据，不是 Windows 实机样本。** 后续版本以测试运行输出和 Release 说明为准。
+
+打包检查包括必要文件、自包含 runtimeconfig、Windows x64 PE、ZIP CRC 和 SHA-256 清单。尚未执行 Windows EXE、验证原版插件管理器实际加载、读取游戏或观察最终显示。
+
+## P0：用实机证据决定是否保留新核心 API
+
+- [ ] 用户下载本仓库最新调试包，解压到新的可写目录，以管理员身份启动 `Start-Debug.cmd`，F12 启用插件。管理员要求来自已有 `GameHelper/app.manifest`。
+- [ ] 在确实有幽火/宝箱/井的区域录制 60 秒，覆盖静止、移动、采集、开启/激活、切图；收集 `diagnostics/`、host 日志、`build-manifest.json` 和实际观察说明。
+- [ ] 检查 `api_comparison`：公开集合是否缺少新增扫描能读到的目标？是否仅因 `ProcessAllRenderableEntities=false`？报告只记录设置，不自动切换。
+- [ ] 若要排除过滤设置影响，可在 GH 原有设置中手动短时开启“处理所有可渲染实体”后再录制，并核对开关值与耗时。该设置会扩大整个框架处理范围，需要观察实际性能；测试后恢复自己的配置。
+- [ ] 比较公开读取与公开构造函数重读组件：同实体路径/颜色/状态是否只有重读路线更新？重复差异是否跨多个稳定场景采样持续？
+- [ ] 比较公开构造函数路线与新实体扫描：是否仍存在目标缺失、组件地址表过期、父指针不符或激活状态不一致？不能把单次先后读取的差异当作缓存失效定论。
+- [ ] 只在 `CompleteWindow=true`、未截断、同一区域且有可用目标的样本上讨论覆盖率；一致的未知颜色/未知状态也不代表功能已确认。
+- [ ] **做架构决定并写下依据**：若原有 API 覆盖和更新都足够，则把投影移回插件、去掉对新扫描 API 的生产依赖，并在未修改核心上验证；若不足，列出失败样本、最小核心改动和每次升级需要合并的位置。
+
+重要源码事实：
+
+1. `AreaInstance.AwakeEntities` 原本就是公开集合；`ProcessAllRenderableEntities` 会影响视觉实体是否进入集合。
+2. `Entity.TryGetComponent<T>(..., shouldCache:false)` **先查已有缓存**；false 只控制未命中时是否写入缓存，不保证强制重读。
+3. `Animated`、`Render`、`Chest`、`StateMachine` 的带地址构造函数原本就是 public。对已找到组件的地址重新构造组件，是本次加入对照的零新 API 候选方案；但它不能补回根本未进入公开集合的实体。
+4. `Entity` 构造函数以及底层进程 Handle/部分事件是 internal，不能当作公开插件 API。当前新 `ScanEntities` 正是放在核心内实现实体重建。
+5. `Animated.UpdateData(false)` 不重新加载路径；`Entity` 对某些无用实体会跳过组件更新。这是需要实测的风险来源，尚不是当前幽火必然受影响的证据。
+
+## P1：功能与性能验收
+
+- [ ] 验证当前 PoE2 的 Awake / Sleeping 布局和目标 metadata；当前日志存在并不意味着 offsets 正确。
+- [ ] 验证 `_primal`、`_warden`、`_vodoo`、`_sacred` 分类；`ModelPath` 仍只是样本，不作为未经证明的颜色替代。
+- [ ] 检查地图缩放、拖动、窗口尺寸、高度差、小地图裁剪和地面框位置。
+- [ ] 用开箱、激活前后样本确认 `Chest.IsOpened` 与 `StateMachine` 的 `activated=1` 语义。
+- [ ] 测试切图、回城、失焦、面板遮挡、F9、关闭游戏、禁用/重新启用，确认显示和日志没有跨区域误判。
+- [ ] 比较普通扫描与诊断开启的耗时、帧率、内存。对照读数不是逐帧执行；慢扫描会自动延长间隔。
+- [ ] 燃料百分比与精确旋转暂不实现；取得当前版本真实字段证据后再评估。
+
+## 关键文件与维护边界
+
+| 文件 | 职责 |
+| --- | --- |
+| `Plugins/WhereTheWispsAt/WhereTheWispsAtCore.cs` | 插件生命周期、扫描、共同的组件读取和状态解释 |
+| `WhereTheWispsAtCore.ApiComparison.cs`（同目录） | 原有 API 与新增扫描的采集调度 |
+| `WispApiComparison.cs`（同目录） | 有界快照、实体身份匹配、差异字段和样本 |
+| `WhereTheWispsAtCore.Diagnostics.cs`、`WispDiagnostics.cs` | 限时录制、报告、心跳、版本信息 |
+| `WispModel.cs`、`WispRenderer.cs` | 分类/连线与 ImGui 绘制 |
+| `GameHelper/RemoteObjects/States/InGameStateObjects/AreaInstance.cs` | 新增 `ScanEntities` / `ScanAwakeEntities`；升级核心时需保留或移除的改动 |
+| `EntityScanDiagnostics.cs`（同目录） | 扫描阶段计数和有限失败样本 |
+| `GameHelper/Utils/MapProjection.cs`、`Plugins/Radar/Helper.cs` | 共用投影计算；最终插件独立化时可调整 |
+| `scripts/package-wisps.py` | Linux 构建和打包，不自动推送或发布 |
+| `tests/WhereTheWispsAt.Tests` | Linux 合成数据回归检查 |
+
+## 复现构建与发布
+
+一般 Linux 环境：
+
+```bash
+dotnet run --project tests/WhereTheWispsAt.Tests/WhereTheWispsAt.Tests.csproj -c Release
+python3 scripts/package-wisps.py
+```
+
+当前工作区已还原依赖的离线方式（路径是开发缓存，不是项目依赖）：
+
+```bash
+DOTNET_CLI_HOME=/tmp/gamehelper-wisps/dotnet-home dotnet build tests/WhereTheWispsAt.Tests/WhereTheWispsAt.Tests.csproj -c Release --no-restore -m:1 -nr:false --disable-build-servers
+DOTNET_CLI_HOME=/tmp/gamehelper-wisps/dotnet-home dotnet tests/WhereTheWispsAt.Tests/bin/Release/net10.0/WhereTheWispsAt.Tests.dll
+DOTNET_CLI_HOME=/tmp/gamehelper-wisps/dotnet-home python3 scripts/package-wisps.py --packages /tmp/gamehelper-wisps/nuget --source /tmp/gamehelper-wisps/nuget
+```
+
+发布前先提交源码，再重新打包，让清单中的 BaseCommit 对应所发布提交。输出 `artifacts/wisps/WhereTheWispsAt-debug-win-x64.zip` 及 `.sha256`，上传到明确指向该提交的新 GitHub Release。给用户 Release 下载地址；单独更新插件 DLL 目前不够。
+
+原仓库的 `scripts/sync-gordin.ps1` 使用覆盖式同步，其他维护/启动器脚本也可能仍指向上游。不要直接运行它们更新当前分支或发布本 fork；先检查目标和差异，避免丢掉新增 API 或拿错编译包。

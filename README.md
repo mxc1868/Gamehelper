@@ -1,3 +1,20 @@
+# GameHelper — WhereTheWispsAt 调试分支
+
+当前仓库：**[mxc1868/Gamehelper](https://github.com/mxc1868/Gamehelper)**。此分支在 GameHelper 上迁移幽火插件；已有可编译原型与诊断日志，Windows / 当前 PoE2 实机验证仍待完成。
+
+- **Windows 下载：[完整 x64 调试包](https://github.com/mxc1868/Gamehelper/releases/download/wisps-debug-2026-09-14/WhereTheWispsAt-debug-win-x64.zip)**（内含 .NET 10 运行时，无需编译环境）。
+- [Release 与 SHA-256 校验文件](https://github.com/mxc1868/Gamehelper/releases/tag/wisps-debug-2026-09-14)
+- [Windows 启动与实机调试](Plugins/WhereTheWispsAt/WINDOWS-DEBUG.zh-CN.md)
+- **[TODO / 后续 agent 接手上下文](TODO.md)**
+
+完整解压到新目录，右键 `Start-Debug.cmd`，以管理员身份运行；F12 启用 `WhereTheWispsAt`。本包包含修改后的核心，不能只把插件 DLL 放进原版 GameHelper。录制 60 秒会同时对比原有 API 与新增扫描，帮助决定正式版能否只维护插件。
+
+Linux 构建：`python3 scripts/package-wisps.py`。编译包发布到本仓库 GitHub Release；下面保留的上游安装器、更新器和发布脚本说明属于原项目，不用于下载或发布此幽火调试包。
+
+原项目与作者信息保留如下。
+
+---
+
 # GameHelper
 
 GameHelper is a Windows x64 .NET overlay for **Path of Exile 2** with a plugin architecture. The launcher (`GameHelper.exe`) checks for updates, starts the overlay (`GameHelper.App.exe`), reads data from the running game process, and loads plugins from the `Plugins` folder.

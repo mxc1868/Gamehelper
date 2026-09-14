@@ -3,6 +3,8 @@ bin/
 obj/
 publish/
 publish-downloader/
+artifacts/wisps/
+__pycache__/
 Test/
 test-runtime-backup/
 runtime-backup/
@@ -20,6 +22,7 @@ tempFileLocations.dat
 update.config.json
 configs/
 Plugins/*/config/
+Plugins/WhereTheWispsAt/diagnostics/
 Plugins/*/price_cache.json
 Plugins/*/prices.json
 Plugins/Atlas/bin/

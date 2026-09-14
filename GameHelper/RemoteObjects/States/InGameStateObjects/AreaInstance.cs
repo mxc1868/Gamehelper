@@ -774,6 +774,98 @@ namespace GameHelper.RemoteObjects.States.InGameStateObjects
                 });
         }
 
+        /// <summary>
+        ///     Takes a fresh, filtered view of the awake entity map, including visual entity IDs.
+        ///     Unlike AwakeEntities, this does not reuse dormant component caches or change the
+        ///     global entity-processing settings. Call sparingly; callbacks execute in parallel.
+        /// </summary>
+        /// <returns>Traversal loop iterations, not an exact entity count; use diagnostics entry_seen for callback count.</returns>
+        public int ScanAwakeEntities(Func<string, bool> pathFilter, Action<EntityNodeKey, Entity> onMatch)
+            => this.ScanEntities(EntityScanSource.Awake, pathFilter, onMatch);
+
+        /// <summary>
+        ///     Explicit source selection for one-shot diagnostics. Sleeping scans can be expensive.
+        ///     Diagnostics distinguish failed reads, filtered metadata and incomplete component maps.
+        /// </summary>
+        public int ScanEntities(EntityScanSource source, Func<string, bool> pathFilter,
+            Action<EntityNodeKey, Entity> onMatch, EntityScanDiagnostics? diagnostics = null)
+        {
+            ArgumentNullException.ThrowIfNull(pathFilter);
+            ArgumentNullException.ThrowIfNull(onMatch);
+            var areaAddress = this.Address;
+            var reader = Core.Process.Handle;
+            if (diagnostics != null)
+            {
+                diagnostics.Source = source.ToString();
+                diagnostics.AreaAddress = $"0x{areaAddress.ToInt64():X}";
+            }
+            if (areaAddress == IntPtr.Zero)
+            {
+                diagnostics?.Record("area_missing");
+                return 0;
+            }
+            if (!reader.TryReadMemory<AreaInstanceOffsets>(areaAddress, out var data))
+            {
+                diagnostics?.Record("area_read_failed");
+                return 0;
+            }
+
+            var map = source == EntityScanSource.Sleeping ? data.Entities.SleepingEntities : data.Entities.AwakeEntities;
+            var limit = source == EntityScanSource.Sleeping ? 500000 : 100000;
+            if (diagnostics != null)
+            {
+                diagnostics.MapHead = $"0x{map.Head.ToInt64():X}";
+                diagnostics.DeclaredCount = map.Size;
+            }
+            if (map.Size == 0) { diagnostics?.Record("map_empty"); return 0; }
+            if (map.Size < 0 || map.Size > limit) { diagnostics?.Record("map_size_rejected", detail: $"Limit={limit}"); return 0; }
+            if (!reader.TryReadMemory<StdMapNode<EntityNodeKey, EntityNodeValue>>(map.Head, out var head))
+            { diagnostics?.Record("map_head_unreadable"); return 0; }
+            if (!reader.TryReadMemory<StdMapNode<EntityNodeKey, EntityNodeValue>>(head.Parent, out var root))
+            { diagnostics?.Record("map_root_unreadable"); return 0; }
+            if (root.IsNil || root.Color > 1)
+            { diagnostics?.Record("map_root_invalid"); return 0; }
+
+            var iterations = reader.ReadStdMap<EntityNodeKey, EntityNodeValue>(map, limit, true, (key, value) =>
+            {
+                diagnostics?.Record("entry_seen", sample: false);
+                var pointer = value.EntityPtr.ToInt64();
+                var path = string.Empty;
+                void Reject(string stage, string detail = "") => diagnostics?.Record(stage, key.id, pointer, path, detail);
+                try
+                {
+                    if (this.Address != areaAddress) { Reject("area_changed"); return false; }
+                    if (!SafeMemoryHandle.IsValidAddress(value.EntityPtr)) { Reject("pointer_invalid"); return false; }
+                    if (!reader.TryReadMemory<EntityOffsets>(value.EntityPtr, out var header)) { Reject("header_unreadable"); return false; }
+                    if (header.Id != key.id) { Reject("id_mismatch", $"HeaderId={header.Id}; flags=0x{header.IsValid:X2}"); return false; }
+                    if (!reader.TryReadMemory<EntityDetails>(header.ItemBase.EntityDetailsPtr, out var details))
+                    { Reject("details_unreadable", $"Details=0x{header.ItemBase.EntityDetailsPtr.ToInt64():X}"); return false; }
+                    path = reader.ReadStdWString(details.name);
+                    if (string.IsNullOrEmpty(path)) { Reject("path_empty", $"Length={details.name.Length}"); return false; }
+                    diagnostics?.Record("path_read", sample: false);
+                    if (!pathFilter(path)) { Reject("path_filtered"); return true; }
+                    diagnostics?.Record("candidate", key.id, pointer, path, $"flags=0x{header.IsValid:X2}");
+                    var entity = new Entity(value.EntityPtr);
+                    if (!entity.IsValid) { Reject("entity_invalid", $"flags=0x{header.IsValid:X2}"); return false; }
+                    if (entity.Id != key.id || entity.Path != path) { Reject("entity_identity_changed"); return false; }
+                    if (this.Address != areaAddress) { Reject("area_changed"); return false; }
+                    // Component names/addresses expose lookup failures without exposing internal readers.
+                    diagnostics?.Record("entity_matched", key.id, pointer, path,
+                        string.Join("; ", entity.GetComponentAddressPairs().Take(32).Select(p => $"{p.Key}=0x{p.Value.ToInt64():X}")));
+                    onMatch(key, entity);
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Reject("entry_exception", ex.ToString());
+                    if (diagnostics == null) throw;
+                    return false;
+                }
+            });
+            if (diagnostics != null) diagnostics.TraversalIterationCount = iterations;
+            return iterations;
+        }
+
         private void ScanSleepingEntitiesForAbyss()
         {
             this.SleepingEntities.Clear();
