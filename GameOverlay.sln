@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.34031.279
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WhereTheWispsAt", "Plugins\WhereTheWispsAt\WhereTheWispsAt.csproj", "{B9571263-4C8A-4CB3-9689-39490CBF72EB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShowMeWisp", "Plugins\ShowMeWisp\ShowMeWisp.csproj", "{B9571263-4C8A-4CB3-9689-39490CBF72EB}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RitualWispAlert", "Plugins\RitualWispAlert\RitualWispAlert.csproj", "{D3AAC005-A2A9-4003-97C6-5563BB873600}"
 EndProject

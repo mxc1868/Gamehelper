@@ -5,7 +5,15 @@
 - 复现：下载上述固定文件到本地，执行 `python3 scripts/build-unique-art-map.py /path/to/uniques.json`。更新时同时更新这里、插件版本说明和测试快照，不能声称静态表自动覆盖未来更新。
 - 参考行为：[Ground Items With Linq](https://github.com/exApiTools/Ground-Items-With-Linq/tree/568297fe1c99eed754a1b6f6fe08b51820b95da2)。其 `GetGameFileUniqueArtMapping` 联结 `ItemVisualIdentities` 与 `UniqueItemDescriptions`，按完整 `ArtPath` 分组；`CustomItemData.UniqueNameCandidates` 用物品 `RenderItem.ResourcePath` 查候选。
 
-此实现为 GameHelper 单独编写，没有引入 ExileCore 二进制、原插件 LINQ 规则引擎或其 PoE1 默认映射。GameHelper 没有相同的两张表读取 API，因此这里使用内嵌 PoE2 导出和用户可覆盖的 JSON。图标路径与名称是游戏数据；未打包图像文件。
+此实现为 GameHelper 单独编写，没有引入 ExileCore 二进制、原插件 LINQ 规则引擎或其 PoE1 默认映射。GameHelper 没有相同的两张表读取 API，因此这里使用内嵌 PoE2 导出和用户可覆盖的 JSON。
+
+## 物品图标（2026-09-23 UTC）
+
+图像为 Grinding Gear Games 的游戏物品美术，通过 PoE2DB 的公开 CDN 获取，例如 [Headhunter](https://cdn.poe2db.tw/image/Art/2DItems/Belts/Uniques/Headhunter.webp) 和 [Mageblood](https://cdn.poe2db.tw/image/Art/2DItems/Belts/Uniques/Mageblood.webp)。按已有完整 asset 路径对应 `.webp`，未使用同文件名猜测或图像生成。来源不改变图像原有权利归属。
+
+`Icons/sources.json` 记录每条 URL、文件名、SHA-256、字节数或下载失败原因。439/446 条路径取得图像，共 5,984,758 字节；缺图回退文字。全部图像已用当前部署的 ImageSharp 解码验证。文件名为规范化 asset 路径（小写 UTF-8）的 SHA-256，避免同名不同目录碰撞。
+
+Windows 复现：`powershell -NoProfile -File scripts/fetch-unique-icons.ps1`。下载是维护操作，插件运行期间不联网；普通编译只复制已保存资源。
 
 ## 默认高亮核对（2026-09-23）
 

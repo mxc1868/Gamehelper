@@ -27,7 +27,7 @@ namespace Launcher
             LegacyPluginCleanup.Apply(installDir);
 
             // This fork is maintained through source builds. Upstream release binaries
-            // lack the core APIs required by WhereTheWispsAt and UniqueLoot, so do not
+            // lack the core APIs required by ShowMeWisp and UniqueLoot, so do not
             // offer an in-place binary update that would replace this patched core.
             LauncherLog.Write("Automatic updates disabled for mxc1868/Gamehelper; update and rebuild the fork source.");
 

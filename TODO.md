@@ -1,6 +1,27 @@
 # GameHelper 插件：TODO 与接手上下文
 
-更新日期：2026-09-23。后续 agent 请先读本文，再读 [插件说明](Plugins/WhereTheWispsAt/README.md) 和 [Windows 调试说明](Plugins/WhereTheWispsAt/WINDOWS-DEBUG.zh-CN.md)。
+更新日期：2026-09-23。后续 agent 请先读本文，再读 [插件说明](Plugins/ShowMeWisp/README.md) 和 [Windows 调试说明](Plugins/ShowMeWisp/WINDOWS-DEBUG.zh-CN.md)。
+
+## ShowMeWisp 改名与幽火三档方框（2026-09-23 UTC）
+
+用户要求整体改名为 `ShowMeWisp`，并确认 Small / Medium / Big 指幽火自身大小，不是宝箱。本 fork 缺少三档逻辑；后续在 `D:\PoE Trade\WhereTheWispsAt` 的旧源码和交接记录中找到资源模型规则及三档倍率说明，已按旧规则恢复。
+
+- [x] 项目、目录、DLL、命名空间、Core/Settings 类、测试项目、解决方案、构建/打包引用与当前文档使用新名称。上游参考仓库链接保留原名。历史章节的源码路径已按新名称更新，当时实际插件名为 `WhereTheWispsAt`。
+- [x] 内部 `PluginRenames` 让插件管理器在新 DLL 存在时跳过旧目录，首次建立新元数据时继承旧 Enable 值；新插件优先读取自己的配置，没有时读取旧 `WhereTheWispsAt/config/settings.txt`。保存使用新目录，旧配置/诊断不删除。未新增公共框架 API。
+- [x] 严格限定资源模型目录 `Metadata/Effects/Spells/monsters_effects/League_Azmeri/resources/wisp_doodads/wisp_`，四类颜色模型的 `_sml` / `_med` / `_big.ao` 对应三档大小；无后缀、未知模型不猜大小。Animated 路径已有颜色时优先使用，否则回退到上述 ModelPath 家族。宝箱和补给不采用幽火倍率。
+- [x] 默认 Small / Medium / Big 倍率为 0.6 / 1 / 1.6，地图基础 5 像素对应 3 / 5 / 8 像素；相同倍率作用于大地图、小地图和启用后的地面框。双语设置提供总开关、三档倍率及大小计数；API 对比和绘制诊断记录大小。
+- [x] Windows 回归 114 项通过，包含颜色/三档模型、未知后缀、非幽火排除、倍率和旧配置/启用状态继承；真实核心插件发现、加载与新增 API 检查共 10 项通过。
+- [ ] 旧目录交接记录报告 2026-09-14 蓝/黄三档实机样本，紫/神圣仍为规则与合成测试。本次未重新采集当前游戏数据，视觉效果仍待验证。旧记录还报告过 API 等价样本；当前 fork 尚未独立复核或迁移为无核心修改插件，不应自动开展该重构。
+
+## UniqueLoot 可选高亮清单与物品图标（2026-09-23 UTC）
+
+- [x] 用户确认 Radar 是窗口宽度问题，取消修复；本次 Radar 源码无改动。
+- [x] UniqueLoot 设置增加可搜索、可勾选的清单和“仅查看已勾选”过滤；同名称多外观归为一项，共用贴图仍保留全部候选。旧高亮规则初始化选择，取消/重新勾选保留自定义颜色和字号；通过临时文件替换保存到 `config/highlights.json`，立即生效。
+- [x] 屏幕掉落列表只显示选中的高亮物品，独立于普通地面文字名额；高亮文字默认至少 1.6 倍，可调 1.3–2.5 倍，保留颜色、边框和背景。普通地面文字仍由原设置控制。
+- [x] 内置 439 张 WebP 图标（约 5.7 MiB），来自公开 PoE2DB 图标 CDN，439/446 条 asset 有图，7 条缺图回退大字；设置清单、地面高亮和屏幕列表支持图片。运行时仅加载本地图像、不联网；纹理缓存有上限，禁用时释放。
+- [x] `Icons/sources.json` 保留 URL、文件名、SHA-256、大小及缺图情况；`scripts/fetch-unique-icons.ps1` 可复现下载。所有 439 图像均用部署版本 ImageSharp 解码成功。无新框架 API，无 ZIP/Release。
+- [x] UniqueLoot 53 项离线检查通过：全清单选择/取消/保存重载、旧样式保留、候选/外观分组、列表资格与字号；Windows 整套 Release 编译成功。实际游戏读取、位置和 UI 点击仍需用户验证。
+- [x] 本机 Test 已覆盖 452 个核心/插件/图标文件，34 个既存配置及诊断文件哈希保持不变；覆盖前完整备份为 `artifacts/wisps/before-showmewisp-unique-20260922-234638/Test`。部署后 10 项真实插件发现/加载/API 检查全通过，439 张图标部署齐全。此前 `test-runtime-backup` 被用户构建流程重新生成，旧备份已不在该位置；本次备份位于不会被该流程重置的 artifacts。
 
 ## Windows：同步 1.5.11、恢复插件加载（2026-09-23 UTC）
 
@@ -11,8 +32,8 @@
 - [x] 保留全部现有幽火/UniqueLoot 核心与插件补丁，将核心和启动器版本统一为 1.5.11。本 fork 的 `Launcher/Program.cs` 跳过在线更新，继续正常启动 overlay；后续从 fork 拉取源码并编译更新。原有上游下载器与维护/发布工具未改造，不要用于本 fork 的更新或发布。
 - [x] Windows .NET SDK 10.0.302 整套 `GameOverlay.sln` Release 编译成功，0 错误。首次整套重编译有 7 条既存警告（核心 3 条、WorldDrawing 4 条）；最后增量编译有 3 条核心警告。
 - [x] Windows 离线检查：幽火 67 项、UniqueLoot 40 项通过。修正幽火测试读取正在写入的日志时的 Windows 共享模式（测试读取端使用 `FileShare.ReadWrite`），未更改插件日志写入行为。
-- [x] 新增 `tests/PluginLoad.Tests`：直接调用部署核心的实际 `PluginAssemblyLoadContext` / `PManager.LoadPlugin`，验证 WhereTheWispsAt、UniqueLoot、Radar 的加载与实例化，并检查 6 项新增核心类型/接口。已在原版 Test 核心复现失败，配套 1.5.11 编译目录和更新后的 Test 目录均通过全部 9 项检查。不启动 overlay、不调用 OnEnable、不读取游戏、不写设置。
-- [x] 已更新本机 `D:\PoE Trade\Gamehelper\Test` 的程序文件；覆盖前完整备份到 `test-runtime-backup/before-patched-1.5.11-20260922-224142/Test`，哈希确认原有 33 个配置/诊断文件保持不变。用户可直接运行 `Test/GameHelper.exe`，F12 启用 `WhereTheWispsAt`。未制作新 ZIP 或 Release。
+- [x] 新增 `tests/PluginLoad.Tests`：直接调用部署核心的实际 `PluginAssemblyLoadContext` / `PManager.LoadPlugin`，验证 ShowMeWisp、UniqueLoot、Radar 的加载与实例化，并检查 6 项新增核心类型/接口。已在原版 Test 核心复现失败，配套 1.5.11 编译目录和更新后的 Test 目录均通过全部 9 项检查。不启动 overlay、不调用 OnEnable、不读取游戏、不写设置。
+- [x] 已更新本机 `D:\PoE Trade\Gamehelper\Test` 的程序文件；覆盖前完整备份到 `test-runtime-backup/before-patched-1.5.11-20260922-224142/Test`，哈希确认原有 33 个配置/诊断文件保持不变。用户可直接运行 `Test/GameHelper.exe`，F12 启用 `ShowMeWisp`。未制作新 ZIP 或 Release。
 - [ ] 当前 PoE2 场景中的幽火分类、地图显示、UniqueLoot 掉落读取和 API 对比仍待用户实测；加载检查通过不等于这些功能已验证。
 
 后续重现：`dotnet build GameOverlay.sln -c Release`；`dotnet run --project tests/PluginLoad.Tests/PluginLoad.Tests.csproj -c Release -- Test`。后者最后一个参数应指向要验证的实际运行目录。
@@ -25,7 +46,7 @@
 - [x] 新增 `Plugins/UniqueLoot`：物品旁文字和屏幕列表、全路径匹配、多候选/未知/贴图读取失败状态、中英文设置、自定义映射覆盖、扫描上限和有界诊断导出。
 - [x] 复用本仓库原有 `AwakeEntities`、`WorldItem`、`RenderItem`、`Mods`、`Render`。**本次新增核心 API 是 `WorldItem.TryReadItem(out Item)`**：重建内部物品并校验读取前后指针；未新增或改动 offsets 数值。插件不依赖此前幽火 `ScanEntities` API。
 - [x] 内置 PoE2 导出版本 `4.5.5.2`，源提交 `repoe-fork/poe2@b818b843337cae43b090b272fd98bbc0fd3a34f3`，446 条路径、441 个名称、3 条共用路径；来源及更新方式见 [数据说明](Plugins/UniqueLoot/Data/SOURCES.md)。与价格数据无关。
-- [x] Linux 编译成功。UniqueLoot **40 项离线检查通过**；WhereTheWispsAt **67 项回归检查通过**。前者检验映射/覆盖/高亮配置，不是游戏内存和绘制测试；后者包含原 63 项以及 4 项 Sacred 颜色默认值/迁移检查。干净编译有 3 条既存核心警告。
+- [x] Linux 编译成功。UniqueLoot **40 项离线检查通过**；ShowMeWisp **67 项回归检查通过**。前者检验映射/覆盖/高亮配置，不是游戏内存和绘制测试；后者包含原 63 项以及 4 项 Sacred 颜色默认值/迁移检查。干净编译有 3 条既存核心警告。
 - [x] 初版 `scripts/package-wisps.py --include-unique` 生成完整自包含 Windows x64 ZIP + SHA-256（约 45.4 MiB），包含三个插件和 .NET 10.0.12。检查必要文件、x64 PE、自包含运行时配置、ZIP CRC、252 个包内文件哈希与双语资源键。
 - [x] **远程目标已恢复并获授权**：2026-09-23 用户重新建立 `mxc1868/Gamehelper` fork，并明确要求同步本地工作。已核对仓库所有者、main 分支和写入权限，保留远端 `0d11fe7` 上游更新并合并本地幽火/UniqueLoot 历史。完整包与 checksum 的发布入口：[UniqueLoot + 幽火调试版](https://github.com/mxc1868/Gamehelper/releases/tag/unique-debug-2026-09-23)；发布前须确认源码、构建清单与 Release 指向同一提交。
 - [x] 默认高亮猎首（金色）和魔血（紫红色）：PoE2DB Icon 与内置 `.dds` asset 交叉确认，完整路径匹配；1.3 倍字号、描边及列表优先显示，默认规则在 `Plugins/UniqueLoot/highlights.default.json`，首次启用生成 `config/highlights.json`，可编辑并重新加载。
@@ -40,14 +61,14 @@
 把 [exCore2/WhereTheWispsAt](https://github.com/exCore2/WhereTheWispsAt) 的幽火标记功能迁移到 GameHelper，最终希望尽量只维护插件。用户在 Windows 玩游戏；现已明确可自行编译（2026-09-23），当前交付 main 源码，先前 Linux 打包流程保留但不再默认执行。
 
 - 当前仓库：<https://github.com/mxc1868/Gamehelper>，本地 Windows `D:\PoE Trade\Gamehelper`，分支 `main`（历史 Linux 工作区为 `/home/ubuntu/Gamehelper`）。幽火实现提交 `05d1116`，UniqueLoot 实现提交 `dfee696`，均在同一分支上；恢复后的 fork 已有更新 `0d11fe7`，通过 merge 保留，现已确认它也是上游 `v1.5.11` 标签指向的提交。
-- 历史 fork 删除后于 2026-09-23 恢复。旧 `wisps-debug-2026-09-14` Release 未恢复，不再作为下载入口；使用新的 `unique-debug-2026-09-23` 完整包（包含 UniqueLoot、WhereTheWispsAt、Radar）。
+- 历史 fork 删除后于 2026-09-23 恢复。旧 `wisps-debug-2026-09-14` Release 未恢复，不再作为下载入口；使用新的 `unique-debug-2026-09-23` 完整包（包含 UniqueLoot、ShowMeWisp、Radar）。
 - 源码同步到本 fork 的 main；如用户另行要求打包，完整 ZIP 和 checksum 放 GitHub Releases。不把 DLL 和运行时逐个提交进源码历史。
 - 初始基础源码来自 `MordWraith/Gamehelper` 提交 `5e581b16c834bbdee831e28910f4786f9e22ab94`；本次同步保留恢复后 fork 中的 `0d11fe7`（核心版本 1.5.10、部署实体记录及地形容量等更新）。与 Gordin/GameHelper2 共用大量核心及 offsets 源码，但不能推断未来版本始终兼容。
 - 用户已要求清理此前的 ExileCore2 / ExileApi 逆向研究，并转向 GameHelper；此前研究文档和临时目录已经清理。当前不做付费授权绕过或相关研究。
 
 ## 已完成
 
-- [x] 原生 `PCore<WhereTheWispsAtSettings>` 插件，幽火颜色、地图标记、相邻 ID 连线、宝箱和事件、可选地面框、中英文设置。
+- [x] 原生 `PCore<ShowMeWispSettings>` 插件，幽火颜色、地图标记、相邻 ID 连线、宝箱和事件、可选地面框、中英文设置。
 - [x] 显式标注未知颜色与不可用状态；没有凭空补燃料百分比或精确模型旋转。
 - [x] 新增核心定向扫描 API，按 metadata 过滤后建立新实体/组件对象；正常绘制读 awake，避免共享对象缓存影响该路线。
 - [x] 地图投影提取为 `GameHelper/Utils/MapProjection.cs`，Radar 复用相同公式。没有修改 `GameOffsets` 数值。
@@ -57,7 +78,7 @@
 - [x] API 对照记录缺失实体、不可用观测、组件/路径/分类/状态/坐标差异、过滤开关、时间/区域、耗时、截断标记、有限样本。空结果或两边都失败不计为可用观测一致。
 - [x] 60 秒录制内以最短 2 秒间隔进行 API 对照，也有手动单次按钮。公开集合读取使用 `shouldCache:false` 避免额外填充共享缓存；不会自动修改全局实体过滤设置。
 - [x] 日志轮换最多 3 × 2 MiB；自动停止、报告导出、写入失败展示。独立定时协程确保 F9 跳过 DrawUI 时仍可记录心跳和停止。
-- [x] Linux 可构建 Windows x64 自包含包，包含配套核心、WhereTheWispsAt、Radar、.NET 10 运行时、字体、语言文件、启动脚本及构建清单。
+- [x] Linux 可构建 Windows x64 自包含包，包含配套核心、ShowMeWisp、Radar、.NET 10 运行时、字体、语言文件、启动脚本及构建清单。
 - [x] 根目录 `AGENTS.md` 指向此接手文档；仓库首页提供本 fork 的完整包下载与调试入口。
 
 ## 已验证与尚未验证
@@ -88,7 +109,7 @@
 ## P1：功能与性能验收
 
 - [ ] 验证当前 PoE2 的 Awake / Sleeping 布局和目标 metadata；当前日志存在并不意味着 offsets 正确。
-- [ ] 验证 `_primal`、`_warden`、`_vodoo`、`_sacred` 分类；`ModelPath` 仍只是样本，不作为未经证明的颜色替代。
+- [ ] 在当前游戏复核 Animated/ModelPath 的四类颜色及 `_sml` / `_med` / `_big` 大小分类；旧目录证据与本次离线测试见顶部记录。
 - [ ] 检查地图缩放、拖动、窗口尺寸、高度差、小地图裁剪和地面框位置。
 - [ ] 用开箱、激活前后样本确认 `Chest.IsOpened` 与 `StateMachine` 的 `activated=1` 语义。
 - [ ] 测试切图、回城、失焦、面板遮挡、F9、关闭游戏、禁用/重新启用，确认显示和日志没有跨区域误判。
@@ -99,34 +120,34 @@
 
 | 文件 | 职责 |
 | --- | --- |
-| `Plugins/WhereTheWispsAt/WhereTheWispsAtCore.cs` | 插件生命周期、扫描、共同的组件读取和状态解释 |
-| `WhereTheWispsAtCore.ApiComparison.cs`（同目录） | 原有 API 与新增扫描的采集调度 |
+| `Plugins/ShowMeWisp/ShowMeWispCore.cs` | 插件生命周期、扫描、共同的组件读取和状态解释 |
+| `ShowMeWispCore.ApiComparison.cs`（同目录） | 原有 API 与新增扫描的采集调度 |
 | `WispApiComparison.cs`（同目录） | 有界快照、实体身份匹配、差异字段和样本 |
-| `WhereTheWispsAtCore.Diagnostics.cs`、`WispDiagnostics.cs` | 限时录制、报告、心跳、版本信息 |
+| `ShowMeWispCore.Diagnostics.cs`、`WispDiagnostics.cs` | 限时录制、报告、心跳、版本信息 |
 | `WispModel.cs`、`WispRenderer.cs` | 分类/连线与 ImGui 绘制 |
 | `GameHelper/RemoteObjects/States/InGameStateObjects/AreaInstance.cs` | 新增 `ScanEntities` / `ScanAwakeEntities`；升级核心时需保留或移除的改动 |
 | `EntityScanDiagnostics.cs`（同目录） | 扫描阶段计数和有限失败样本 |
 | `GameHelper/Utils/MapProjection.cs`、`Plugins/Radar/Helper.cs` | 共用投影计算；最终插件独立化时可调整 |
 | `scripts/package-wisps.py` | Linux 构建和打包，不自动推送或发布 |
-| `tests/WhereTheWispsAt.Tests` | Linux 合成数据回归检查 |
+| `tests/ShowMeWisp.Tests` | Linux 合成数据回归检查 |
 
 ## 复现构建与发布
 
 一般 Linux 环境：
 
 ```bash
-dotnet run --project tests/WhereTheWispsAt.Tests/WhereTheWispsAt.Tests.csproj -c Release
+dotnet run --project tests/ShowMeWisp.Tests/ShowMeWisp.Tests.csproj -c Release
 python3 scripts/package-wisps.py
 ```
 
 当前工作区已还原依赖的离线方式（路径是开发缓存，不是项目依赖）：
 
 ```bash
-DOTNET_CLI_HOME=/tmp/gamehelper-unique/dotnet-home dotnet build tests/WhereTheWispsAt.Tests/WhereTheWispsAt.Tests.csproj -c Release --no-restore -m:1 -nr:false --disable-build-servers
-DOTNET_CLI_HOME=/tmp/gamehelper-unique/dotnet-home dotnet tests/WhereTheWispsAt.Tests/bin/Release/net10.0/WhereTheWispsAt.Tests.dll
+DOTNET_CLI_HOME=/tmp/gamehelper-unique/dotnet-home dotnet build tests/ShowMeWisp.Tests/ShowMeWisp.Tests.csproj -c Release --no-restore -m:1 -nr:false --disable-build-servers
+DOTNET_CLI_HOME=/tmp/gamehelper-unique/dotnet-home dotnet tests/ShowMeWisp.Tests/bin/Release/net10.0/ShowMeWisp.Tests.dll
 DOTNET_CLI_HOME=/tmp/gamehelper-unique/dotnet-home python3 scripts/package-wisps.py --packages /tmp/gamehelper-unique/nuget --source /tmp/gamehelper-unique/nuget
 ```
 
-交付前先提交源码，再重新打包，让清单中的 BaseCommit 对应本地提交。默认输出 `artifacts/wisps/WhereTheWispsAt-debug-win-x64.zip` 及 `.sha256`；加 `--include-unique` 输出 `artifacts/unique/GameHelper-unique-debug-win-x64.zip` 及 `.sha256`。提供完整包，单独更新插件 DLL 目前不够。当前源码同步目标为 `mxc1868/Gamehelper` 的 main；用户现自行在 Windows 编译，未经新请求不执行上述打包/Release 步骤。将来需要打包时建议使用干净提交/临时 worktree，避免混入其他尚未提交的评估文档。
+交付前先提交源码，再重新打包，让清单中的 BaseCommit 对应本地提交。默认输出 `artifacts/wisps/ShowMeWisp-debug-win-x64.zip` 及 `.sha256`；加 `--include-unique` 输出 `artifacts/unique/GameHelper-unique-debug-win-x64.zip` 及 `.sha256`。提供完整包，单独更新插件 DLL 目前不够。当前源码同步目标为 `mxc1868/Gamehelper` 的 main；用户现自行在 Windows 编译，未经新请求不执行上述打包/Release 步骤。将来需要打包时建议使用干净提交/临时 worktree，避免混入其他尚未提交的评估文档。
 
 原仓库的 `scripts/sync-gordin.ps1` 使用覆盖式同步，其他维护/启动器脚本也可能仍指向上游。不要直接运行它们更新当前分支或发布本 fork；先检查目标和差异，避免丢掉新增 API 或拿错编译包。

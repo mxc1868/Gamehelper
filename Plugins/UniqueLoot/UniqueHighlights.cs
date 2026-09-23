@@ -25,17 +25,41 @@ public sealed class UniqueHighlights
     }
 
     private readonly Dictionary<string, HighlightStyle> rules;
-    private UniqueHighlights(Dictionary<string, HighlightStyle> rules) => this.rules = rules;
-    public static UniqueHighlights Empty { get; } = new(new(StringComparer.OrdinalIgnoreCase));
+    private readonly Dictionary<string, Rule> savedRules;
+    private UniqueHighlights(Dictionary<string, HighlightStyle> rules, Dictionary<string, Rule> savedRules)
+    { this.rules = rules; this.savedRules = savedRules; }
+    public static UniqueHighlights Empty { get; } = new(new(StringComparer.OrdinalIgnoreCase), new(StringComparer.OrdinalIgnoreCase));
     public int Count => this.rules.Count;
     public HighlightStyle? Match(string? asset) => this.rules.GetValueOrDefault(UniqueArtCatalog.NormalizePath(asset));
+    public IEnumerable<(string Name, string AssetPath)> ConfiguredItems => this.savedRules.Values.Select(x => (x.Name, x.AssetPath));
+
+    public UniqueHighlights WithSelection(string name, IEnumerable<string> assets, bool enabled)
+    {
+        var replacement = new Dictionary<string, Rule>(this.savedRules, StringComparer.OrdinalIgnoreCase);
+        foreach (var path in assets)
+        {
+            var asset = UniqueArtCatalog.NormalizePath(path);
+            var old = replacement.GetValueOrDefault(asset);
+            replacement[asset] = new Rule
+            {
+                Name = old?.Name ?? name, AssetPath = asset, Enabled = enabled,
+                TextColor = old?.TextColor ?? "#FFD700", BackgroundColor = old?.BackgroundColor ?? "#332600EE",
+                BorderColor = old?.BorderColor ?? "#FFD700", FontScale = old?.FontScale ?? 1.6f,
+            };
+        }
+        return Parse(JsonSerializer.Serialize(new Config { Rules = replacement.Values.ToList() }));
+    }
+
+    public string ToJson() => JsonSerializer.Serialize(new Config { Rules = this.savedRules.Values.ToList() },
+        new JsonSerializerOptions { WriteIndented = true });
 
     public static UniqueHighlights Parse(string json)
     {
         var config = JsonSerializer.Deserialize<Config>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-        if (config?.Rules == null || config.Rules.Count > 100)
-            throw new FormatException("Highlights must contain a Rules array with at most 100 entries.");
+        if (config?.Rules == null || config.Rules.Count > 20000)
+            throw new FormatException("Highlights must contain a Rules array with at most 20000 entries.");
         var result = new Dictionary<string, HighlightStyle>(StringComparer.OrdinalIgnoreCase);
+        var saved = new Dictionary<string, Rule>(StringComparer.OrdinalIgnoreCase);
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var rule in config.Rules)
         {
@@ -50,9 +74,12 @@ public sealed class UniqueHighlights
                 throw new FormatException("Invalid highlight name or font scale: " + asset);
             var style = new HighlightStyle(rule.Name.Trim(), asset, ParseColor(rule.TextColor),
                 ParseColor(rule.BackgroundColor), ParseColor(rule.BorderColor), rule.FontScale);
+            rule.Name = rule.Name.Trim();
+            rule.AssetPath = asset;
+            saved.Add(asset, rule);
             if (rule.Enabled) result.Add(asset, style);
         }
-        return new(result);
+        return new(result, saved);
     }
 
     private static uint ParseColor(string? hex)

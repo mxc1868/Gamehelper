@@ -10,6 +10,7 @@ if (args.Length != 1)
 }
 
 var root = Path.GetFullPath(args[0]);
+Directory.SetCurrentDirectory(root);
 var hostPath = Path.Combine(root, "GameHelper.dll");
 var resolver = new AssemblyDependencyResolver(hostPath);
 AssemblyLoadContext.Default.Resolving += (_, name) =>
@@ -25,8 +26,14 @@ var managerType = host.GetType("GameHelper.Plugin.PManager", throwOnError: true)
 var loadPlugin = managerType.GetMethod("LoadPlugin", BindingFlags.NonPublic | BindingFlags.Static,
     [typeof(Assembly), alcType, typeof(string)])!;
 var failed = false;
+var discover = managerType.GetMethod("GetPluginsDirectories", BindingFlags.NonPublic | BindingFlags.Static)!;
+var directories = (IEnumerable<DirectoryInfo>)discover.Invoke(null, null)!;
+var names = directories.Select(directory => directory.Name).ToArray();
+var renameOk = names.Contains("ShowMeWisp", StringComparer.OrdinalIgnoreCase) && !names.Contains("WhereTheWispsAt", StringComparer.OrdinalIgnoreCase);
+failed |= !renameOk;
+Console.WriteLine($"{(renameOk ? "PASS" : "FAIL")} discovery uses ShowMeWisp without the legacy duplicate");
 
-foreach (var name in new[] { "WhereTheWispsAt", "UniqueLoot", "Radar" })
+foreach (var name in new[] { "ShowMeWisp", "UniqueLoot", "Radar" })
 {
     AssemblyLoadContext? alc = null;
     try
@@ -73,5 +80,5 @@ foreach (var (typeName, methodName, parameterCount) in new[]
     Console.WriteLine($"{(found ? "PASS" : "FAIL")} core API: {typeName}.{methodName}");
 }
 
-Console.WriteLine(failed ? "Plugin load checks failed." : "All 9 plugin load/API checks passed. Game rendering is not tested.");
+Console.WriteLine(failed ? "Plugin load checks failed." : "All 10 plugin discovery/load/API checks passed. Game rendering is not tested.");
 return failed ? 1 : 0;

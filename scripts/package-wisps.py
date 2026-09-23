@@ -20,14 +20,14 @@ def main():
     args = parser.parse_args()
     root = Path(__file__).resolve().parent.parent
     artifact_dir = root / "artifacts" / ("unique" if args.include_unique else "wisps")
-    bundle_name = "GameHelper-unique-debug-win-x64" if args.include_unique else "WhereTheWispsAt-debug-win-x64"
+    bundle_name = "GameHelper-unique-debug-win-x64" if args.include_unique else "ShowMeWisp-debug-win-x64"
     artifact_dir.mkdir(parents=True, exist_ok=True)
     environment = dict(os.environ, DOTNET_CLI_TELEMETRY_OPTOUT="1", DOTNET_NOLOGO="1")
 
     def run(*command):
         subprocess.run(command, cwd=root, env=environment, check=True)
 
-    projects = ["Plugins/WhereTheWispsAt/WhereTheWispsAt.csproj", "Plugins/Radar/Radar.csproj"]
+    projects = ["Plugins/ShowMeWisp/ShowMeWisp.csproj", "Plugins/Radar/Radar.csproj"]
     if args.include_unique:
         projects.append("Plugins/UniqueLoot/UniqueLoot.csproj")
     for project in projects:
@@ -48,7 +48,7 @@ def main():
             "-p:PublishDocumentationFile=false", "-o", str(package))
         # Copy an explicit allowlist of plugin assets, excluding local configs, logs and other plugins.
         plugins = {
-            "WhereTheWispsAt": [],
+            "ShowMeWisp": [],
             "Radar": ["icons.png", "important_tgt_files.txt", "boss_arena_tgt_files.txt", "stairs_tgt_files.txt"],
         }
         if args.include_unique:
@@ -61,10 +61,11 @@ def main():
                 shutil.copy2(output / file, target / file)
             shutil.copytree(root / "Plugins" / name / "Localization", target / "Localization")
         shutil.copy2(root / "LICENSE", package / "LICENSE")
-        shutil.copy2(root / "Plugins/WhereTheWispsAt/README.md", package / "WhereTheWispsAt-README.zh-CN.md")
-        start_here = "Plugins/UniqueLoot/README.md" if args.include_unique else "Plugins/WhereTheWispsAt/WINDOWS-DEBUG.zh-CN.md"
+        shutil.copy2(root / "Plugins/ShowMeWisp/README.md", package / "ShowMeWisp-README.zh-CN.md")
+        start_here = "Plugins/UniqueLoot/README.md" if args.include_unique else "Plugins/ShowMeWisp/WINDOWS-DEBUG.zh-CN.md"
         shutil.copy2(root / start_here, package / "START-HERE.zh-CN.md")
         if args.include_unique:
+            shutil.copytree(root / "Plugins/UniqueLoot/Icons", package / "Plugins/UniqueLoot/Icons")
             data_target = package / "Plugins/UniqueLoot/Data"
             data_target.mkdir(parents=True, exist_ok=True)
             shutil.copy2(root / "Plugins/UniqueLoot/Data/SOURCES.md", data_target / "SOURCES.md")
@@ -84,11 +85,12 @@ def main():
                     "GameHelper.runtimeconfig.json", "coreclr.dll", "hostfxr.dll", "hostpolicy.dll",
                     "System.Private.CoreLib.dll", "cimgui.dll", "ImGui.NET.dll", "ClickableTransparentOverlay.dll",
                     "ProcessMemoryUtilities.dll", "fonts/DejaVuSans.ttf", "fonts/unifont.ttf",
-                    "Localization/zh-CN.json", "Plugins/WhereTheWispsAt/WhereTheWispsAt.dll",
-                    "Plugins/WhereTheWispsAt/Localization/zh-CN.json", "Plugins/Radar/Radar.dll"]
+                    "Localization/zh-CN.json", "Plugins/ShowMeWisp/ShowMeWisp.dll",
+                    "Plugins/ShowMeWisp/Localization/zh-CN.json", "Plugins/Radar/Radar.dll"]
         if args.include_unique:
             required += ["Plugins/UniqueLoot/UniqueLoot.dll", "Plugins/UniqueLoot/Localization/zh-CN.json", "Plugins/UniqueLoot/Data/SOURCES.md"]
             required += ["Plugins/UniqueLoot/highlights.default.json", "Plugins/UniqueLoot/config/highlights.json"]
+            required += ["Plugins/UniqueLoot/Icons/sources.json"]
         for file in required:
             if not (package / file).is_file():
                 raise RuntimeError("Required package file missing: " + file)

@@ -12,6 +12,7 @@
     <None Update="Localization/*.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="highlights.default.json" CopyToOutputDirectory="PreserveNewest" />
     <PluginLocalization Include="Localization/*.json" />
+    <PluginIcons Include="Icons/*.webp;Icons/sources.json" />
   </ItemGroup>
   <Target Name="CopyPlugin" AfterTargets="Build">
     <Copy SourceFiles="$(OutDir)$(TargetName).dll;$(OutDir)$(TargetName).pdb"
@@ -20,5 +21,7 @@
           DestinationFolder="../../GameHelper/$(OutDir)Plugins/UniqueLoot/Localization" SkipUnchangedFiles="true" />
     <Copy SourceFiles="$(OutDir)highlights.default.json"
           DestinationFolder="../../GameHelper/$(OutDir)Plugins/UniqueLoot" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(PluginIcons)"
+          DestinationFolder="../../GameHelper/$(OutDir)Plugins/UniqueLoot/Icons" SkipUnchangedFiles="true" />
   </Target>
 </Project>

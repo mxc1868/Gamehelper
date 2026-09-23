@@ -23,6 +23,7 @@ tempFileLocations.dat
 update.config.json
 configs/
 Plugins/*/config/
+Plugins/ShowMeWisp/diagnostics/
 Plugins/WhereTheWispsAt/diagnostics/
 Plugins/UniqueLoot/diagnostics/
 Plugins/UniqueLoot/uniqueArtMapping.json

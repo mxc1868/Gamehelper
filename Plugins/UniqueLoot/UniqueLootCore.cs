@@ -46,6 +46,10 @@ public sealed class UniqueLootCore : PCore<UniqueLootSettings>
 
     private UniqueArtCatalog catalog = UniqueArtCatalog.Empty;
     private UniqueHighlights highlights = UniqueHighlights.Empty;
+    private readonly UniqueIcons icons = new();
+    private HighlightChoice[] highlightChoices = [];
+    private string highlightSearch = string.Empty;
+    private bool selectedChoicesOnly;
     private bool highlightsLoaded;
     private string highlightStatus = string.Empty;
     private Drop[] drops = [];
@@ -83,6 +87,7 @@ public sealed class UniqueLootCore : PCore<UniqueLootSettings>
         this.areaChanged?.Cancel();
         this.gameClosed?.Cancel();
         this.areaChanged = this.gameClosed = null;
+        this.icons.Clear();
         this.Reset();
     }
 
@@ -149,6 +154,7 @@ public sealed class UniqueLootCore : PCore<UniqueLootSettings>
                 catch { this.catalog = UniqueArtCatalog.Empty; }
             }
         }
+        this.highlightChoices = HighlightChoices.Build(this.catalog, this.highlights);
     }
 
     private void LoadHighlights()
@@ -157,8 +163,8 @@ public sealed class UniqueLootCore : PCore<UniqueLootSettings>
         {
             if (File.Exists(this.HighlightsPath))
             {
-                if (new FileInfo(this.HighlightsPath).Length > 256 * 1024)
-                    throw new FormatException("Highlight config exceeds 256 KiB.");
+                if (new FileInfo(this.HighlightsPath).Length > 16 * 1024 * 1024)
+                    throw new FormatException("Highlight config exceeds 16 MiB.");
                 this.highlights = UniqueHighlights.Parse(File.ReadAllText(this.HighlightsPath));
             }
             else
@@ -189,6 +195,22 @@ public sealed class UniqueLootCore : PCore<UniqueLootSettings>
         }
         this.nextScan = 0;
         this.drops = [];
+        this.highlightChoices = HighlightChoices.Build(this.catalog, this.highlights);
+    }
+
+    private void SetHighlight(HighlightChoice choice, bool enabled)
+    {
+        try
+        {
+            var replacement = this.highlights.WithSelection(choice.Name, choice.AssetPaths, enabled);
+            Directory.CreateDirectory(Path.GetDirectoryName(this.HighlightsPath)!);
+            File.WriteAllText(this.HighlightsPath + ".tmp", replacement.ToJson());
+            File.Move(this.HighlightsPath + ".tmp", this.HighlightsPath, overwrite: true);
+            this.highlights = replacement;
+            this.highlightStatus = string.Empty;
+            this.nextScan = 0;
+        }
+        catch (Exception ex) { this.highlightStatus = ex.Message; }
     }
 
     public override void DrawUI()
@@ -333,46 +355,62 @@ public sealed class UniqueLootCore : PCore<UniqueLootSettings>
         var world = Core.States.InGameStateObject.CurrentWorldInstance;
         var listPos = new Vector2(Math.Min(this.Settings.ListX, Math.Max(0, screenSize.X - 200)),
             Math.Min(this.Settings.ListY, Math.Max(0, screenSize.Y - 60)));
-        var count = 0;
-        foreach (var drop in this.drops)
+        var groundCount = 0;
+        var listCount = 0;
+        foreach (var drop in this.drops.OrderByDescending(x => this.Settings.HighlightPriorityDrops && this.highlights.Match(x.Match.AssetPath) != null))
         {
-            if (!this.Settings.ShowUnknown && drop.Match.Kind is ArtMatchKind.Unknown or ArtMatchKind.MissingArt) continue;
-            if (count++ >= this.Settings.MaxLabels) break;
+            var highlight = HighlightChoices.DisplayStyle(drop.Match.AssetPath, this.highlights, this.Settings);
+            if (highlight == null && !this.Settings.ShowUnknown && drop.Match.Kind is ArtMatchKind.Unknown or ArtMatchKind.MissingArt) continue;
             var text = this.DropText(drop);
-            var highlight = this.Settings.HighlightPriorityDrops ? this.highlights.Match(drop.Match.AssetPath) : null;
             if (highlight != null) text = "[!] " + text;
             var color = drop.Match.Kind == ArtMatchKind.Single ? 0xFF55AAFFu : 0xFF80DCFFu;
             var fontSize = ImGui.GetFontSize() * (highlight?.FontScale ?? 1);
-            if (this.Settings.ShowGroundNames && float.IsFinite(drop.Position.X) && float.IsFinite(drop.Position.Y) &&
+            var icon = highlight != null && this.Settings.ShowItemIcons ? this.icons.Find(this.DllDirectory, drop.Match.AssetPath) : null;
+            if (this.Settings.ShowGroundNames && groundCount < this.Settings.MaxLabels && float.IsFinite(drop.Position.X) && float.IsFinite(drop.Position.Y) &&
                 float.IsFinite(drop.Position.Z) && float.IsFinite(drop.TerrainHeight))
             {
                 var point = world.WorldToScreen(drop.Position, drop.TerrainHeight);
                 if (float.IsFinite(point.X) && float.IsFinite(point.Y) && point != Vector2.Zero &&
                     point.X >= 0 && point.Y >= 0 && point.X <= screenSize.X && point.Y <= screenSize.Y)
-                    DrawText(draw, point + new Vector2(-ImGui.CalcTextSize(text).X * (highlight?.FontScale ?? 1) / 2, this.Settings.GroundOffsetY), text, color, highlight);
+                {
+                    DrawText(draw, point + new Vector2(-(ImGui.CalcTextSize(text).X * (highlight?.FontScale ?? 1) + (icon == null ? 0 : 44)) / 2, this.Settings.GroundOffsetY), text, color, highlight, icon);
+                    groundCount++;
+                }
             }
-            if (this.Settings.ShowList)
+            // A separate list budget prevents ordinary/unknown drops from consuming
+            // slots reserved for the user's selected highlights.
+            if (this.Settings.ShowList && highlight != null && listCount < this.Settings.MaxLabels)
             {
-                if (count == 1)
+                if (listCount++ == 0)
                 {
                     DrawText(draw, listPos, this.T("list.title", "Unique drops"), 0xFFFFFFFF);
                     listPos.Y += ImGui.GetTextLineHeightWithSpacing() + 4;
                 }
                 var distance = float.IsFinite(drop.Distance) ? $"  [{drop.Distance:0}]" : string.Empty;
-                if (listPos.Y + fontSize + 6 < screenSize.Y)
-                    DrawText(draw, listPos, text + distance, color, highlight);
-                listPos.Y += fontSize + ImGui.GetStyle().ItemSpacing.Y + 6;
+                var rowHeight = Math.Max(fontSize, icon == null ? 0 : 36);
+                if (listPos.Y + rowHeight + 6 < screenSize.Y)
+                    DrawText(draw, listPos, text + distance, color, highlight, icon);
+                listPos.Y += rowHeight + ImGui.GetStyle().ItemSpacing.Y + 8;
             }
         }
     }
 
-    private static void DrawText(ImDrawListPtr draw, Vector2 position, string text, uint color, HighlightStyle? highlight = null)
+    private static void DrawText(ImDrawListPtr draw, Vector2 position, string text, uint color, HighlightStyle? highlight = null, UniqueIcons.Icon? icon = null)
     {
         var size = ImGui.CalcTextSize(text) * (highlight?.FontScale ?? 1);
+        var iconSpace = icon == null ? 0 : 44;
+        var height = Math.Max(size.Y, icon == null ? 0 : 36);
         var start = position - new Vector2(4, 3);
-        var end = position + size + new Vector2(4, 3);
+        var end = position + new Vector2(size.X + iconSpace + 4, height + 3);
         draw.AddRectFilled(start, end, highlight?.BackgroundColor ?? 0xBB000000, 3);
         if (highlight != null) draw.AddRect(start, end, highlight.BorderColor, 3, ImDrawFlags.None, 2);
+        if (icon is { } image)
+        {
+            var fitted = image.Size * Math.Min(36 / image.Size.X, 36 / image.Size.Y);
+            var topLeft = position + (new Vector2(36, height) - fitted) / 2;
+            draw.AddImage(image.Texture, topLeft, topLeft + fitted);
+        }
+        position += new Vector2(iconSpace, (height - size.Y) / 2);
         draw.AddText(ImGui.GetFont(), ImGui.GetFontSize() * (highlight?.FontScale ?? 1), position, highlight?.TextColor ?? color, text);
     }
 
@@ -383,7 +421,10 @@ public sealed class UniqueLootCore : PCore<UniqueLootSettings>
         ImGui.Checkbox(this.L("list", "Drop list"), ref this.Settings.ShowList);
         ImGui.Checkbox(this.L("show_unknown", "Show unknown / unreadable uniques"), ref this.Settings.ShowUnknown);
         if (ImGui.Checkbox(this.L("highlights", "Highlight priority drops"), ref this.Settings.HighlightPriorityDrops)) this.nextScan = 0;
-        ImGui.TextWrapped(this.T("highlights_help", "Headhunter: gold; Mageblood: magenta. Edit config/highlights.json to change the rules."));
+        ImGui.SliderFloat(this.L("highlight_font", "Highlight text size"), ref this.Settings.HighlightFontScale, 1.3f, 2.5f, "%.1fx");
+        ImGui.Checkbox(this.L("item_icons", "Show item icons"), ref this.Settings.ShowItemIcons);
+        ImGui.TextWrapped(this.T("highlights_help", "Select the items to highlight below. The drop list only shows selected highlights. Choices are saved immediately."));
+        this.DrawHighlightChoices();
         if (ImGui.Button(this.L("highlights_reload", "Reload highlight config"))) this.LoadHighlights();
         if (!string.IsNullOrEmpty(this.highlightStatus)) ImGui.TextWrapped(this.highlightStatus);
         ImGui.Checkbox(this.L("unfocused", "Hide when unfocused"), ref this.Settings.HideWhenUnfocused);
@@ -406,6 +447,46 @@ public sealed class UniqueLootCore : PCore<UniqueLootSettings>
         ImGui.TextWrapped(this.T("limits", "Only ground entities exposed by GameHelper are scanned. Zero results do not prove there were no drops. Windows/game validation pending."));
         if (ImGui.Button(this.L("export", "Export latest scan"))) this.ExportReport();
         if (!string.IsNullOrEmpty(this.actionStatus)) ImGui.TextWrapped(this.actionStatus);
+    }
+
+    private void DrawHighlightChoices()
+    {
+        if (!ImGui.TreeNode(this.L("highlight_items", "Items to highlight"))) return;
+        ImGui.SetNextItemWidth(Math.Min(280, Math.Max(1, ImGui.GetContentRegionAvail().X)));
+        ImGui.InputTextWithHint("##highlight_search", this.T("highlight_search", "Search item name..."), ref this.highlightSearch, 200);
+        ImGui.Checkbox(this.L("selected_only", "Show selected items only"), ref this.selectedChoicesOnly);
+        var selected = this.highlightChoices.Count(x => HighlightChoices.IsSelected(x, this.highlights));
+        ImGui.Text(this.PluginText.F("selected_count", "Selected: {0} / {1}", selected, this.highlightChoices.Length));
+        ImGui.TextWrapped(this.T("shared_art", "Names separated by / share an icon; a drop can be any of those candidates."));
+        if (ImGui.BeginChild("##highlight_choices", new Vector2(0, 280), ImGuiChildFlags.Borders))
+        {
+            foreach (var choice in this.highlightChoices)
+            {
+                var enabled = HighlightChoices.IsSelected(choice, this.highlights);
+                if (this.selectedChoicesOnly && !enabled || !choice.Name.Contains(this.highlightSearch, StringComparison.OrdinalIgnoreCase)) continue;
+                ImGui.PushID(choice.AssetPaths[0]);
+                var visible = ImGui.IsRectVisible(new Vector2(32));
+                if (ImGui.Checkbox("##selected", ref enabled)) this.SetHighlight(choice, enabled);
+                ImGui.SameLine();
+                if (this.Settings.ShowItemIcons)
+                {
+                    var icon = visible ? this.icons.Find(this.DllDirectory, choice.AssetPaths[0]) : null;
+                    var cursor = ImGui.GetCursorScreenPos();
+                    if (icon is { } image)
+                    {
+                        var fitted = image.Size * Math.Min(32 / image.Size.X, 32 / image.Size.Y);
+                        var topLeft = cursor + (new Vector2(32) - fitted) / 2;
+                        ImGui.GetWindowDrawList().AddImage(image.Texture, topLeft, topLeft + fitted);
+                    }
+                    ImGui.Dummy(new Vector2(32));
+                    ImGui.SameLine();
+                }
+                ImGui.TextUnformatted(choice.Name);
+                ImGui.PopID();
+            }
+        }
+        ImGui.EndChild();
+        ImGui.TreePop();
     }
 
     private void ExportReport()

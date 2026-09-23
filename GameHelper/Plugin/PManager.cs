@@ -175,7 +175,7 @@ namespace GameHelper.Plugin
         private static List<DirectoryInfo> GetPluginsDirectories()
         {
             return State.PluginsDirectory.GetDirectories().Where(
-                x => (x.Attributes & FileAttributes.Hidden) == 0).ToList();
+                x => (x.Attributes & FileAttributes.Hidden) == 0 && !PluginRenames.IsSuperseded(x)).ToList();
         }
 
         private static (Assembly assembly, PluginAssemblyLoadContext alc)? ReadPluginFiles(DirectoryInfo pluginDirectory)
@@ -273,7 +273,7 @@ namespace GameHelper.Plugin
                 {
                     if (!PluginMetadataByName.TryGetValue(x.Name, out var metadata))
                     {
-                        metadata = new PluginMetadata();
+                        metadata = PluginRenames.InitialMetadata(x.Name, PluginMetadataByName);
                         PluginMetadataByName[x.Name] = metadata;
                     }
 

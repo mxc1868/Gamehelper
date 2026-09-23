@@ -13,6 +13,7 @@ public sealed class UniqueArtCatalog
     private UniqueArtCatalog(Dictionary<string, string[]> entries) => this.entries = entries;
     public int Count => this.entries.Count;
     public static UniqueArtCatalog Empty { get; } = new(new(StringComparer.OrdinalIgnoreCase));
+    public IEnumerable<ArtMatch> KnownItems => this.entries.Where(x => x.Value.Length > 0).Select(x => this.Resolve(x.Key));
 
     public static string NormalizePath(string? path) => (path ?? string.Empty).Trim().Replace('\\', '/');
 

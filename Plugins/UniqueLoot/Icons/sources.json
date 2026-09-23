@@ -1,0 +1,2664 @@
+{
+  "Art/2DItems/Amulets/Uniques/Astramentis.dds": {
+    "File": "a4d9de0f0e9bafe19d40c49a539ad09d0996a50b6ebaf973d7723ff1dafa90fd.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Amulets/Uniques/Astramentis.webp",
+    "Sha256": "c9283a8dfd893e0bc4aa1641755861a55af0811f23bf8c613167becec017ac02",
+    "Bytes": 5620
+  },
+  "Art/2DItems/Amulets/Uniques/BeaconOfAzis.dds": {
+    "File": "e2bd7163d400080b24b03382ca742aeec550ee3e0ca57e171c12bb9ec4128150.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Amulets/Uniques/BeaconOfAzis.webp",
+    "Sha256": "d57f2c73964482253d1c3ee6f0f08b08cb025682750f6248d3e288657ed04b82",
+    "Bytes": 6050
+  },
+  "Art/2DItems/Amulets/Uniques/CarnageHeart.dds": {
+    "File": "493251cebe96d08bc1f2023868a7573df8e0e13fa62e981379617eb2280973cb.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Amulets/Uniques/CarnageHeart.webp",
+    "Sha256": "6e1636a3eda2ee4f3b3aeabab5e1d4f7844fb83ff7d5d33123acc1ee6dfbc791",
+    "Bytes": 4112
+  },
+  "Art/2DItems/Amulets/Uniques/ChainsOfAdherence.dds": {
+    "File": "97dc70f96999accc63317e7dae8912475953488ddf2e42df999c4313f2d788e2.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Amulets/Uniques/ChainsOfAdherence.webp",
+    "Sha256": "467214374e206c4721f5539b04749f4e08e71a709a5d8e11346950de26b8a09d",
+    "Bytes": 5918
+  },
+  "Art/2DItems/Amulets/Uniques/ChoirOfTheStorm.dds": {
+    "File": "7df7da5931fb9af5e0eb8e8def521ce589b1dffd3823bb6ac08604daecbdbeac.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Amulets/Uniques/ChoirOfTheStorm.webp",
+    "Sha256": "7e58c52e9f75e7e3a704eee60b5b3a8140a670c7fc1fe31c590f3ce227d97a9b",
+    "Bytes": 6254
+  },
+  "Art/2DItems/Amulets/Uniques/DefianceOfDestiny.dds": {
+    "File": "aa0282dd5a2d739e3c679954f45b8f737774080515efec812066c016d251653c.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Amulets/Uniques/DefianceOfDestiny.webp",
+    "Sha256": "5812be392822c0e9be80b3f8d8b1d25b6e1b38ed7bed86928dbae935f182b27f",
+    "Bytes": 5592
+  },
+  "Art/2DItems/Amulets/Uniques/DeliriumAmulet.dds": {
+    "File": "262eb836bea9ee658a99cb6a34aaa3ff1da232b7d3baadf7e1e569c27c009be4.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Amulets/Uniques/DeliriumAmulet.webp",
+    "Sha256": "b1ea2c1b90fca78936b3250967e168383291018d96d98bea110a8afd0eca00e7",
+    "Bytes": 5518
+  },
+  "Art/2DItems/Amulets/Uniques/EyeOfChayula.dds": {
+    "File": "bd6fce69a68720c7c962fd89ea3ae05ce34d262066263ff2e5da5c60725c3604.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Amulets/Uniques/EyeOfChayula.webp",
+    "Sha256": "5d4de0194262b05058b9051296a2592653631d795f897b8bb1ec01c90c9a9d9c",
+    "Bytes": 4992
+  },
+  "Art/2DItems/Amulets/Uniques/Fireflower.dds": {
+    "File": "bdf2c46f339d8845a60ae11bb7a8a0d40f789d94fb5fe0d8f45265c66cf7675e.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Amulets/Uniques/Fireflower.webp",
+    "Sha256": "5836cf3ff88a560c3bb226d296f337079373854da99e40282a7456f8ea80d50a",
+    "Bytes": 5370
+  },
+  "Art/2DItems/Amulets/Uniques/FixationOfYix.dds": {
+    "File": "e086a0b661badb2cf0bba02821d6543078c2ffd51c236d7553bc28318c8eee73.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Amulets/Uniques/FixationOfYix.webp",
+    "Sha256": "073b5387fc00df8f58be7922398896b1eb667016a9ed77dd605f1cb05ece6c4b",
+    "Bytes": 5432
+  },
+  "Art/2DItems/Amulets/Uniques/HinekorasSight.dds": {
+    "File": "e066ebf2547b509dfd71a4ecb6d299d9905c4ab71a5044932de84de23f798d27.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Amulets/Uniques/HinekorasSight.webp",
+    "Sha256": "48ebbf9dfd3d05a94398e209646cdee104d26c9a102e4e89d45ea76b8a7e1785",
+    "Bytes": 5304
+  },
+  "Art/2DItems/Amulets/Uniques/IdolOfUldurn.dds": {
+    "File": "cce8ccc0c37c92dfe1b229cc9b1c3f37cbcadb66b83f31bd3b437ff334bf39e3.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Amulets/Uniques/IdolOfUldurn.webp",
+    "Sha256": "50e877a8476530ea245a975d594f7769619ce1753200d6d20d0c5621db18b749",
+    "Bytes": 4626
+  },
+  "Art/2DItems/Amulets/Uniques/Igniferis.dds": {
+    "File": "b3036b403996b0d5b858545c2788a451ac0d188c5bf6d7057c5e9afdad8b7911.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Amulets/Uniques/Igniferis.webp",
+    "Sha256": "bce55de9bf470f091d6bca43ad9352ab44c8fe5cdaafb2ad4e689d5069950191",
+    "Bytes": 6706
+  },
+  "Art/2DItems/Amulets/Uniques/LiguriumTalisman.dds": {
+    "File": "43d93d67ca827157c20df74082b355608462bbeac7402463bd3ee04d92dcb3b5.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Amulets/Uniques/LiguriumTalisman.webp",
+    "Sha256": "302bcab194b1d875764e2114b25ee03f203de74eb9e9ae631760df375f64595f",
+    "Bytes": 5068
+  },
+  "Art/2DItems/Amulets/Uniques/Nattblom.dds": {
+    "File": "323c2ab660389a09f7114d3c7059ca948a7cf56f736ae77ea7080cf8c3e82210.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Amulets/Uniques/Nattblom.webp",
+    "Sha256": "c577b9b91ff3d941169d7f69f7aed557dc43ccaefe99c2e0e51f370a675a5f56",
+    "Bytes": 6232
+  },
+  "Art/2DItems/Amulets/Uniques/ReveredResin.dds": {
+    "File": "ea32758f5e43104ecb5d90db8e9d39ea500ba94c801bbc17d2e49c180252c729.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Amulets/Uniques/ReveredResin.webp",
+    "Sha256": "afecf2fb55ba6f56bab5e26bf57a6585475d4346fa3398f0fd7a1eb4687b9c6c",
+    "Bytes": 6234
+  },
+  "Art/2DItems/Amulets/Uniques/RondelOfFragility.dds": {
+    "File": "17c57479ff9a68fb5bdbc60812c3019d6d44abca55cdf66a022b1312219c1f32.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Amulets/Uniques/RondelOfFragility.webp",
+    "Sha256": "01683a8033c6b5f370492db00217341c28a2ee3d2492c5cf05b731bbb62b12ac",
+    "Bytes": 5002
+  },
+  "Art/2DItems/Amulets/Uniques/StoneOfLazhwar.dds": {
+    "File": "dac5858569a2aeeda43eb5c2ac49d86716bd71273638bab3d0e68b083238d1b0.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Amulets/Uniques/StoneOfLazhwar.webp",
+    "Sha256": "210a3fa87d907981399a4550dc25cda1819f8d14d806a572de1252378acdc7bd",
+    "Bytes": 4904
+  },
+  "Art/2DItems/Amulets/Uniques/SurefootedSigil.dds": {
+    "File": "4084266980153fa315641b97f9fe51201fc55301b4c7025b78a1ae6ba059305e.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Amulets/Uniques/SurefootedSigil.webp",
+    "Sha256": "e4112eafda1990f5fea821a2fa8c470363031bf5c682285254b4a653f08e990a",
+    "Bytes": 5410
+  },
+  "Art/2DItems/Amulets/Uniques/TheAnvil.dds": {
+    "File": "9326f442a1a11bc57b8150fe6b459a53955f583b70a4054910154e157330cd8d.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Amulets/Uniques/TheAnvil.webp",
+    "Sha256": "b9ac7fd5282954d6790c4e667f2890390314ee88d45d283fe121e7f150d3402b",
+    "Bytes": 4028
+  },
+  "Art/2DItems/Amulets/Uniques/TheEverlastingGaze.dds": {
+    "File": "6fb3feb7971cf028662c298ffe578a9b23781e6ad6b3885e08c3be1992fb1153.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Amulets/Uniques/TheEverlastingGaze.webp",
+    "Sha256": "818759a6950e3b8dc9af2b849db764c1ac49f5157ec8215fb20885f1eec2501d",
+    "Bytes": 5070
+  },
+  "Art/2DItems/Amulets/Uniques/ThePandemonius.dds": {
+    "File": "33cf24a25959baa0ec31eaa263d167ab9f96074953c2516b5fda225763596e18.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Amulets/Uniques/ThePandemonius.webp",
+    "Sha256": "07d7fafa67b0867e200f9d4f559f2934151f8eedd612adda345c0c84f1aa58ca",
+    "Bytes": 5450
+  },
+  "Art/2DItems/Amulets/Uniques/TheSerpentsEgg.dds": {
+    "File": "a909f3dc21eaf99564722d85c2d124674671f97a943e6fa91150d140bfd23e79.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Amulets/Uniques/TheSerpentsEgg.webp",
+    "Sha256": "38f9225fcc52ba0c06d051ce64e7357c6ba1aa2e45f23996eb6d48c314be7406",
+    "Bytes": 3528
+  },
+  "Art/2DItems/Amulets/Uniques/UngilsHarmony.dds": {
+    "File": "a125102b7d9b69e80fd227d5e01c90f92d2a24717aaced2388b4578e67080dd1.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Amulets/Uniques/UngilsHarmony.webp",
+    "Sha256": "3397b5616d91b0ebfcc4a3de86aeebad4280e245f44313858cb1554316873840",
+    "Bytes": 6774
+  },
+  "Art/2DItems/Amulets/Uniques/XophsBlood.dds": {
+    "File": "921aaef488784a2ffbcc44d203e2beade0cd0f51e9155d78f000f36731bd3862.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Amulets/Uniques/XophsBlood.webp",
+    "Sha256": "6b30304e6f7571e8c78c21e6c0baabd8e91e13ebe97faa9c6d0c5d183307180a",
+    "Bytes": 6498
+  },
+  "Art/2DItems/Amulets/Uniques/YokeOfSuffering.dds": {
+    "File": "072665f13372b1c17e8991aa27284ebef8f00c303ec2a7cdbe363ed3ce9e0eb8.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Amulets/Uniques/YokeOfSuffering.webp",
+    "Sha256": "34308a575c4449cd879ad00602b9126004633410f1486e5ad2183f2e65d51870",
+    "Bytes": 4988
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/ApronOfEmiran.dds": {
+    "File": "2ed69ef406aeeb68365d0ef9132be450a417b781a716815184dea3dbf6306b63.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/ApronOfEmiran.webp",
+    "Sha256": "53bacc3d2afa8e74d11c371e1b9d5e2d21c0ed8dd849bd7ed3f3139773e07d2e",
+    "Bytes": 19320
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/Ashrend.dds": {
+    "File": "4bde2abf835665b7fc2cf6434b4a08d87370300461e5baabd747a30a7cc42f21.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/Ashrend.webp",
+    "Sha256": "24c9c983fae285a74560a6db49ea408b1174e40a69fecf2ae8db835feab97576",
+    "Bytes": 20908
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/AtzirisSplendour.dds": {
+    "File": "d44c0b6396027151588cf4eff87d5b7de25cccd890c1fd9547171811e3a2b3c5.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/AtzirisSplendour.webp",
+    "Sha256": "0cab1f9435d971aa1b4ff720475e4db67164a20e08c97b8ed2081cd4aba22202",
+    "Bytes": 21730
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/BellyOfTheBeast.dds": {
+    "File": "a2ccc4d436735cde18a3680d5ab4f74bcebe35451927ab6e05a52b28bebf5a03.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/BellyOfTheBeast.webp",
+    "Sha256": "65d5a079178f17c99177915afdf2d183fa7c23f70ea5d4197914770db495ced7",
+    "Bytes": 18758
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/Blackbraid.dds": {
+    "File": "bb66ca0f4831325f33ec23f812dc2c68a4b22277f20cd2bca60c8672e3a4d8ca.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/Blackbraid.webp",
+    "Sha256": "ed4980b6cc9fa1648b122f237bf44e1f2f782a35d855b19aa8b9503a78227412",
+    "Bytes": 22592
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/Bramblejack.dds": {
+    "File": "97aa2819f55b4495550e9b9e2874e08d5dc79c4b11a324b77ba9848dbfeec8ff.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/Bramblejack.webp",
+    "Sha256": "09a03e3c713fe8f7d3c1cd0bba1d60b850b42896e1c56936bbed78742f21a702",
+    "Bytes": 17416
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/BrassDome.dds": {
+    "File": "cac750c50cbe4eedec0de223fe417488821533e8d603775c3a090bdcb270d3ae.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/BrassDome.webp",
+    "Sha256": "44498c0be89765e215f77a69ac9c7eac17b31d93d1e00e2ace0c16aa9c683fae",
+    "Bytes": 18772
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/Briskwrap.dds": {
+    "File": "2fe90d4b93d74b2f194e5ae3883ff40e70b5da5d404b2d312be09f59639e4b1e.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/Briskwrap.webp",
+    "Sha256": "fc976e9aca5d6b22832f03e978b654b14698140877323f14e32134bff314aebb",
+    "Bytes": 22296
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/Bristleboar.dds": {
+    "File": "b3b6560b9428d72c4d214339b0019222ef4a72811b5b7f01b0a43ce08697dca9.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/Bristleboar.webp",
+    "Sha256": "a7fa0440a8cb56206c6aea5e7ebd66f27d56f641ef29c8a29a1adb48e5ea4f1e",
+    "Bytes": 23422
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/CloakOfDefiance.dds": {
+    "File": "e143d79b557447f37a111c8e2289a3853e7f8660c2e8bd533f157046229dd41e.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/CloakOfDefiance.webp",
+    "Sha256": "4a3f6d162d1e4eb9565bab44e51979f584e463e3672d7e617a87e821021f8fd7",
+    "Bytes": 16352
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/CloakOfFlame.dds": {
+    "File": "6b3c02a67e8f6ef5862e8374a144ec16ba97e5f335904ec44423f853764b9c30.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/CloakOfFlame.webp",
+    "Sha256": "c8698c05ddaee9447f300be945b4fe6784d71b14eee60031f912f279093d847e",
+    "Bytes": 19458
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/CoatOfRed.dds": {
+    "File": "9ad834c41d58ee7c7ba4ffbddc2f90a9a710ca3d7e5d904f5c350fe9e5e6e234.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/CoatOfRed.webp",
+    "Sha256": "efae614c6ed242e3731560b7ccfb43303f24ef051b0cb3f7953b3feb6422e871",
+    "Bytes": 20318
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/CosprisWill.dds": {
+    "File": "20189413dfb0cc320c944fdb6ec2b3efab22dce11e6cacbae6a252e74a1a6ec3.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/CosprisWill.webp",
+    "Sha256": "6339133a742ba423dc55bd3ed772f00b6f67faab83a7c32cb50a4dc0137eb4ff",
+    "Bytes": 20040
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/CoutureOfCrimson.dds": {
+    "File": "5c2793a6df64b601c77ef597d3cc3e74ada0264b7e23434f3323a9778181de47.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/CoutureOfCrimson.webp",
+    "Sha256": "04469dea76013909d3ca62104ee667b1c864e968691b1dc6612b8391137b6946",
+    "Bytes": 26418
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/DarkwoodPerianth.dds": {
+    "File": "8d06ab2325c86e9d80d1461370fde4312eba360e033f24d72826b30d17dc9032.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/DarkwoodPerianth.webp",
+    "Sha256": "14f5824821eabad19c0d5bcec0bf5734c16ba0cde2fe81a2494dd226210049e5",
+    "Bytes": 16198
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/DoryanisPrototype.dds": {
+    "File": "c2fe5b2b654e50376e45213f2481b1ced39b37935a467ba4337207c4b54b00ec.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/DoryanisPrototype.webp",
+    "Sha256": "cb814a8768aa8ea88d203eeba780ee77d502476410a6a07ee3d081c08cf8134a",
+    "Bytes": 21596
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/Dustbloom.dds": {
+    "File": "35ead7ce97583251064e417f40e3d415d282565f723c1ff7c093c6aaf52811e8.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/Dustbloom.webp",
+    "Sha256": "bb22aae62c3fb9aefdc233627881c7314bc0ffe308e44ae92654fcdfa7b73fb5",
+    "Bytes": 20170
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/EdyrnsTusks.dds": {
+    "File": "068ed6c75a323589ac750a462d249ea530df583085c7b04e7f47830c089fb99f.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/EdyrnsTusks.webp",
+    "Sha256": "160661d61ac772759391634e320b67b051dc1c2d9f9587a7d18e50cfbc36dc45",
+    "Bytes": 19780
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/Endurfaedyr.dds": {
+    "File": "0ba5cfa4cfc57d60d85c04a2887333d458706c838be1cd5f731094aae8c8654e.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/Endurfaedyr.webp",
+    "Sha256": "e5a8bd3847dafd5985d4fc31a670ca9def3114766d7852cfa4b40fa26bca1033",
+    "Bytes": 16596
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/EnfoldingDawn.dds": {
+    "File": "9757f457f501db52cd143e029b74cfaee2a251a6de10ece9b92e435d4cec423a.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/EnfoldingDawn.webp",
+    "Sha256": "8983eac6b0b1c47444790490a1d902f1236047a0054711ad684b3ef0fa1d9d90",
+    "Bytes": 21098
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/FallenFormation.dds": {
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/FallenFormation.webp",
+    "Error": "Exception calling \"Wait\" with \"1\" argument(s): \"One or more errors occurred.\""
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/Foxform.dds": {
+    "File": "8f76c8d6084b303e19c8a32da7b54e889b0d9b299607f13af54666a20c5f2952.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/Foxform.webp",
+    "Sha256": "0e959917aa2f2d5b18c1175032aae1269368de93d43ea8e3ada3c9c100b1a069",
+    "Bytes": 23420
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/GatheringGloom.dds": {
+    "File": "8613469574e0324b8477e2c031f5e94d4c3505a4296571288caeef55392481b3.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/GatheringGloom.webp",
+    "Sha256": "13a879c4adab0a6046a65433a1908aed0499efba6cf502bc992ebee831115967",
+    "Bytes": 12758
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/GeofrisSanctuary.dds": {
+    "File": "6ead9e30af01a2aad36424b515e109ff2cbd6055f9361875a1c520fcc822fa80.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/GeofrisSanctuary.webp",
+    "Sha256": "0470765b4046bd920b982c97c5fa376161b8fcd648b451e68ce96054ef7798e8",
+    "Bytes": 18888
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/Ghostwrithe.dds": {
+    "File": "41ce5a9c5d5280c2f040da0ffe168bd6f5fd55a327ba95ad6949fb31207d2ed0.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/Ghostwrithe.webp",
+    "Sha256": "2b1db9781c8510672cd164925e23f5c2a506e05bf7990958f743d983c5674b36",
+    "Bytes": 36936
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/Gloamgown.dds": {
+    "File": "f1aeacb9040ce8fa476c6c6399ca3a58862b9fd5ac98589261b48cebc82f1b72.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/Gloamgown.webp",
+    "Sha256": "e194c3a675615521428845e421dce75e0fa9097d47b3ee3bf90408ac29de3797",
+    "Bytes": 14642
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/GreedsEmbrace.dds": {
+    "File": "f35377376b40ca5f973fff9d96b35e95ac4c756cdbda940e80b6ac11f0a1b550.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/GreedsEmbrace.webp",
+    "Sha256": "ba23860876b4e7bb856b94b21bab0dc5ca5f4646f64c24c087c10b2032a513c6",
+    "Bytes": 20368
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/HuskOfDreams.dds": {
+    "File": "b7079e3731faa61d8cf1cac12f2daafeddd9f9cb0e4a13ab3a3847321ae99a2d.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/HuskOfDreams.webp",
+    "Sha256": "2468b93c13b79f26f9dfee274067bcdbaa9e3085e65c0dd341ec75b73ca71482",
+    "Bytes": 21058
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/HyrrisIre.dds": {
+    "File": "fdfccca25a92303b477350da4113c04c5f7134d5fdc21096767c9f6e1193ad1a.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/HyrrisIre.webp",
+    "Sha256": "60433cba4a7974ff543cbbce621a09dd5374d0d994fa048c19ff9d55d9c29d1e",
+    "Bytes": 24862
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/Icetomb.dds": {
+    "File": "734f185941d64f85e09f3f3e9973931a7170bf26bb6680fc1c1ad3489b9292d4.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/Icetomb.webp",
+    "Sha256": "363f4fb74fab99f9331032ff13402552d3e31f373dd28d3b0845d45458eae2e4",
+    "Bytes": 23132
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/Irongrasp.dds": {
+    "File": "ef3a125d1eb8de6884241c60ff28a7b7666a1f920e832c17ad7295796daedac9.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/Irongrasp.webp",
+    "Sha256": "f1b2d22617915dfb7ecedd7b7effe9b46f55c07a5a4a005fb493dbd896aeb9b4",
+    "Bytes": 20364
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/KaomsHeart.dds": {
+    "File": "b7866919c9903234c5d51113308a0d0d3d1ff41365293f28c4edfd2af6961f4c.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/KaomsHeart.webp",
+    "Sha256": "8401ed6ff6c3fa108be72ac4dc1bf1a2b53fc83f02afa03eb58a6dc33fe50ff4",
+    "Bytes": 24284
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/Kingsguard.dds": {
+    "File": "5431d187c66742ce49cb2e1621df4a470c6d3fd54ef42aeb0d42b3a197972a9b.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/Kingsguard.webp",
+    "Sha256": "e046064caf6a24fc733d3b3e8a70e3fac45e31bd6af3c6180b2c46010fe9c440",
+    "Bytes": 21340
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/LightningCoil.dds": {
+    "File": "155f3ed24d9f9f17d6cad78478f37e41a044343b3068c14c4c2acfc62bbddc9b.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/LightningCoil.webp",
+    "Sha256": "22ed36efb5d11e4ec10b8b43e47f42ff1bec7436a3bb05f261faca88529a13e0",
+    "Bytes": 18850
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/Loreweave.dds": {
+    "File": "73bb9894703798a8e4e9fd44d0865981d6f6fad5f9f83a3092baaae16701d369.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/Loreweave.webp",
+    "Sha256": "10c66501ca652929a8ae915ddf2ab6a52a63e29fb4256262a50e30401f38ba52",
+    "Bytes": 21920
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/MoriorInvictus_M.dds": {
+    "File": "b3325d04ba45a55b82c3ddc827a6aa11c9f8aa9f207c18ea4e3496e86f6a6363.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/MoriorInvictus_M.webp",
+    "Sha256": "f982a0d08905cc78f9d0dc4ebe290e16830383e604ee2a67f1cd0cbd68de245a",
+    "Bytes": 22096
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/MutableStar.dds": {
+    "File": "8e679473bde350ba55b3c8ae8ecedd15141ebc55e5e2a9a7091a0055f05e02cf.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/MutableStar.webp",
+    "Sha256": "cb79d3ec3af165284bdd7148c3babe20483ec1994ebd2d747824492d064ede50",
+    "Bytes": 24330
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/MutewindSail.dds": {
+    "File": "131aca3cbd13747d82d6e4291f6ac8828c553a441e8d3b57a814783b9835af7c.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/MutewindSail.webp",
+    "Sha256": "e4015d05c15673e69da1da71dfbc88f8acce09ae9839ec8b10b83f6ddd408258",
+    "Bytes": 21760
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/Necromantle.dds": {
+    "File": "1d60fa66cc796700592f24404b82bd36070e8627e90bf11b9cd5af2b2d391499.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/Necromantle.webp",
+    "Sha256": "45a8328d31f29b6f4c6560c0466a104db1165fb26f76fa708bfd91952e6d73b8",
+    "Bytes": 21414
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/PariahsEmbrace.dds": {
+    "File": "d8cd40570ff6ea005130b75e8e14006f73797eb5a6ca3ab5eb73faeb78a5306a.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/PariahsEmbrace.webp",
+    "Sha256": "95e6e4545bd6c369435b389356941be1d51e7b6eb4b650b99ef05867feb7b53a",
+    "Bytes": 13314
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/Perfidy.dds": {
+    "File": "55a7ceeba0c09ae8249dd394502ef1546112792ea8dbcf18918e3c41230fb0f7.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/Perfidy.webp",
+    "Sha256": "c4e672aca81a7569ff5daddc5584615d798a6493cd49355f34beb2b9b0f05805",
+    "Bytes": 19734
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/PilgrimsImage.dds": {
+    "File": "7ca9d3a7c1a2bd7c8ec5b74113eeb857aedb2dc65d5aeb61465cd4dfe5519894.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/PilgrimsImage.webp",
+    "Sha256": "84eed7cb170829caf965b315425f0a93e596dee167d1d39cd5c916f695e36f4b",
+    "Bytes": 24298
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/Pragmatism.dds": {
+    "File": "e610fb2f57a1bf7c694e7f3db12d24adf6fe7bff8acdd3d95f84599f7e504f0a.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/Pragmatism.webp",
+    "Sha256": "ba57fd192cac3877145f6738b0c7078e0d83b6c11eb1fd0daa8008da5979fc31",
+    "Bytes": 16360
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/PrayersForRain.dds": {
+    "File": "5d47653d4ad5040e7ace639aa155ddc0907c8798e11c41e5ba17ddcc78ee4e63.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/PrayersForRain.webp",
+    "Sha256": "779122743b5e925ed92c25c8a754098188c543c0b7166b587f2e5279a4fead7d",
+    "Bytes": 21094
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/QuatlsMolt.dds": {
+    "File": "5b8320ff03db5c9e76f778c00cdf427629bc8d87386f2a3a70124e8d7803584c.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/QuatlsMolt.webp",
+    "Sha256": "87000dba0a0e4f07151b9c0cc97ad98e0f7184bff45b6175f18664f9ac059dc5",
+    "Bytes": 16476
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/QueenOfTheForest.dds": {
+    "File": "c0c7ea309a6d74cb07f3f3b6231714b10d9ba3ee46c50fd8f3f2fc24f2359df3.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/QueenOfTheForest.webp",
+    "Sha256": "2c434e8a0d0707d641a54dfdcbeef23022c9a67d4c02e1c80cd83dc78ba97c44",
+    "Bytes": 18988
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/RedflareConduit.dds": {
+    "File": "51e2717f06a4c0e04606fbddf20efe2576cf22819df8df824a382e1177e739bc.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/RedflareConduit.webp",
+    "Sha256": "607869c89bc9d9d3af0a2735e54f3cacd484052c0c2598c11dc8bf6fe05d2d93",
+    "Bytes": 21754
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/Sacrosanctum.dds": {
+    "File": "3e9d618d9175bf21df6ee21f06c5f6b9627b7dec9f32a382b73f6193b67f3917.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/Sacrosanctum.webp",
+    "Sha256": "b9764034875f4388a158108a187232c67c3110dbd07ef567e53466b7967b6b27",
+    "Bytes": 23628
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/SandsOfSilk.dds": {
+    "File": "f07914d17c81584d610e544098f699c34d89f8aeadf5def80a86b6075ebc68f0.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/SandsOfSilk.webp",
+    "Sha256": "d1faed2edf5782920fcd998d8f5589d2717285afa657c5e2c54db73d7c72874a",
+    "Bytes": 24954
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/SilksOfVeneration.dds": {
+    "File": "19cfaaf98b09b3a0dcec3e8ced7408f3fd8b6fe97fde719e23e3b116c82dc901.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/SilksOfVeneration.webp",
+    "Sha256": "1f05670b553a30ef315eb69c9691e35d3bfc0b7cb7ed058ab656da74d2775df0",
+    "Bytes": 21748
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/SkinOfTheLoyal.dds": {
+    "File": "62bb746a27d92853ee97c9f69ef791992d51e8da04ed5a6b83dc357bc4f28658.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/SkinOfTheLoyal.webp",
+    "Sha256": "5836f584630c98cfe09203cab550995dc01390f262986f79bcda09fb3cd6486e",
+    "Bytes": 15984
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/SoulMantle.dds": {
+    "File": "09c8dc758f0d07330f5995119810107f2f29e09bedd6d08738ce23c2e1235928.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/SoulMantle.webp",
+    "Sha256": "dcfb08c4ef1898835c5e85d7d14737feafccdd8355ceb6f40cb8ba7886d90635",
+    "Bytes": 20238
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/TabulaRasa.dds": {
+    "File": "b0653a9d09accaae982cfc21140d07a542bbf1350830bda8315c99464b399199.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/TabulaRasa.webp",
+    "Sha256": "323060964cbedd097a9baf4b71579d8629a4b952021dbe5ed5b11b048c1eafde",
+    "Bytes": 17328
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/TetzlapokalsDesire.dds": {
+    "File": "b67dd442fd00036767eb927b1fc34157a51de3f525cc96b2665ee373ad95189e.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/TetzlapokalsDesire.webp",
+    "Sha256": "af9353407e43f33b22d22c372bedc475a93167f7f21c9bf736c2c089844808ea",
+    "Bytes": 24960
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/The Auspex.dds": {
+    "File": "ad68b7c4b5f9eae63826d5b94f0ce661f091a7d253b48ad2651f4e17ffa5fe38.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/The Auspex.webp",
+    "Sha256": "806e1746894322e115c15fdb31de7b82ff64486e57843ca9d9e70bf0653051fe",
+    "Bytes": 15920
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/TheAncientOrder.dds": {
+    "File": "9929f07bb7f7273d778dcbae88f4b995d573a71616ca321f606c115198c53714.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/TheAncientOrder.webp",
+    "Sha256": "c21bf6e734bdc8e99360e83bc7a49fbafbf09b71167a412a1c2aae1b89ba1bb1",
+    "Bytes": 25244
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/TheBarrowDweller.dds": {
+    "File": "b183ba5f60a7a2efa20c0b19880870f0901e7cce1e35fd0338bd58554c6e85db.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/TheBarrowDweller.webp",
+    "Sha256": "81c47a8b915adaec66d6e4583f2ac71cfc5b1484b191a0903b9220744f88a9ce",
+    "Bytes": 19248
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/TheBlackDoubt.dds": {
+    "File": "fd26c3a32ac6d3fdd82e54608071db2aedb47f12aec754156056c5a9baef34ed.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/TheBlackDoubt.webp",
+    "Sha256": "56ef3fd5c4611153f932d989a5b0dc1c1226e2ca1df33234fc3774635bfd62e4",
+    "Bytes": 18280
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/TheComingCalamity.dds": {
+    "File": "2945b30d032348363ea14e2a7b608a15ec9a448b98c33c00b3365f34fc755db4.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/TheComingCalamity.webp",
+    "Sha256": "f28269bc97e6939b88e0e9c9ece10243d7667835d61261ebdab9b5ba10978ae6",
+    "Bytes": 20596
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/TheCovenant.dds": {
+    "File": "6a532b3bf579ae17bd734d582d0a8b39d76470af641d8dfafaecf07a1070d6e1.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/TheCovenant.webp",
+    "Sha256": "80d518c5bc8ee91470f4f410302fd42ce4a57619ca377ec222cb4da9fd0eb795",
+    "Bytes": 18630
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/TheDancingMirage.dds": {
+    "File": "ffc5fa15f3f2981758bb1e7711f6b94a81a3d3a2ea3e902e6593524613a3d16b.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/TheDancingMirage.webp",
+    "Sha256": "2fea64cf4e6956af326e2712521dc274385c0385938bd01abb88dc1a8d4650e4",
+    "Bytes": 21134
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/TheRatCage.dds": {
+    "File": "906b83fe951301eabfdcfa9d545e6d021479afc031e7ea4c00a63858cb7f16b1.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/TheRatCage.webp",
+    "Sha256": "480e90e5688cdad4809f2925f34454c31112c01c127a29499b0ec5386007d025",
+    "Bytes": 21906
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/TheRoadWarrior.dds": {
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/TheRoadWarrior.webp",
+    "Error": "Exception calling \"Wait\" with \"1\" argument(s): \"One or more errors occurred.\""
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/TheSunkenVessel.dds": {
+    "File": "bf4b984f702ce3160b495afc5c7d0b6c45f9c243362d5fb92b4a522dd6cb6296.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/TheSunkenVessel.webp",
+    "Sha256": "09ec9f1e5368f8e22a705398b8fd2a85da87814b919ce58655bff654aee5826b",
+    "Bytes": 18668
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/TitanrotCataphract.dds": {
+    "File": "2a286d717ac748d47350d9b6c4de89f54564d6a90d6da26445b373f9f841aa07.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/TitanrotCataphract.webp",
+    "Sha256": "ec0696e86685133ebca947130c4dd2a031a86abfba10263bc169c429594c94c1",
+    "Bytes": 19190
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/UnfalteringFaith.dds": {
+    "File": "b67577269c222b7b078eb2feeb85233ec1fd1f6edd78055c07189677587d7221.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/UnfalteringFaith.webp",
+    "Sha256": "3d87f10cbbcb342ac0fc8b3c4b782701986f9e3b9d5f80ad87aea1c382a84ca6",
+    "Bytes": 14426
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/VisMortis.dds": {
+    "File": "f98d776eb21fdb935a6c41418198bc94a4a76dbefdd164c730016baf1ca534a1.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/VisMortis.webp",
+    "Sha256": "59dfc8243555c02454a4ef228126e31919f3a62c556046b180abc9cf4f236d4f",
+    "Bytes": 18108
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/VollsProtector.dds": {
+    "File": "b70b533b59d146ae569a5b16ad53dbe14534cb34869a756440b9e40cbf340db4.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/VollsProtector.webp",
+    "Sha256": "dfe22e7e6099d5b91013cbbb127f5c7cdb14d70aef4f9ccbe73f183a24f7d01a",
+    "Bytes": 20910
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/WanderingReliquary.dds": {
+    "File": "7b8736f6befa764a16a77e6d0d9a8d622ae581cc5b34ee75e672078b8960beee.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/WanderingReliquary.webp",
+    "Sha256": "bee2500dd032779363c1f0dcd8a3b5f6e58f28314d986717dab6d15db62b69a3",
+    "Bytes": 20320
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/Waveshaper.dds": {
+    "File": "8bd515e2a65b74ff7ac38b089137f8c8030c2cf5f8bbb9af699cfadad25ce909.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/Waveshaper.webp",
+    "Sha256": "768a53fe348d360e4b8856b491f8b9c46354c5a88de10a8f091f9f909268b7c2",
+    "Bytes": 26004
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/WidowsReign.dds": {
+    "File": "39b139deae00127332c5c4e0134fbe6da0ed6418a7bf8ea723d9a66f77b7417f.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/WidowsReign.webp",
+    "Sha256": "554eba0be204d756edf49dac355cc05f24853055e652b63eb147b96c20ddc4ca",
+    "Bytes": 23594
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/YrielsFostering.dds": {
+    "File": "b521d6a4a8197d6f9717a952ea6911dd625b718b1f999bf897c7dd22b3ef5f5d.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/YrielsFostering.webp",
+    "Sha256": "2a1ab48b51179e78903fc128d7954084b37386be6f034f436b202cea196e1ba1",
+    "Bytes": 20246
+  },
+  "Art/2DItems/Armours/BodyArmours/Uniques/ZerphisSerape.dds": {
+    "File": "3ddc098bfb2a1dd2fb7b9d7d7bd21520aaa9b5dfbcbc56b16bf9235cb29e1b5b.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/BodyArmours/Uniques/ZerphisSerape.webp",
+    "Sha256": "2f977c3348c995f7113f12eaa49a3c7f6232dc97ea2178831978a380da5b87c1",
+    "Bytes": 19170
+  },
+  "Art/2DItems/Armours/Boots/Uniques/AbAeterno.dds": {
+    "File": "1b42e8efe69eff9cf588e4b56308e53c6a076912c11b173e0cefac3674134711.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Boots/Uniques/AbAeterno.webp",
+    "Sha256": "8ae5265896f7e7db3f42cebad397bcaec5f2ef30b43477f939873752e0cc8e83",
+    "Bytes": 9458
+  },
+  "Art/2DItems/Armours/Boots/Uniques/AtzirisStep.dds": {
+    "File": "4455f460919b4de95782a7ae35eeb47373a073bf42df78ef0043fb674fddb5d7.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Boots/Uniques/AtzirisStep.webp",
+    "Sha256": "9c67a914182c17de7a8a34e37eb4996127389bff359c7fa80682df603989f064",
+    "Bytes": 12334
+  },
+  "Art/2DItems/Armours/Boots/Uniques/BatedPace.dds": {
+    "File": "035e2f6acddaf8a99b4344b9a8c81409f97506d570eb86094c253275ea0487ec.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Boots/Uniques/BatedPace.webp",
+    "Sha256": "86c6fd3419b61d64c6b6d8d0d8a52593692a592f5694da48a8ba8fa1876b547d",
+    "Bytes": 14340
+  },
+  "Art/2DItems/Armours/Boots/Uniques/BirthOfFury.dds": {
+    "File": "0ff9ff42d45d3b455c5112129afacfc2a956e284e895b4225bc5efa3d5229c31.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Boots/Uniques/BirthOfFury.webp",
+    "Sha256": "9ee04b26062f67dbed76f2120253ce4c814bfce21f1b083d7ff1648ff5116bd2",
+    "Bytes": 16992
+  },
+  "Art/2DItems/Armours/Boots/Uniques/BonesOfUllr.dds": {
+    "File": "e9e22e1ce809a7be085d9d5a4c00fca19743878e04434e639b1c40f1491b0657.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Boots/Uniques/BonesOfUllr.webp",
+    "Sha256": "69c2ef356af2dcdb4914262c81d067af1a9053299294d6f0d5dda96728881481",
+    "Bytes": 13702
+  },
+  "Art/2DItems/Armours/Boots/Uniques/BoundlessAuthority.dds": {
+    "File": "aca3b1586dcef50c91e6c14f2be54ba69acde2002b0480202aee08be21911396.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Boots/Uniques/BoundlessAuthority.webp",
+    "Sha256": "8bc6fd46013c1708edf606805f4184b70120f84d0d1e98a01f7f4041359e4cf7",
+    "Bytes": 12654
+  },
+  "Art/2DItems/Armours/Boots/Uniques/Briarpatch.dds": {
+    "File": "f2bb5318d5f02868cc8c747f6c2fc38e10378cf1b9d476c5d483f7badd9170b3.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Boots/Uniques/Briarpatch.webp",
+    "Sha256": "aa20430b40dec7ec362b7f5c4358db234be7daea5d938d9b2fcf1b7a652e7af5",
+    "Bytes": 15816
+  },
+  "Art/2DItems/Armours/Boots/Uniques/Bushwack.dds": {
+    "File": "d2c455142d61ba53ce2501b3bbfba7156307b5563a1a593e0aae7d0253bed6aa.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Boots/Uniques/Bushwack.webp",
+    "Sha256": "d90e0920d23bcd7c26ec1424995a306c0b6b0388ab8f72bbef009eabc257519a",
+    "Bytes": 14174
+  },
+  "Art/2DItems/Armours/Boots/Uniques/ChainsOfDeshret.dds": {
+    "File": "b155d66cc86f884b655a819fdedf9d5eea34f8b52dd86a4b911c255af9e23eb0.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Boots/Uniques/ChainsOfDeshret.webp",
+    "Sha256": "571862e4205b953946acd239f660aed06c45143c47bb6b1dff7010c708c9e404",
+    "Bytes": 14530
+  },
+  "Art/2DItems/Armours/Boots/Uniques/Corpsewade.dds": {
+    "File": "c46a3464189a053605a14da9d68cd7d6c73ae3a8ea304fd42301b2aa88659785.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Boots/Uniques/Corpsewade.webp",
+    "Sha256": "72cf36b7697149b83a6ed26c64fdfdf7663dd9783073cf01b9bf5e66dd8620e2",
+    "Bytes": 11354
+  },
+  "Art/2DItems/Armours/Boots/Uniques/DarkrayVectors.dds": {
+    "File": "c8d1d9816df004872f7090eb0d418eafdd37df3f75675c3b4f1c63fc0e5dbfb1.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Boots/Uniques/DarkrayVectors.webp",
+    "Sha256": "f9da58a7672e2786f4ef322876138d8ff7a3ddee79e3626de56952d07a09f3a2",
+    "Bytes": 9680
+  },
+  "Art/2DItems/Armours/Boots/Uniques/Gamblesprint.dds": {
+    "File": "54238a424a0885a8f2b50d6cc5e33085b16383a216f04eddee0f54323eafe029.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Boots/Uniques/Gamblesprint.webp",
+    "Sha256": "866ba38622c5bac410c662f55bb46b32ca2106477e9040735151437f97aec83b",
+    "Bytes": 11244
+  },
+  "Art/2DItems/Armours/Boots/Uniques/Ghostmarch.dds": {
+    "File": "734c3ba45f2355768fa4a12ecb1900b3f2f494548e9bff5ec82b20eda8322784.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Boots/Uniques/Ghostmarch.webp",
+    "Sha256": "171f9d44662194bdcd4234b3593aed5b43c50f1db6ca4c35bf0b8150b653f3da",
+    "Bytes": 15168
+  },
+  "Art/2DItems/Armours/Boots/Uniques/KnightErrant.dds": {
+    "File": "9eead664b0421d5be304d6f6ecfe65ea3bf5ca2771854c1fb47ea8a6215d9104.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Boots/Uniques/KnightErrant.webp",
+    "Sha256": "4e8d830b3f2b99e242679435d76455daba9483c865168d9a6e213c395d048fbd",
+    "Bytes": 8438
+  },
+  "Art/2DItems/Armours/Boots/Uniques/Legionstride.dds": {
+    "File": "286813e5780a81590b2f4522185c7d7e23f6359511ef12d65a626de4f81da26e.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Boots/Uniques/Legionstride.webp",
+    "Sha256": "fc18f614ce5bf71a2eff022ae35dc4234fe2e3763f0615ded5ecc91eee730e39",
+    "Bytes": 9508
+  },
+  "Art/2DItems/Armours/Boots/Uniques/ObernsBastion.dds": {
+    "File": "ce324345d0365c92bb812fb6c5e2adb129accd10ad5da43cb038380a8134bf50.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Boots/Uniques/ObernsBastion.webp",
+    "Sha256": "49e06170776e96cfdf8605912e4e193fc447dedfcb31e07c6f82241dd0ebca53",
+    "Bytes": 10764
+  },
+  "Art/2DItems/Armours/Boots/Uniques/Powertread.dds": {
+    "File": "b0ff001121a66749de3528873ff88860a2abae64de9456403658aa2b2b6dd205.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Boots/Uniques/Powertread.webp",
+    "Sha256": "d157ee4535c1aebe502fac852d9abad2b9302736268b806264da71dbd00e6428",
+    "Bytes": 14504
+  },
+  "Art/2DItems/Armours/Boots/Uniques/Shankgonne.dds": {
+    "File": "24af959f6afbf02ab9116f6e079b1834690191856db788c42664f690ce960dcb.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Boots/Uniques/Shankgonne.webp",
+    "Sha256": "fa745849f3590a0b48a66ced894b1fbda7b2bfc55d9e8784c71ba9cc0b0aaff5",
+    "Bytes": 12786
+  },
+  "Art/2DItems/Armours/Boots/Uniques/TheInfinitePursuit.dds": {
+    "File": "1ecd2399e5cb1ef63b260d61e8e772c8a8fbf5bcdf57875a89c162b930f4f701.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Boots/Uniques/TheInfinitePursuit.webp",
+    "Sha256": "6950a7e7f730549cef55ac25a9e950fbb3e8684917dcf43c13e670a08aaceb0c",
+    "Bytes": 14528
+  },
+  "Art/2DItems/Armours/Boots/Uniques/ThunderousSilence.dds": {
+    "File": "91311d31e45f233dc28f0bf3578deb209d349b4ba655e48a202ea530b599dee5.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Boots/Uniques/ThunderousSilence.webp",
+    "Sha256": "c7178e75393035eaabcc2ce84f712c3c7d408a1311e329e85cbb312e8087b14e",
+    "Bytes": 15028
+  },
+  "Art/2DItems/Armours/Boots/Uniques/Trampletoe.dds": {
+    "File": "f2be0f64b7b0cedb05a78716adf530f5a42cfb65d4a885c29a43087bfd22c4e2.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Boots/Uniques/Trampletoe.webp",
+    "Sha256": "0d7c0dc72f428ce3e68dc85678f8716b16f60db69531f3da243e258d6c50318d",
+    "Bytes": 14798
+  },
+  "Art/2DItems/Armours/Boots/Uniques/WakeOfDestruction.dds": {
+    "File": "2e3a9f53855c94cccb1b4a67405479e68e66fe45599edf906ed3db1c9d1d6e8b.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Boots/Uniques/WakeOfDestruction.webp",
+    "Sha256": "79382e9fb36f49656ec497f1be50ca91b5c5abffa4763c512c8a5b10c4e910f9",
+    "Bytes": 11936
+  },
+  "Art/2DItems/Armours/Boots/Uniques/Wanderlust.dds": {
+    "File": "1334ccc11eef6bfda4dfdd7f8906c26195e09bd7c1bd89484db4304069a13bbb.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Boots/Uniques/Wanderlust.webp",
+    "Sha256": "a0d0db494873e506ce071bdd4173b974ffe35d9f6b1cff66233a45834904e7df",
+    "Bytes": 12410
+  },
+  "Art/2DItems/Armours/Boots/Uniques/Windscream.dds": {
+    "File": "caa4905a9496693c77112ae855a5b8cd5b2729ec1a35b2eab32e0f7ee1e0bc9e.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Boots/Uniques/Windscream.webp",
+    "Sha256": "6f5b17897388b90030fc5642fdfe1759d756309f5910c1ffe94d333d981eef1f",
+    "Bytes": 13758
+  },
+  "Art/2DItems/Armours/Boots/Uniques/Wondertrap.dds": {
+    "File": "d7aa803a87457e3c636312bd0e22f95b81b9d19ad07fb0ee3807edb6c2b4d3d8.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Boots/Uniques/Wondertrap.webp",
+    "Sha256": "55901da785287e09c104b1bed3ffc518c5e5c96107bc66779eb81c55757f10c0",
+    "Bytes": 12014
+  },
+  "Art/2DItems/Armours/Gloves/Uniques/AerisvanesWings.dds": {
+    "File": "9e12842e4b53e804c0317416be967d8dd871232b4cb1a13d7f7cab7c8837bed5.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Gloves/Uniques/AerisvanesWings.webp",
+    "Sha256": "dd5fdad854d6d5088e3a48f9a7ca89f5a8cfe87333b17fb47e8168455221e91e",
+    "Bytes": 14240
+  },
+  "Art/2DItems/Armours/Gloves/Uniques/AtzirisAcuity.dds": {
+    "File": "cd43415195b427d1c86d13d073edaaa8f52e2caf73c18f755053a24dbc613bd2.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Gloves/Uniques/AtzirisAcuity.webp",
+    "Sha256": "9b5580c52995465142b25352bc268bbfa19bb7446717d8e0cadf5537240814f4",
+    "Bytes": 19918
+  },
+  "Art/2DItems/Armours/Gloves/Uniques/Aurseize.dds": {
+    "File": "0f142e59a72b25d6c01f7ad2767451e0cdcd7cd5c0faf6ddb01ce40c800f3469.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Gloves/Uniques/Aurseize.webp",
+    "Sha256": "41d6009ed646ca428b7373ce5736d2766a2af92675ecae053356c65e65a2afc1",
+    "Bytes": 15632
+  },
+  "Art/2DItems/Armours/Gloves/Uniques/BlessedBonds.dds": {
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Gloves/Uniques/BlessedBonds.webp",
+    "Error": "Exception calling \"Wait\" with \"1\" argument(s): \"One or more errors occurred.\""
+  },
+  "Art/2DItems/Armours/Gloves/Uniques/Candlemaker.dds": {
+    "File": "7c1b1f7a15613e90614c276b5c67e9b95dc5fab07829246bb2a0dbdaee0c2dae.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Gloves/Uniques/Candlemaker.webp",
+    "Sha256": "7a8e88489aca6237d0ef0763c336ac77f1ce56709d488e34d2c528de7553d42a",
+    "Bytes": 15356
+  },
+  "Art/2DItems/Armours/Gloves/Uniques/ChokingMists.dds": {
+    "File": "0d9b02fbb57afa5fe309483c020a2a8168dcd6969aa15a263007dcf322805f62.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Gloves/Uniques/ChokingMists.webp",
+    "Sha256": "f7b780c5ac6a0502ff906a2ee0d428d27feda1f8bdc5ca3bab7e928b0ac7fe41",
+    "Bytes": 16868
+  },
+  "Art/2DItems/Armours/Gloves/Uniques/DeathArticulated.dds": {
+    "File": "d5ef193124cb7482d16cb3f81e4d696ed4696418935d31f1f669060775735d23.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Gloves/Uniques/DeathArticulated.webp",
+    "Sha256": "083751230a9e22e447502833df128e8af0ecf79ef2721148e629826c2e7188c6",
+    "Bytes": 13758
+  },
+  "Art/2DItems/Armours/Gloves/Uniques/Deathblow.dds": {
+    "File": "10537b3318f8a959769474bf9d17a58bf49a7ba17cf0682ca14f3dde157c1ad4.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Gloves/Uniques/Deathblow.webp",
+    "Sha256": "d87a22379facdcf788d09e4ca555ad9a132273cb6070bc37c5a92605d2c40fd1",
+    "Bytes": 13528
+  },
+  "Art/2DItems/Armours/Gloves/Uniques/DemonStitcher.dds": {
+    "File": "28fa739a1063dbe664c8694f735e82b67445c42cf7a754ea58aff14349e90097.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Gloves/Uniques/DemonStitcher.webp",
+    "Sha256": "dcbfa1e00c962cf8cdeb9313305a2be6af658959b3ecd27c930acadc5e24fa79",
+    "Bytes": 18070
+  },
+  "Art/2DItems/Armours/Gloves/Uniques/Dreadfist.dds": {
+    "File": "4471007a91a4053337f84e7849193a874bceb2b3d0fd42923e72a80b98e8d5aa.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Gloves/Uniques/Dreadfist.webp",
+    "Sha256": "e8ce2144ca4d7efdd0b1b50f9a81af476880c56c3bcf05345858c7d0303f2e0d",
+    "Bytes": 17416
+  },
+  "Art/2DItems/Armours/Gloves/Uniques/EmpiresGrasp.dds": {
+    "File": "c2fc0ad2da7e1dde7ff259725a33743ebdae174ce7663cb352fa4ba2aa839b7d.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Gloves/Uniques/EmpiresGrasp.webp",
+    "Sha256": "98e888effe3912b51e5a429609216bf4d98c28f98dcf90867e5612acb4053461",
+    "Bytes": 13682
+  },
+  "Art/2DItems/Armours/Gloves/Uniques/EnraptHands.dds": {
+    "File": "a8b4dcb0118a45c3f55e57a111155296407a6515147ce2faf7fd5e39ba2984a2.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Gloves/Uniques/EnraptHands.webp",
+    "Sha256": "34a15abb870afa8fa02d8cd3ae469e902d8a6e8c5749f54ce9224ba6945b4154",
+    "Bytes": 13754
+  },
+  "Art/2DItems/Armours/Gloves/Uniques/EssentiaSanguis.dds": {
+    "File": "6523ee248dbadb0a6930c8ec2b0f981a637bb1cdf1db8a2df8c9ada0ab4e8d89.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Gloves/Uniques/EssentiaSanguis.webp",
+    "Sha256": "d7bfd18b762392be44a1ec198d001735cff42350a20a8d2604c227f69408e703",
+    "Bytes": 12364
+  },
+  "Art/2DItems/Armours/Gloves/Uniques/Facebreaker.dds": {
+    "File": "16a0f99409a2cbe6c9e4ee2cd2f1d5cef993568e8202651c49a53b9c4069a28e.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Gloves/Uniques/Facebreaker.webp",
+    "Sha256": "1d628b65d395dfeeba8a29ee3f45c9fb378bfb50fe8553d0430cc55d6982e8b1",
+    "Bytes": 18282
+  },
+  "Art/2DItems/Armours/Gloves/Uniques/GaruksCurrent.dds": {
+    "File": "20dd14842615aa2fb0285a5711e8281fee4d09165fc0243cf33a9bc84be61243.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Gloves/Uniques/GaruksCurrent.webp",
+    "Sha256": "58387dd7e1ac12175c9d49ef93df83a7c872810c5e81f5c5727b3495c405f272",
+    "Bytes": 16458
+  },
+  "Art/2DItems/Armours/Gloves/Uniques/Gravebind.dds": {
+    "File": "f5f58a806c68feb354a71b99afaf1356457d672c473d4270ca3735a20f2531ef.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Gloves/Uniques/Gravebind.webp",
+    "Sha256": "dabee6f934f365c59bac2d6b4268e0b1ee0b127036dbfb2223714e275f8c8221",
+    "Bytes": 17536
+  },
+  "Art/2DItems/Armours/Gloves/Uniques/GripOfWinter.dds": {
+    "File": "0c0bcb05931289fc369cbba74395ab8df7a2775c2e0a565f160235c39842be83.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Gloves/Uniques/GripOfWinter.webp",
+    "Sha256": "ea85f46682ad039877235fedb817562fb48fd8e1b1fb79c9bb546619da4d2d49",
+    "Bytes": 16252
+  },
+  "Art/2DItems/Armours/Gloves/Uniques/HandOfWisdomAndAction.dds": {
+    "File": "f9e3841365d4951abf984978e453bf4ff699a5572afc51a9f14a196008b6bbc0.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Gloves/Uniques/HandOfWisdomAndAction.webp",
+    "Sha256": "295ad2cb28e18bdadcf33df00c6200c8402742584220ded012c4ce52ce6d07a2",
+    "Bytes": 15116
+  },
+  "Art/2DItems/Armours/Gloves/Uniques/Hateforge.dds": {
+    "File": "065f7a6fcefc647b9d6321b61115b135413a4a1a8d8e4899f7670c49141b7733.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Gloves/Uniques/Hateforge.webp",
+    "Sha256": "8d6bb0836a040690f8dae5259be658b5c76b59ff7620f66798adf92f3fa4a39d",
+    "Bytes": 14318
+  },
+  "Art/2DItems/Armours/Gloves/Uniques/IdleHands.dds": {
+    "File": "48a0cbb29f7e64d1ab90b532bdefcd5b974ede0592659602f3ca4df7266cabec.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Gloves/Uniques/IdleHands.webp",
+    "Sha256": "e30521bb65a38a4a4bfbf6543d98035a34535c55520ac057041cb34662b2f6d5",
+    "Bytes": 16732
+  },
+  "Art/2DItems/Armours/Gloves/Uniques/Jarngreipr.dds": {
+    "File": "ac3ac3cb7b7a3fb69bf1dbaa531284b3f84c66c3f62a094298ec7d2bfc549b73.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Gloves/Uniques/Jarngreipr.webp",
+    "Sha256": "c82c08d22566bef80dff723ba53a6945bd2ad2e1e4415047791fb59f366091f6",
+    "Bytes": 14372
+  },
+  "Art/2DItems/Armours/Gloves/Uniques/Killjoy.dds": {
+    "File": "93e794f85747ce0802a73a8ad36f54cab64351cff1b571b44851ca65b66bc8d4.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Gloves/Uniques/Killjoy.webp",
+    "Sha256": "54488ca4c37fcb3d90a58f3558d7338dd16e272805c9655946154887db9f1648",
+    "Bytes": 15612
+  },
+  "Art/2DItems/Armours/Gloves/Uniques/LeopoldsApplause.dds": {
+    "File": "1cf3a5bdc0b1d9e2a8cb46bde2f840e80e429e2625f5962f4874f91187f64af9.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Gloves/Uniques/LeopoldsApplause.webp",
+    "Sha256": "f1050cd043efb42054ca1e39eb5d12e91800aac5e6296d7d653188fd3dae0d5c",
+    "Bytes": 11116
+  },
+  "Art/2DItems/Armours/Gloves/Uniques/LochtonialCaress.dds": {
+    "File": "43da250de435ebd3026b232b3cdf272161dc62a4ca91e4c3a31405ea155e0dc2.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Gloves/Uniques/LochtonialCaress.webp",
+    "Sha256": "d6e359576482e6b83caef4b860a0c173aac60ce53a422a7bfb93181e4e4abd58",
+    "Bytes": 16324
+  },
+  "Art/2DItems/Armours/Gloves/Uniques/MaligarosVirtuosity.dds": {
+    "File": "e3df48fd5e832ed7fdbdf19c92f1c01532bdfded11f31e87512636b349b4c5a4.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Gloves/Uniques/MaligarosVirtuosity.webp",
+    "Sha256": "942ddd343485941bbdcdd46b3f1abebda46de238ca6ec5d74d9dc24ca5105279",
+    "Bytes": 12172
+  },
+  "Art/2DItems/Armours/Gloves/Uniques/Nightscale.dds": {
+    "File": "17043b87602c55e751c7a76521aa2da1ece25b210518c5a18df4bf2da95e0820.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Gloves/Uniques/Nightscale.webp",
+    "Sha256": "878779f503a4a828433d300380d94d80f2af79e550af25bbcf3944d0d5403980",
+    "Bytes": 16274
+  },
+  "Art/2DItems/Armours/Gloves/Uniques/Northpaw.dds": {
+    "File": "3b347e5c979edc5f567d1b7ef9c4495f2bbbc701697efe8f5893b916ca139c2d.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Gloves/Uniques/Northpaw.webp",
+    "Sha256": "1f25e7dfcf74ca717bc50e8c9d74822eb180544c01056f21f57e4a6ebf115c0d",
+    "Bytes": 12532
+  },
+  "Art/2DItems/Armours/Gloves/Uniques/PaintersServant.dds": {
+    "File": "b6615f25375916f39e148130ab70632bdeb5e6adf0caebadfe29e07e21500e26.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Gloves/Uniques/PaintersServant.webp",
+    "Sha256": "eaa9ffdf9b4b43c027fdaf4ad35ffae30fab1d635f70e1c7fcabd26df02bef0c",
+    "Bytes": 11658
+  },
+  "Art/2DItems/Armours/Gloves/Uniques/Plaguefinger.dds": {
+    "File": "14375e6f54c423ae63d7ac5cfd654ddfa70511054b940b57a7da06e1e5b76893.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Gloves/Uniques/Plaguefinger.webp",
+    "Sha256": "cd198fe4ae5f9b3fec50dbc872031a3e80402d13feec0251ef1d941f584d6a8f",
+    "Bytes": 18252
+  },
+  "Art/2DItems/Armours/Gloves/Uniques/PrisonersManacles.dds": {
+    "File": "3a789aa7aebfe5caff7ae19f78e85071aa33f654e3914b418ed612a4e07ec3ee.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Gloves/Uniques/PrisonersManacles.webp",
+    "Sha256": "8b95b04d749a4a35a8741dfb4d8e2b51eec584ef80eb3ecd28b78c8958eb5aa9",
+    "Bytes": 17706
+  },
+  "Art/2DItems/Armours/Gloves/Uniques/ShacklesOfTheWretched.dds": {
+    "File": "7fc4c41839e4a865fce6472958afeaf44d989e8f3de525e9fa664882ae695283.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Gloves/Uniques/ShacklesOfTheWretched.webp",
+    "Sha256": "7b053a6396e32ba29589d79fdb3f067e8c4a662a5fb7c0c3b93187adfba60f77",
+    "Bytes": 13898
+  },
+  "Art/2DItems/Armours/Gloves/Uniques/SineAequo.dds": {
+    "File": "f98ef711567b70d958fe4ad8f5adecf1d44f922501d21a52327ee8737e8daad3.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Gloves/Uniques/SineAequo.webp",
+    "Sha256": "77e886ff6e272cb5aeaeb86c2a2b1f7e96a134b80a48ddcbee2f2d8dec95fac5",
+    "Bytes": 9970
+  },
+  "Art/2DItems/Armours/Gloves/Uniques/Snakebite.dds": {
+    "File": "df1f2dcfd79b5bc77c440b45c5a3d7c28c5edb11b25f3d18b80a5fdd72e103a4.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Gloves/Uniques/Snakebite.webp",
+    "Sha256": "217b54d1a5879d1389fe0c35caf2552e6085a9f8388ff389327431de8f8c5fa0",
+    "Bytes": 13532
+  },
+  "Art/2DItems/Armours/Gloves/Uniques/SunConstrictor.dds": {
+    "File": "0e2f4a3481318a96048e5d72b12f999a1b65433b231c6c93dcb1c12be7d35af5.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Gloves/Uniques/SunConstrictor.webp",
+    "Sha256": "fac83c3a43ed5f7d3f160bd8a72db0aabf803dbff6a14ccffa0a2a501c463568",
+    "Bytes": 16664
+  },
+  "Art/2DItems/Armours/Gloves/Uniques/Thunderfist.dds": {
+    "File": "62a2dc4b42568d7ad3cc6dcdff2e43e918c13e53c50ec12f1b1ac03473d78c77.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Gloves/Uniques/Thunderfist.webp",
+    "Sha256": "eaba4f5972246c51600fb743df182c4628b642eae6ae89d2e059bd7a21ebff39",
+    "Bytes": 21030
+  },
+  "Art/2DItems/Armours/Gloves/Uniques/Treefingers.dds": {
+    "File": "3cc2505f9222dba5ea23b494340635442a8c27b3d5db73fbc0dea11cd187edf0.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Gloves/Uniques/Treefingers.webp",
+    "Sha256": "edc28bace8748e341c2c3b08b8e4b770e37e82169ab16ae0e516596b962d7b6d",
+    "Bytes": 14148
+  },
+  "Art/2DItems/Armours/Gloves/Uniques/ValakosVice.dds": {
+    "File": "823e2dbceb83673a44f9816a507832f794e45d8b299e2d5b86d24fd569686cb6.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Gloves/Uniques/ValakosVice.webp",
+    "Sha256": "79db2a8123c7db41d92bb94cdc58aa44767a6b651a55cf9169bb560607583534",
+    "Bytes": 14902
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/AlphasHowl.dds": {
+    "File": "5d9ac3473b0fe1b4f62dcda47be8818e80ee1871fd1fa711606e3d03fedc51f8.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/AlphasHowl.webp",
+    "Sha256": "fb3a502c251978d744fed564f8ca5fc1f7f23aad5cea2de1e9a2bb8a01d56915",
+    "Bytes": 12240
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/Assailum.dds": {
+    "File": "f8690266ea37f6fd8bdd40a9f2d2a3990f4df270dafe5bc9e8f09f58795c0031.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/Assailum.webp",
+    "Sha256": "0b2350c8a37272afa47bd7543a00ed4ca476c9c7ed3cdce9d99681e586f171f2",
+    "Bytes": 12414
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/AtzirisDisdain.dds": {
+    "File": "cba14b3ea9d2567d5717ca7f4451bb56c7064f3f236989963f8061a9867f3c29.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/AtzirisDisdain.webp",
+    "Sha256": "9a3bcdb0aaa9154d56cee80ac7f88688f0f06227b8cd14a52527da0f2f4a9970",
+    "Bytes": 20468
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/BalefulTemperance.dds": {
+    "File": "ba55310d759dd52e95435e6ccf938fdb9c4fb5a109d9f6e1446ae220cb9eca9a.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/BalefulTemperance.webp",
+    "Sha256": "06da863ee05d069ee25a6799034d401d5e2873cad57de2b14482c92faacd58b2",
+    "Bytes": 8754
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/BlackSunCrest.dds": {
+    "File": "79cfec70b8855a7ef868d72b5adf1eb59ce1b7964c5cec3c12cf5a2d76c9985d.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/BlackSunCrest.webp",
+    "Sha256": "e5961a12bba1c89f809150108d426e7ed75512a6b245937941b1a72cc5a5b4d4",
+    "Bytes": 13568
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/BloodPrice.dds": {
+    "File": "9e338fdd9ff778bc30821ca4ccadddced944103729dad17d56b26c2633c77e15.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/BloodPrice.webp",
+    "Sha256": "fb94c72b168eb4d29c49c940eda1e480fcac9e2bff7a032571925192ca194be8",
+    "Bytes": 14956
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/BringerOfRain.dds": {
+    "File": "4406dfec30a92ad514419b9c76d7eed6c3676a3f71897b711e30119161cc6567.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/BringerOfRain.webp",
+    "Sha256": "83b894b05a044b8a96c3499df17e24926b0b1864c091516aa57119145f245f4d",
+    "Bytes": 14086
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/Bronzebeard.dds": {
+    "File": "9e8116c7c08678419e251ecad44fa9d84045dda51c21931ca24e39dc85b20e9a.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/Bronzebeard.webp",
+    "Sha256": "510630831f4c11cbd37346c0b6e188e298b2bfe387475cdd95e1166b0b03ccea",
+    "Bytes": 15506
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/ConstrictingCommand.dds": {
+    "File": "27fc8cad2a18a0343d1e8dd2b52ffff2dd047af973a9ddd3fdb4e7d3ecfe11bc.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/ConstrictingCommand.webp",
+    "Sha256": "8de343757fb1509d69a59589d4174fc8778a9ba52980a479ca84b2b114315ba2",
+    "Bytes": 19680
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/Cornathaum.dds": {
+    "File": "10026562d17fd0e8886bdcf01f0a8b9c08f1f7f49eda8223b0c85a1f8d445776.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/Cornathaum.webp",
+    "Sha256": "e04c165aa66c2431b3b3571fc960eae68e0ac979dfab6a50c3091bffe2028059",
+    "Bytes": 9624
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/CoronaOfTheRedSun.dds": {
+    "File": "27e94aba82ae7e635754c7fb4dfb2e3bbf8b7a7f5d8d547fc153ae6164bd329f.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/CoronaOfTheRedSun.webp",
+    "Sha256": "e0aefea87e8b138907bdd4a7654255a281cb528bbe45220776893196e0455bf4",
+    "Bytes": 18924
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/CrownOfEyes.dds": {
+    "File": "47ca10766c5f351cf46355689c851b741bb5b8e767c7a6771cc4d47f71df1c68.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/CrownOfEyes.webp",
+    "Sha256": "89e270bfaf42a848077dfe235980f02f3ed90145e7f43850a821287094173887",
+    "Bytes": 15966
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/CrownOfThePaleKing.dds": {
+    "File": "680143b8bbd28450362a70970e384fd365b840bf89ad46175178f065ebf311a0.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/CrownOfThePaleKing.webp",
+    "Sha256": "912813563d166b82581cfb10cec2be7274c3156ae0fdb2051fe7702823d0f5a3",
+    "Bytes": 14844
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/CrownOfTheVictor.dds": {
+    "File": "8904843f2ece64998fd8d0c948fcab358fb8c35b5e9646e641a483c58f41c066.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/CrownOfTheVictor.webp",
+    "Sha256": "abde89e05c75f9047c6a91d9f8d48b2c8c26ec2fca9cf285b1958214bb6120ac",
+    "Bytes": 12432
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/CrownOfTheWendigo.dds": {
+    "File": "9f55142a7ddf7c23b9e660452010bb3fc737c17118215a27d714b76b9a10deed.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/CrownOfTheWendigo.webp",
+    "Sha256": "4f56fd72a3226c2890f7d429039aa8584e81c4bcf7e7908f671905ce1f26a2a3",
+    "Bytes": 16888
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/CrownOfThorns.dds": {
+    "File": "7f42784e9719424ded3a0a0f3b5fdf526b2589836899c5d569d37089108c3c0f.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/CrownOfThorns.webp",
+    "Sha256": "d4431ae30057e3a7cc4adc68ed211677da958465da6d8e8948115f17c5b8cefa",
+    "Bytes": 14748
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/Deidbell.dds": {
+    "File": "0e5d3c7f602eea70a7c7fef9594a064cd3aa53775c9f32818a153c910ee95d2b.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/Deidbell.webp",
+    "Sha256": "e5ef5e2b6032d0c7dc162025a1e6beed42f82ce23c9136e65a078fad8483ec3a",
+    "Bytes": 10238
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/DevouringDiadem.dds": {
+    "File": "e75ba2b5e87dfcfa76f6c3745277822be2bf4385c1f4a919e751d615b1bfdebc.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/DevouringDiadem.webp",
+    "Sha256": "410981570d7a25eea2bc477fd386d59fa038c0b4c2e652b460b9ef84a10eba0f",
+    "Bytes": 12864
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/Elevore.dds": {
+    "File": "23799ab6a619fcb86ef06281eaa778d847e6257f9294385191e49dd3d701a0dd.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/Elevore.webp",
+    "Sha256": "d766f8c76491504bc31d8ddedda34cd1aae6c93bcb6736dc14557da999e275ee",
+    "Bytes": 12146
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/EzomytePeak.dds": {
+    "File": "243c033b9ddd79121eabb345bc757d47d1d97aa8063db9f9d3ab2b31397e4c56.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/EzomytePeak.webp",
+    "Sha256": "71185d157f7785720fe3956f716e8924a750d7b6ba3b31fde0b888796df830d2",
+    "Bytes": 10578
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/ForbiddenGaze.dds": {
+    "File": "a2e718ac793e3e3482947d0cf3179718539e0d1fc530544d9fd9b0f1786d7e06.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/ForbiddenGaze.webp",
+    "Sha256": "69bedb53d4f80b0e400b182d3c1b4daea1c7e69c65e59a5c75239e191efa66fe",
+    "Bytes": 14636
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/GlimpseOfChaos.dds": {
+    "File": "0ad7b209e0e7c6eca8ddd23c8305d243313841b4e02e932e7f04d3d12c809c74.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/GlimpseOfChaos.webp",
+    "Sha256": "e41953d08e73f318154d68fb032926b9de83aec9f5af8cb56e7d1b8fcbdea13c",
+    "Bytes": 20934
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/Goldrim.dds": {
+    "File": "b9f6ddebaf3335dd0368e722017fb3a3e56691fad5a30db03cb439e1e063822d.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/Goldrim.webp",
+    "Sha256": "0eec67ddbc9af8dd2529c9a72f8464c94827d40fb79a96204162507a1f8a2e46",
+    "Bytes": 12834
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/Greymake.dds": {
+    "File": "e15685c8260debd96dbe44f2bf957c793022a36b3e6c869cc034169b9ba593e0.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/Greymake.webp",
+    "Sha256": "47cb037b8fc6f47a685ce08c501ffa09df75836a176fef07e23cff85d7fd899a",
+    "Bytes": 11922
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/GrimrotCoif.dds": {
+    "File": "c3dccaf1caa0dac3123f70e5756009d36018d08ee031f2bf814b709934fcdfcf.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/GrimrotCoif.webp",
+    "Sha256": "050e538f103cefe7eb4f429a4d51ba3ec39ccb4d1b29dad757a14111d486bf96",
+    "Bytes": 10360
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/Heatshiver.dds": {
+    "File": "0321ed928dc60735c42bbe0efaea83b9a2f26d31f2d4110a9ba0ea58514544ca.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/Heatshiver.webp",
+    "Sha256": "e9fdd0204639ed5e5b779270975e8188e2f93aab4afdd5fb0d529103cab1e849",
+    "Bytes": 11764
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/HornsOfBrynden.dds": {
+    "File": "49432b1f41e0b175bb6df3edbc8aabff3db436415004b1911817ecc72c929850.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/HornsOfBrynden.webp",
+    "Sha256": "3caca86195e3f8abd938defb0c6bc88e4d58621e3ddf6cf186bc62fd48046d7d",
+    "Bytes": 12824
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/Indigon.dds": {
+    "File": "3fe6f3422205e94d2a73d0301c421ff5a1c14acc7a2e6f4c38f495b22aab15ff.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/Indigon.webp",
+    "Sha256": "7bab2e58a73be2dc46e62e30a00de70f1eb4148bb785ba0562a934918dcca04f",
+    "Bytes": 13988
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/Innsmouth.dds": {
+    "File": "a5f089b456022fbf78aabeea61ff776b8076e793fedc1407bcc3cbb816b873fd.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/Innsmouth.webp",
+    "Sha256": "a91e2d3ab481442c708d4cc28601dde914da8f9e4d7beed140335bcb42e495f5",
+    "Bytes": 7792
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/Ironride.dds": {
+    "File": "2cb858d2a141b32a93b18f18c4e4ffdde1cc10e47c92fc53aa79a6a81424e5e8.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/Ironride.webp",
+    "Sha256": "d53f7a060811e4fdfbcf645573b0cedbc326a98efb6d30cc0dccb1a4767ed97c",
+    "Bytes": 11732
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/KeeperOfTheArc.dds": {
+    "File": "667d2dce9487f79a3b60c41c00771fa3788195d8de13b366ed7eb4d2ade4f90b.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/KeeperOfTheArc.webp",
+    "Sha256": "e54b92a88b5978d0c5a1a801de96c5e7769a203defdf2a41cc66e8234afcbfd9",
+    "Bytes": 15642
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/Leercast.dds": {
+    "File": "203ce62d0e2e0860fcf016574b4ed77e06ff43a5bc49028bdce56d6e332f4d1f.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/Leercast.webp",
+    "Sha256": "c715421c859d26549054f874f1001398bb0019cea58f28aa8d542216b3390853",
+    "Bytes": 10638
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/MaskOfTheHollow.dds": {
+    "File": "4d72f55f337ec3c5eddfb593196c3507805e08256cfeaceb70635ae878e5b0ff.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/MaskOfTheHollow.webp",
+    "Sha256": "d92756aec4a4efb074809b16fda1793ecaa56d5548c89a61ccfae71b6f76e5b4",
+    "Bytes": 17506
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/MaskOfTheStitchedDemon.dds": {
+    "File": "d6216c06174b6e97b8a3d81d7d9f5ee789bac5f85f836d7b7b7692c1aeb1e763.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/MaskOfTheStitchedDemon.webp",
+    "Sha256": "5eba2e2fb440cdc4405d3cdd054245527c2e880c99519d2a2962876bd111ac0f",
+    "Bytes": 11546
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/MindOfTheCouncil.dds": {
+    "File": "6050aeb426b18f5a24158e12d18a03a882e9c2813c0d5f72a2fd8037d9095f6a.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/MindOfTheCouncil.webp",
+    "Sha256": "b5c3ead2296c6fad59bdd98559572b72529dc190b67bf388137e7a8db23a4aaa",
+    "Bytes": 15392
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/MyrisUxor.dds": {
+    "File": "204dff05b13739ff4817bfa7b111b977a312c8f492cbebbad126bc8d280bbe40.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/MyrisUxor.webp",
+    "Sha256": "a00ea6d16a55b43c481e135cb5ee98c0459616735f0a12e4b511e0a8c89c5e86",
+    "Bytes": 9992
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/PhantomBlood.dds": {
+    "File": "d32ba07a70a706a941b8e860ea8bf58119d2f03dbeba5e906dcc878e4fc25af7.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/PhantomBlood.webp",
+    "Sha256": "71be156d512e6ad224cf481139769130b4e3b76aa818e07d27355fe0331e353e",
+    "Bytes": 16400
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/RadiantGrief.dds": {
+    "File": "33e9a22837677f256ba4b8156eb4f0087e3179dec0fadf603aa269694665e26d.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/RadiantGrief.webp",
+    "Sha256": "e6822e55c9f781c2deacfb28b6639d6a555290be55eb24e7127071e8b8845dcd",
+    "Bytes": 8676
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/SandstormVisage.dds": {
+    "File": "5646b385a5bfb1c8c203665ccb7a6d5d1b7339fca5e81467e3a9f068fd68efa3.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/SandstormVisage.webp",
+    "Sha256": "75802d93be20fee46a2e1051cfcd12b428da99aa1ebd9c8a0eac36b140f67c15",
+    "Bytes": 11210
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/ScoldsBridle.dds": {
+    "File": "c5fc0b394edb36e50ea80907d49fafb6c99e16826605fa6e246b43d0e2829682.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/ScoldsBridle.webp",
+    "Sha256": "52f01fe7fd7b0a4b2a9ab6b9a8941e42153087ed9fb54c89ed7162a4f20aa340",
+    "Bytes": 11250
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/SightlessConviction.dds": {
+    "File": "fd4435a285fb726157c3b7f19030d6dce36c6149014528c31c1c48609564da73.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/SightlessConviction.webp",
+    "Sha256": "6ca69468b7fd24055d5820316f4ee823fbee397d150619faa18b819441169802",
+    "Bytes": 9732
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/SolusIpse.dds": {
+    "File": "e39ba5b58090fda9cb1f4da28ebf7883e4b5cf693e4cc82d8e6cbbc3c718f4a5.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/SolusIpse.webp",
+    "Sha256": "fc6a46b392f75396b39f8e2b3266b476af15f4e54c2017b7564cce7f3cb74099",
+    "Bytes": 10262
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/StarkonjasHead.dds": {
+    "File": "a20b5d043deb9f53504887386dcccc61be6f4bb613c6ef5c76fdc8afa9a7f3f6.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/StarkonjasHead.webp",
+    "Sha256": "7aada1c0b01487b7e9dd09f80c6f9977cc179534523af2c2197283a4acb5684b",
+    "Bytes": 10166
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/TheBlackCrest.dds": {
+    "File": "0ae95d0630e0bee8b51fc364489c248640d9b4c002b33b5bc2a6eeeb896773cf.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/TheBlackCrest.webp",
+    "Sha256": "b6c25c5e9a7e8b58befc4e2d8b82609f087a1009d05d11d9829a3a5c6eec8ab6",
+    "Bytes": 12042
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/TheDeepestTower.dds": {
+    "File": "1bcfb3a2d186c0ea16db912555422f67b96e4b8e2cf229ed8b37aba0710d7afa.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/TheDeepestTower.webp",
+    "Sha256": "d91c8ec0ee48785121e728eb7794bd3e6c6ecb0c5580cb632bef4f305a65fec4",
+    "Bytes": 11196
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/TheSmilingKnight.dds": {
+    "File": "00c3deb7027368b9fb86b2e789c486a60e8607f6e729dd61f34fe036219d1d99.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/TheSmilingKnight.webp",
+    "Sha256": "edd6d4ba809f95eea298348821b430c4437fc79057c8f98e1e103d5d24199c67",
+    "Bytes": 7426
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/TheThreeDragons.dds": {
+    "File": "ff9e2d296ea97d548f12fc93bd254d93c1f8cc54bd14925bd6d58279014b87dd.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/TheThreeDragons.webp",
+    "Sha256": "81dc0c75c5e8eae5c464e66b1ad44b63847f629ce4104b19c3b351c53a8607dc",
+    "Bytes": 14648
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/TheVertex.dds": {
+    "File": "e62df47192bc98707a4e9be6fa6afb205d4ca76a86aacb60f7fcc6a1e2570327.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/TheVertex.webp",
+    "Sha256": "fac57525390f9b3ca9295c88385c8666889b9579f9a06f1a3f1e45c57432fbbc",
+    "Bytes": 22144
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/TheVileKnight.dds": {
+    "File": "b2a2003c0a85b29f858b0bbb225a4a1f1b0950d685e6248f9bd86badfcfbb6ad.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/TheVileKnight.webp",
+    "Sha256": "afc1c38adc35b56936ef16a5e35f2e7d1dc49c4577d917b7b26fabe20e7fde1d",
+    "Bytes": 12724
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/Thrillsteel.dds": {
+    "File": "92f6050c84e0646510032613320d10f2a60b8d928037a237b89dcb275f9a3b3a.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/Thrillsteel.webp",
+    "Sha256": "e17cceb399d7c49a86f0ffa2d3315a1f2c7b37ca57ec2924a12b3cb17e113306",
+    "Bytes": 16018
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/VeilOfTheNight.dds": {
+    "File": "afdcae4c5b974e436a65d997bd858bbef0913b807003e2387e64ed7868c260a7.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/VeilOfTheNight.webp",
+    "Sha256": "f51ebc1940077f901d0b64c337de75fad92b94994b243544bfde45461073c22f",
+    "Bytes": 11168
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/VisageOfAyah.dds": {
+    "File": "013a6024700e3b0e97a5be2ddffe1f525a73700d55a23d57f06333f082608903.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/VisageOfAyah.webp",
+    "Sha256": "c594d36c765ea79d5734a95f0bbc457126b0abca5cda66873416aa7648578189",
+    "Bytes": 9042
+  },
+  "Art/2DItems/Armours/Helmets/Uniques/WingsOfCaelyn.dds": {
+    "File": "d49044fd159c747bde4478780a63d7ca7c82c2d4719d84614bee5183f150c841.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Armours/Helmets/Uniques/WingsOfCaelyn.webp",
+    "Sha256": "56f3e7535fd9327846c9f0ab51405081fb8dea4d29fa8f2be4512745465dde7f",
+    "Bytes": 8164
+  },
+  "Art/2DItems/Belts/Uniques/BirthrightBuckle.dds": {
+    "File": "c714486f7941b8c00ca021c85f371658082d2eef178a6676dd7c6677784aff70.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Belts/Uniques/BirthrightBuckle.webp",
+    "Sha256": "c0b923fb662f4cb9ded6642accf7d2e8b3f93ed91db13aafef1b23da68c0b387",
+    "Bytes": 7908
+  },
+  "Art/2DItems/Belts/Uniques/Byrnabas.dds": {
+    "File": "7e3e3657f976ba4d101591be7b4c44c1521a27f3814c73a4e671de8f4cffda53.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Belts/Uniques/Byrnabas.webp",
+    "Sha256": "c871f024247832e73a625b8b1b2ab14eedf3e6e5bc5f48744f1f214c209e1bd1",
+    "Bytes": 6676
+  },
+  "Art/2DItems/Belts/Uniques/CatONineTails.dds": {
+    "File": "02416ed12527428cc80fa92b9cadff60a0a64cc3c12de5f44270791d1ac8db52.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Belts/Uniques/CatONineTails.webp",
+    "Sha256": "a20c1119f000963de31197dcd005d3b517882b37e2764aabecf7fc1bd15eb4f6",
+    "Bytes": 8882
+  },
+  "Art/2DItems/Belts/Uniques/CowardsLegacy.dds": {
+    "File": "605333d738871e34ab1c89fe088e6b49eb4f2186ec77fb544b628e8cc7334725.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Belts/Uniques/CowardsLegacy.webp",
+    "Sha256": "45e007ece2e53a2ab9d30900f585b647c45d378d006c48df3f21cfd7fb3e779d",
+    "Bytes": 12560
+  },
+  "Art/2DItems/Belts/Uniques/DarknessEnthroned.dds": {
+    "File": "a8e9a5d9e3785edd2b33ca3f123e32a113cc670e72dd8dceed0b3f1ed1fb0adc.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Belts/Uniques/DarknessEnthroned.webp",
+    "Sha256": "ff840c84e1a5db235d7e17b69937ef7e327f2100d4567e3b649ecf7bcd861d7a",
+    "Bytes": 9092
+  },
+  "Art/2DItems/Belts/Uniques/GnashingSash.dds": {
+    "File": "f1da01449886d5f455adecad1cfae51857335888d272d3d65239d574540732f5.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Belts/Uniques/GnashingSash.webp",
+    "Sha256": "3361f2e395d525f3abac6431dea25a4d6d0503b07d536c60b0ca3f2e5dd61b53",
+    "Bytes": 10796
+  },
+  "Art/2DItems/Belts/Uniques/Goregirdle.dds": {
+    "File": "a524ee1ee2d3cd9310ecd430bb975bc84de94df3ba2c482f9082ce5ef437a137.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Belts/Uniques/Goregirdle.webp",
+    "Sha256": "fbeb0a6ca83ca03ddcf1e06bf565991217b7e426113e15029fa1f5c50e08f1f3",
+    "Bytes": 7736
+  },
+  "Art/2DItems/Belts/Uniques/Headhunter.dds": {
+    "File": "0a32e6401ed27f81a3104e08e7c59ab9bb01e72bffa41593e9089dc2cbe602a6.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Belts/Uniques/Headhunter.webp",
+    "Sha256": "f57e67253db08b8b091b453aeeacf71032ee679cd9e2079ac91161522fbe2dd8",
+    "Bytes": 9190
+  },
+  "Art/2DItems/Belts/Uniques/Infernoclasp.dds": {
+    "File": "b986fa7955ce7da270db1e3aeb86817a85476c913849c7c7713f2ea7e0fca94a.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Belts/Uniques/Infernoclasp.webp",
+    "Sha256": "6b2c6f96ca163e2f7a5f2a384d733f168885432c1d28749643b12c55eeda2583",
+    "Bytes": 8654
+  },
+  "Art/2DItems/Belts/Uniques/Keelhaul.dds": {
+    "File": "a06de84a40f0efc47c7a3dbf74e3359d4f58bc91be2150ac2dd08f545abaed09.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Belts/Uniques/Keelhaul.webp",
+    "Sha256": "38de0cdafedac77038a03e9b871ddb8f43933a51fd6dc4de867a7da725be1fd7",
+    "Bytes": 7772
+  },
+  "Art/2DItems/Belts/Uniques/Mageblood.dds": {
+    "File": "c4dc2793497e9540f9fa4eed50ceee3ea17da029b5305130646ecf1d1a2a6ec8.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Belts/Uniques/Mageblood.webp",
+    "Sha256": "55632a048b4fec38ffc7d67093090f33691e4eaf7bcc85b9df763aa44a27ca22",
+    "Bytes": 8276
+  },
+  "Art/2DItems/Belts/Uniques/MeginordsGirdle.dds": {
+    "File": "83bf5b11e1ed99aff14c00b83dbacfdd851853f0de7119a44d655369e2857eee.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Belts/Uniques/MeginordsGirdle.webp",
+    "Sha256": "f74dcda9ae019ba4a6b52c11760eee89ba4e5d6c6fb875cf533a890b6118d485",
+    "Bytes": 10862
+  },
+  "Art/2DItems/Belts/Uniques/MidnightBraid.dds": {
+    "File": "819e6387f17e1185d2deaa26145f6564cb8825a64e2fe2e018f8c0cbd5d36eb9.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Belts/Uniques/MidnightBraid.webp",
+    "Sha256": "01511c2eb37bcc0128fbe417b320d3dfd973af60cc9f526b3dac041b2cda8999",
+    "Bytes": 6798
+  },
+  "Art/2DItems/Belts/Uniques/RyslathasCoil.dds": {
+    "File": "1cde4aa506f0a6af24900a3789a57bb4d4b6a0d91065dccd45f59e2c9aec4709.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Belts/Uniques/RyslathasCoil.webp",
+    "Sha256": "39ba8a444609560258450ba19d29bbb3feacc9b715d35bd640da236c4963074a",
+    "Bytes": 10910
+  },
+  "Art/2DItems/Belts/Uniques/ShavronnesSatchel.dds": {
+    "File": "8345c7314f13bd538bcf86db16a8517e5afa9a52b537a2c448df850ddc3ae658.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Belts/Uniques/ShavronnesSatchel.webp",
+    "Sha256": "0923b6509773e833a75a38a9fcb6d971be3d46b3a4472992bb475cda83c302c6",
+    "Bytes": 8852
+  },
+  "Art/2DItems/Belts/Uniques/SoulTether.dds": {
+    "File": "0044ae8abe4e43d7dc7e6515fc0bae74bf20ba3a86143f9666d3917cdf93c171.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Belts/Uniques/SoulTether.webp",
+    "Sha256": "974b28c3609a268d3c9a87cca33dce40dff32cc0b93368215c868beb2b996a85",
+    "Bytes": 10098
+  },
+  "Art/2DItems/Belts/Uniques/Twinclasp.dds": {
+    "File": "25463b1122a749c1d2c35a972d5f11670e58d5911fa20fb2165126c66c645a38.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Belts/Uniques/Twinclasp.webp",
+    "Sha256": "5e969d794d006f124e077d55e8b88013676b056fd201f093466f13d0944195c0",
+    "Bytes": 8382
+  },
+  "Art/2DItems/Belts/Uniques/UmbilicusImmortalis.dds": {
+    "File": "cdb50501710fd09e01d99670e42348a5679fbd5efc8adc0680a761fd419b81b8.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Belts/Uniques/UmbilicusImmortalis.webp",
+    "Sha256": "9abfcd757b3047d442b2b838b8cc579c674e7b8ea65081625f352a32ca6709bc",
+    "Bytes": 10964
+  },
+  "Art/2DItems/Belts/Uniques/Waistgate.dds": {
+    "File": "cd857c8f17510a3858db8d5afd9d1267505aad6c65bef74fe25d75147fe2f97f.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Belts/Uniques/Waistgate.webp",
+    "Sha256": "2b6fed83655d5cb3a80a3e952d451c09f2d013924e38ce3c56445dbd9e2b7e6b",
+    "Bytes": 12530
+  },
+  "Art/2DItems/Belts/Uniques/Widowmaker.dds": {
+    "File": "a23262b32d6c2f896b540e0eff0f1925cf5c7d7fcb50303ea32436cd110e6b08.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Belts/Uniques/Widowmaker.webp",
+    "Sha256": "9b29798ddbe6132fdae49234c1d5957ad8ca0e15bbae8d936b7f6416b2aa2654",
+    "Bytes": 8928
+  },
+  "Art/2DItems/Belts/Uniques/ZerphisGenesis.dds": {
+    "File": "a0fe63d0ecb8f6fa96389c1009c1472398d01c0522fbbe219b83e3153a4d1040.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Belts/Uniques/ZerphisGenesis.webp",
+    "Sha256": "8c1d1c7ef0d0419b7cd4211d41dab4b36549200172e8182f53bdc95e93f61a31",
+    "Bytes": 8658
+  },
+  "Art/2DItems/Charms/Uniques/AntidoteUniqueCharm.dds": {
+    "File": "b2a5404256fa878013f63200f3812fb21217c2048240f11aaa6dd3d2f6e4961b.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Charms/Uniques/AntidoteUniqueCharm.webp",
+    "Sha256": "0494cb6de4684711d440d052e65c0b912b4c9e99f43acc0f48403c327d284317",
+    "Bytes": 6836
+  },
+  "Art/2DItems/Charms/Uniques/ChaosUniqueCharm.dds": {
+    "File": "cf0ce09acc9e78bb70861b3b2d7f77eba879862f88ecb1a53ca8874987edc560.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Charms/Uniques/ChaosUniqueCharm.webp",
+    "Sha256": "2f777124a86ab2ce247498d27a8e463e83dc9f5c780dad7ae4a7d996c73445df",
+    "Bytes": 4602
+  },
+  "Art/2DItems/Charms/Uniques/DousingUniqueCharm.dds": {
+    "File": "7c70ed90003e4fd19bb414c9e79c6e253386dfaa74d2c739c18f7172ba36dd5b.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Charms/Uniques/DousingUniqueCharm.webp",
+    "Sha256": "944fc3499725cf24a206170e0f8e1eb42e28645db587f902fc630349c82c3765",
+    "Bytes": 4668
+  },
+  "Art/2DItems/Charms/Uniques/GoldenUniqueCharm.dds": {
+    "File": "e0d144f09ef63adbefe25f1dd3e37385d71720673a637f7a1b4333b0f71c2188.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Charms/Uniques/GoldenUniqueCharm.webp",
+    "Sha256": "648592507125c95204b8491340633ce15712b0bff95f7e74d2376ad7016c7d25",
+    "Bytes": 5520
+  },
+  "Art/2DItems/Charms/Uniques/GroundingUniqueCharm.dds": {
+    "File": "7b0344c69becd2a6832eb6e8b4e55a3231d991982aef92e27e7f23c6a6927463.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Charms/Uniques/GroundingUniqueCharm.webp",
+    "Sha256": "2438a2a79ea77c4202de934aa686aaf702c8fa47426510dd0451c58921493c58",
+    "Bytes": 4566
+  },
+  "Art/2DItems/Charms/Uniques/RubyUniqueCharm.dds": {
+    "File": "bedd6d01248b98b0a6858c1ce1621d59a86419ea8d885e15624f3c9e341f9624.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Charms/Uniques/RubyUniqueCharm.webp",
+    "Sha256": "1ca1722914c78679b6d2d63894d689f1c4bb99838606b0497be934535965adc6",
+    "Bytes": 4636
+  },
+  "Art/2DItems/Charms/Uniques/SapphireUniqueCharm.dds": {
+    "File": "46252ee62d48892c9ebf3ccd071e7a7a12288a484bbdbfdf26fe96120cd66ac2.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Charms/Uniques/SapphireUniqueCharm.webp",
+    "Sha256": "21734d8cd23313289c43d9a1fd56cf19a806abd77a19845c1868768b63344753",
+    "Bytes": 5250
+  },
+  "Art/2DItems/Charms/Uniques/SilverUniqueCharm.dds": {
+    "File": "cf75dfed576b37801ad589d8568e873921e330d668c231e4c442313ffd6dca9b.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Charms/Uniques/SilverUniqueCharm.webp",
+    "Sha256": "75267fc96085e253ee3aabe1631769d8f80bd0fb321ebe8f98709d10ae6aca6d",
+    "Bytes": 5164
+  },
+  "Art/2DItems/Charms/Uniques/StaunchingUniqueCharm.dds": {
+    "File": "08cf1d9ba506b3aa80a5a6c4b9a2a8e1557c0b440dd8d266935c7b5cabb2405b.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Charms/Uniques/StaunchingUniqueCharm.webp",
+    "Sha256": "721e325dce26c08e06daeece515c8e8be0638ea3f9fba2cd40ac0ec0d446443d",
+    "Bytes": 5034
+  },
+  "Art/2DItems/Charms/Uniques/StoneUniqueCharm.dds": {
+    "File": "e4d9554f3ccc06804defd9639af17ab3efd257a3e1c894d1e4baf423fd6df6b2.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Charms/Uniques/StoneUniqueCharm.webp",
+    "Sha256": "b1e83da48fee1bcac6b534fc37cef89b0a706a5ce072b9e20b45c34a3ef7add8",
+    "Bytes": 5404
+  },
+  "Art/2DItems/Charms/Uniques/ThawingUniqueCharm.dds": {
+    "File": "0a656c6c3fef493474bdf4802e50f89ce0979a75fea75828092ccd4fbe8fcb1c.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Charms/Uniques/ThawingUniqueCharm.webp",
+    "Sha256": "faea33fb3ca8a9f16658451b370ce1c4eb58bdeb262a5b3f48dbbcd36a289079",
+    "Bytes": 5392
+  },
+  "Art/2DItems/Charms/Uniques/TopazUniqueCharm.dds": {
+    "File": "054ada13caef0621c61b3764369ceda661ca357e6e320fe2684c54bedb4b4ec0.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Charms/Uniques/TopazUniqueCharm.webp",
+    "Sha256": "f976e2ec42c1ba45e946526399529168090eed12cf51ee251021e12b9de7da58",
+    "Bytes": 4670
+  },
+  "Art/2DItems/Flasks/Uniques/BloodOfTheKarui.dds": {
+    "File": "77bae25d233107ad957ce6108951a2b73ccb862fc5b1e76d7934ac3562cc4f90.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Flasks/Uniques/BloodOfTheKarui.webp",
+    "Sha256": "53ac974fa88ea4d30b9740187abb59737e68cc06d0c673880b6e629a5b29229d",
+    "Bytes": 6908
+  },
+  "Art/2DItems/Flasks/Uniques/LaviangasSpirit.dds": {
+    "File": "e275134a9253002a41679972a20e4dfb2ab2d607569e358a26b93309d752496c.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Flasks/Uniques/LaviangasSpirit.webp",
+    "Sha256": "79b698c826129c2c9406e6883c583a9716b8e03b500fc0625b6ef153cc58cdcc",
+    "Bytes": 8252
+  },
+  "Art/2DItems/Flasks/Uniques/MeltingMaelstrom.dds": {
+    "File": "8e0188dbae67f8c6e406097bb3d251e34497076781e4fca3e97d588481e78120.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Flasks/Uniques/MeltingMaelstrom.webp",
+    "Sha256": "8a4f8949bb3371c8c01182160665f4f67090da9342873e89b7a7ae956ab2fd5d",
+    "Bytes": 6508
+  },
+  "Art/2DItems/Flasks/Uniques/OlrothsResolve.dds": {
+    "File": "c24887fecfe8168745cc41b88845fa3d8e2ff82f8ddfef8d11b7b6314d297c71.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Flasks/Uniques/OlrothsResolve.webp",
+    "Sha256": "dec07ef5088c1b2ca940b49628bdbef7b726e4ab9f88e6babdda4b4288ad294f",
+    "Bytes": 6856
+  },
+  "Art/2DItems/Flasks/Uniques/TranscendantThirst.dds": {
+    "File": "b565f83801cd4db89c71c7068649a2f444823d0f77321f4c5e700fb0dfe6ddf6.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Flasks/Uniques/TranscendantThirst.webp",
+    "Sha256": "d82511d006221a578c8dfd239b569bdb142c3a87b17ce6fab6c265fce6bee7ef",
+    "Bytes": 9082
+  },
+  "Art/2DItems/Flasks/Uniques/UhtredsLegacy.dds": {
+    "File": "be105b81cd17820931dff17ea1f165111e93842234b093c4c6a4603be8597c23.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Flasks/Uniques/UhtredsLegacy.webp",
+    "Sha256": "4c16a38a96989d959b9a36526a26aba6b5f2564c760e002c411b8e2addc05d51",
+    "Bytes": 8618
+  },
+  "Art/2DItems/Jewels/BreachJewel.dds": {
+    "File": "7f83baac17749efa3f63406b2454b441509b1db985dafbe9a2bf983a0ba6afed.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Jewels/BreachJewel.webp",
+    "Sha256": "b30c644298b5c79ad0fbfeb0fb455ef8e875bd1844c7519342415ec167f82211",
+    "Bytes": 5388
+  },
+  "Art/2DItems/Jewels/DeliriumJewel.dds": {
+    "File": "bb00651d61b956ad2275e31fa4be44413b43a0f0b0b7de34401d4f82f543cf23.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Jewels/DeliriumJewel.webp",
+    "Sha256": "08cd1a97e2d7b093ccc0bd51d18866c537b29cfdf71f57b52325670dc2075332",
+    "Bytes": 4622
+  },
+  "Art/2DItems/Jewels/ExpeditionJewel.dds": {
+    "File": "7a95d27d749a3f98a050e8379db334ab33abf68c3735b6f791fe48a3a84fd17f.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Jewels/ExpeditionJewel.webp",
+    "Sha256": "9654da17ac217acb31e429eac74a6a366cbc615100f638f4136ac0ea9ab8fae0",
+    "Bytes": 4812
+  },
+  "Art/2DItems/Jewels/RitualJewel.dds": {
+    "File": "1b1a37ce55a3115189bbc59cbb11a986b1b1c5227fc9181b642488caa3b8cbdf.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Jewels/RitualJewel.webp",
+    "Sha256": "40427a8c64446684683495acd979e2ecb4250c00380bb95b05640c04988ce1fe",
+    "Bytes": 5136
+  },
+  "Art/2DItems/Jewels/SanctumJewel.dds": {
+    "File": "9676dc4f32873f0d2a082a5e92b71ae5a69ca1311b39a5e03d7acf2e84eba76d.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Jewels/SanctumJewel.webp",
+    "Sha256": "35da808ab95635ef67559b15ec96a914e0eec4f7d5ad97b10997ca7132bb0850",
+    "Bytes": 5116
+  },
+  "Art/2DItems/Jewels/TrialmasterJewel.dds": {
+    "File": "b842ae0cad8770a0a7f9dc3f3d31fe3c357506fb4dc472450fca87c908a332b3.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Jewels/TrialmasterJewel.webp",
+    "Sha256": "1d1434561d0a3e7cbc6ed6b16175ba80dd3bcc618e821229f4643d16177ce09c",
+    "Bytes": 5690
+  },
+  "Art/2DItems/Jewels/Uniques/ApostatesHeart.dds": {
+    "File": "ce8d879cf6072af0fe7cad76e794129a0ebdc1cfccbf63afe831130ce3172002.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Jewels/Uniques/ApostatesHeart.webp",
+    "Sha256": "4440609a6416e681b40e6376211c95accff64677cb06679728513541092ceed3",
+    "Bytes": 4258
+  },
+  "Art/2DItems/Jewels/Uniques/GrandSpectrum_Emerald.dds": {
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Jewels/Uniques/GrandSpectrum_Emerald.webp",
+    "Error": "Exception calling \"Wait\" with \"1\" argument(s): \"One or more errors occurred.\""
+  },
+  "Art/2DItems/Jewels/Uniques/GrandSpectrum_Ruby.dds": {
+    "File": "1145fc8d12835e7e7abc9afd06992b793097e2dc7b626715760e8348eba5e230.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Jewels/Uniques/GrandSpectrum_Ruby.webp",
+    "Sha256": "713123dcdae8d5dfe0b55c33cbd98ecb2d17dd70efbdefb6e37343f0a0dc4516",
+    "Bytes": 4024
+  },
+  "Art/2DItems/Jewels/Uniques/GrandSpectrum_Sapphire.dds": {
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Jewels/Uniques/GrandSpectrum_Sapphire.webp",
+    "Error": "Exception calling \"Wait\" with \"1\" argument(s): \"One or more errors occurred.\""
+  },
+  "Art/2DItems/Jewels/Uniques/PrismOfBelief.dds": {
+    "File": "85f713ea6981fbd5c18f50d34b9e701b2869ae26c27b7cfff84ef6b7b044e6d5.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Jewels/Uniques/PrismOfBelief.webp",
+    "Sha256": "72557fce728703c7915fff20d06ffea1e72847a9cc871dbf73abba05b9b77533",
+    "Bytes": 4586
+  },
+  "Art/2DItems/Jewels/Uniques/SplitPersonality.dds": {
+    "File": "ed3b09e2a11b678af3ce3d06d2970e3aa477872a1861f80c386c9d7cde732c27.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Jewels/Uniques/SplitPersonality.webp",
+    "Sha256": "e76cf4a4f3378ead24a4dc146dcf51d892c06d876e2ed4616bb9a251d28930b2",
+    "Bytes": 5148
+  },
+  "Art/2DItems/Jewels/Uniques/UndyingHatred.dds": {
+    "File": "70c119b4c3458dd821720b2aa2394d74d5454768b0e28dc4fef9b47f76d70604.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Jewels/Uniques/UndyingHatred.webp",
+    "Sha256": "ccc2235c39b8cfc3957e3d2390977668398cb4b0e540829ca4d88d78610d70cf",
+    "Bytes": 5322
+  },
+  "Art/2DItems/Jewels/Uniques/Vivisection.dds": {
+    "File": "49345672ff10cee42a84a5e1381ac3b0852accaa8457c0a442962aa0f7c3f651.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Jewels/Uniques/Vivisection.webp",
+    "Sha256": "3c456bbffec769bdd0bb9fff3635b96613cd19a83b2f960bc01c9a2ca46b539a",
+    "Bytes": 5256
+  },
+  "Art/2DItems/Jewels/Uniques/Voices.dds": {
+    "File": "28183baf543a657ad9045ee8bb96f5fc1b705a62c483c20e34eed53e63d44df0.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Jewels/Uniques/Voices.webp",
+    "Sha256": "10847ad550dc0964602e3c6001ef3498c230dbb4e40a8d40553afca712db94ef",
+    "Bytes": 6112
+  },
+  "Art/2DItems/Offhand/Foci/Uniques/ApepsSupremacy.dds": {
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Offhand/Foci/Uniques/ApepsSupremacy.webp",
+    "Error": "Exception calling \"Wait\" with \"1\" argument(s): \"One or more errors occurred.\""
+  },
+  "Art/2DItems/Offhand/Foci/Uniques/CarrionCall.dds": {
+    "File": "473a3fc8f0d57d81c6306a51852d1f3470641778be9d5987011161cece541bbe.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Offhand/Foci/Uniques/CarrionCall.webp",
+    "Sha256": "816db218480daee74ed9337c4a1d11da5e9b954e6c2efcd74872f35b08a1928d",
+    "Bytes": 13996
+  },
+  "Art/2DItems/Offhand/Foci/Uniques/DeathRattle.dds": {
+    "File": "95d2c6657cd3695953e7c34c6194dd0104bf2b63860b56e8f25a9e95a65a76f5.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Offhand/Foci/Uniques/DeathRattle.webp",
+    "Sha256": "770c93e67cec89e0c4e1222976b458da5e7094feb24c95642fdf7178db82bc92",
+    "Bytes": 19318
+  },
+  "Art/2DItems/Offhand/Foci/Uniques/EffigyOfCruelty.dds": {
+    "File": "52bf87410063a2afd488687f85cd63a87980e559bcc834f077dda5766c307e4c.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Offhand/Foci/Uniques/EffigyOfCruelty.webp",
+    "Sha256": "76e85e177a8950e3b9f9d04e76c295ed8315dc036ea6ba0d47e62b34c494e89f",
+    "Bytes": 12186
+  },
+  "Art/2DItems/Offhand/Foci/Uniques/EternalSpark.dds": {
+    "File": "34cce64faabb93d8a84a4a9964c5d6cce79befc28f8ba0c2d8992eed14fc6fd1.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Offhand/Foci/Uniques/EternalSpark.webp",
+    "Sha256": "3726178aea3c6879b6125a8c13a7f88b6f60a6b6e74a48b95067a7d495578bd6",
+    "Bytes": 19340
+  },
+  "Art/2DItems/Offhand/Foci/Uniques/RathpithGlobe.dds": {
+    "File": "0f80f8405411eb33095f2f6f5f1ca04e8152fde49bc446aa964d515805474419.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Offhand/Foci/Uniques/RathpithGlobe.webp",
+    "Sha256": "cd78668d2800045803879a4dd7b6f51417e396d6348c6c9f7da5aa2b234964bb",
+    "Bytes": 18498
+  },
+  "Art/2DItems/Offhand/Foci/Uniques/ThreadedLight.dds": {
+    "File": "c89fe0a7510b2d8a1705ecb3f22fa122f124b93d86f9e90f66483a07fd93c36e.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Offhand/Foci/Uniques/ThreadedLight.webp",
+    "Sha256": "9e704c72bb098061c3ed39669c17d669ecfe1d94d07549ea9aecb51969e2d6d6",
+    "Bytes": 23102
+  },
+  "Art/2DItems/Offhand/Foci/Uniques/TonesOfFate.dds": {
+    "File": "9eb5d7578e573e87c60dc75916c7ebfbabb6e69af5af31f6a7e69d290730cac0.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Offhand/Foci/Uniques/TonesOfFate.webp",
+    "Sha256": "2ea629e49de9bd6349e0b70bbc9f0c1cf32a9af679701686482196a0713987c7",
+    "Bytes": 13418
+  },
+  "Art/2DItems/Offhand/Shields/Crest06.dds": {
+    "File": "d9337eb8d64ff16d6bb5d6d973717f7a5f0cfed59daccb8feb8c53bec05dd902.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Offhand/Shields/Crest06.webp",
+    "Sha256": "e69d2fe422529dc275e5e8b9aa20d951c1f6ac4fc412d2b787394bc2e0300674",
+    "Bytes": 20472
+  },
+  "Art/2DItems/Offhand/Shields/Uniques/AlkemEira.dds": {
+    "File": "39a7c989fca5d9d2ecb9050b8691588f72ecbf628e0cb02abe13cb0021849593.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Offhand/Shields/Uniques/AlkemEira.webp",
+    "Sha256": "e6749aa80b0ccd791b2916ba4ca985d40c5c96f152f9a60e2675bb2a550851a2",
+    "Bytes": 14516
+  },
+  "Art/2DItems/Offhand/Shields/Uniques/ArvilsWheel.dds": {
+    "File": "1b0a25e2633ef560d69095f711ab7e99144f8dbc668f999e80acc1cac5bc343b.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Offhand/Shields/Uniques/ArvilsWheel.webp",
+    "Sha256": "31372895172e55873427978d7e694a1487fe97867a021a1fd9e818f82ed91777",
+    "Bytes": 20296
+  },
+  "Art/2DItems/Offhand/Shields/Uniques/BloodBarrier.dds": {
+    "File": "acf703922c54ff384cba120bd388ee9121f7e75a879df52e8756d8c12fb1fef6.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Offhand/Shields/Uniques/BloodBarrier.webp",
+    "Sha256": "87d971cca32ef46572c31756d51220c18bb54b9fa6c68cac2a9988dd4e3fb698",
+    "Bytes": 12992
+  },
+  "Art/2DItems/Offhand/Shields/Uniques/CalgyrasArc.dds": {
+    "File": "6bf24a079f028c83f688baf9480f5b1ef078191dedc9f2042c1516da35a5e954.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Offhand/Shields/Uniques/CalgyrasArc.webp",
+    "Sha256": "e648cbe7b46aa67e7d0628135429db3984d8fbca5dd48eb58b4c19f58e9a570f",
+    "Bytes": 16662
+  },
+  "Art/2DItems/Offhand/Shields/Uniques/ChernobogsPillar.dds": {
+    "File": "6553638b1c5ced768b8d803e95fb58048af4b6e8fd92d73b22b166f8b1775500.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Offhand/Shields/Uniques/ChernobogsPillar.webp",
+    "Sha256": "0fc74a4aee7db414c7667ec67b243d629692111411fa2e2d494296a5180c8438",
+    "Bytes": 26604
+  },
+  "Art/2DItems/Offhand/Shields/Uniques/CrestOfArdura.dds": {
+    "File": "419b53b924151b42efce8841460e49aaa7ea9a03e124dfda3a3f9d75bc9aedf4.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Offhand/Shields/Uniques/CrestOfArdura.webp",
+    "Sha256": "8a34d7d39d57059f4be429902f3a651257af8a62cc4f38ca02a5da94d208ba9f",
+    "Bytes": 20844
+  },
+  "Art/2DItems/Offhand/Shields/Uniques/Dionadair.dds": {
+    "File": "e5cff12eec8b192f3afde9f112889d438c4ab8bfb79566b071807734c3eb694e.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Offhand/Shields/Uniques/Dionadair.webp",
+    "Sha256": "f8572456c71d834621bd8d5a40347fe825dd951c33dc5f7d57582763f3bf725b",
+    "Bytes": 27082
+  },
+  "Art/2DItems/Offhand/Shields/Uniques/Doomgate.dds": {
+    "File": "8e2f3af33ccf8b70bc5ed67104783d193838addda5de67c32bd9a0c016de6405.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Offhand/Shields/Uniques/Doomgate.webp",
+    "Sha256": "c24c99e0cc01aec995762cb07add5a55e890a4d324ef99e1087d7ceb837c9477",
+    "Bytes": 26824
+  },
+  "Art/2DItems/Offhand/Shields/Uniques/Dunkelhalt.dds": {
+    "File": "77a5588e277269c775e08753fcde5e465a0331e40bd8f319e6db9dbbd944a056.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Offhand/Shields/Uniques/Dunkelhalt.webp",
+    "Sha256": "b042c38b4baf53a5572767d1b7fd60f3f77050590bee9ec70e5970fffe161711",
+    "Bytes": 13940
+  },
+  "Art/2DItems/Offhand/Shields/Uniques/FeatheredFortress.dds": {
+    "File": "927a188f96fc95ba077627eec92115186e2f4663cdf014e57ee59601667dad96.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Offhand/Shields/Uniques/FeatheredFortress.webp",
+    "Sha256": "1ccd5c95f4fe61984a3824f9e634abcc20f2fde7cd4dc0863fb66263e1c23218",
+    "Bytes": 26518
+  },
+  "Art/2DItems/Offhand/Shields/Uniques/Kaltenhalt.dds": {
+    "File": "7556acb47c796e1a7156a7afd1cedc811dca0864154db78c817d300617a4faa4.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Offhand/Shields/Uniques/Kaltenhalt.webp",
+    "Sha256": "5c3012898d3d8e1dac8cd3387b40415f9e5ed05cbb2b96e8ab8ec924fa890be6",
+    "Bytes": 13770
+  },
+  "Art/2DItems/Offhand/Shields/Uniques/Lycosa.dds": {
+    "File": "67990d28576cc74402dcf0cfe4ec0035006c6b79ef0c366c91028705f302e7c5.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Offhand/Shields/Uniques/Lycosa.webp",
+    "Sha256": "e6f014540e3c9f458de86983b2a74ac5c560aafdfabeb6e975fde4d9f19bd3c3",
+    "Bytes": 29684
+  },
+  "Art/2DItems/Offhand/Shields/Uniques/MahuxotlsMachination.dds": {
+    "File": "b26a01415fb4302cb44221cd7ba2b3177665ff6397627d28e5906ba0ec189936.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Offhand/Shields/Uniques/MahuxotlsMachination.webp",
+    "Sha256": "57fd4bd842346cc488a04cd007356b5abe3b01c0623c42de8811d0648595b384",
+    "Bytes": 22838
+  },
+  "Art/2DItems/Offhand/Shields/Uniques/MeritOfService.dds": {
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Offhand/Shields/Uniques/MeritOfService.webp",
+    "Error": "Exception calling \"Wait\" with \"1\" argument(s): \"One or more errors occurred.\""
+  },
+  "Art/2DItems/Offhand/Shields/Uniques/Nocturne.dds": {
+    "File": "5212f5831f2d36708dab3b3b94fe58d3676fc11ae604e1d02d3c779b6702baa9.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Offhand/Shields/Uniques/Nocturne.webp",
+    "Sha256": "fbb32b802343acda241cdbddbb3c523eeb31933f5fa1908fe0b2c9835f1489a3",
+    "Bytes": 17328
+  },
+  "Art/2DItems/Offhand/Shields/Uniques/Oaksworn.dds": {
+    "File": "2fc17dd815c8d6967d70aa6845583d88a0568d7fb740b526c1891e0f5496589b.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Offhand/Shields/Uniques/Oaksworn.webp",
+    "Sha256": "4b0a44ea07a056e35ed456c019006bd697290e9c482d2a1e7e7f15630435fe32",
+    "Bytes": 20932
+  },
+  "Art/2DItems/Offhand/Shields/Uniques/PrismGuardian.dds": {
+    "File": "a176432b5b6047a3d7be6b183a9598ae55fcb0b0dfd5a7ff078195735080121f.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Offhand/Shields/Uniques/PrismGuardian.webp",
+    "Sha256": "9f7cc433ae258abc5054e4b1a3d880359a9a7ae3a8f12197217cf084650a8722",
+    "Bytes": 16156
+  },
+  "Art/2DItems/Offhand/Shields/Uniques/RedbladeBanner.dds": {
+    "File": "808d8262abb27900c6a2785fe4c4dc617360a4fbfd40fce72518c4c1b886bd9c.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Offhand/Shields/Uniques/RedbladeBanner.webp",
+    "Sha256": "9cc3ad5e54e080e707f72f0ca54beeb87889612e53cb7ac445e73c7bd5a8430a",
+    "Bytes": 28894
+  },
+  "Art/2DItems/Offhand/Shields/Uniques/RondelDeEzo.dds": {
+    "File": "4a1bc17c482a0274a9c110542c8494a1be70136571a72f43ff95351a0efb1c17.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Offhand/Shields/Uniques/RondelDeEzo.webp",
+    "Sha256": "a2a9b436fdafa3515df7c4b1324908f3a903e79607761a6f1ad305b8d292a5d2",
+    "Bytes": 16142
+  },
+  "Art/2DItems/Offhand/Shields/Uniques/SaffelsFrame.dds": {
+    "File": "ddca4653b931e5c3c08734b24adb3b74874c6a2f96e43605cbe00c90b8b1e0df.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Offhand/Shields/Uniques/SaffelsFrame.webp",
+    "Sha256": "9892f3f3f1230b51d9a297fb2b14f099ed5f91ab8b35f41a953f47e20e3c063e",
+    "Bytes": 25878
+  },
+  "Art/2DItems/Offhand/Shields/Uniques/Silverthorne.dds": {
+    "File": "0bdc7c6781c2d35efb60432281fff1401868bc968699be7f3f6938f377176168.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Offhand/Shields/Uniques/Silverthorne.webp",
+    "Sha256": "6a6991f93406c1f92e4b9b6f8142eb219d9d78c493a5f73e72765229054f3355",
+    "Bytes": 13740
+  },
+  "Art/2DItems/Offhand/Shields/Uniques/Sunsplinter.dds": {
+    "File": "806ee20a51580848ee6ba5f09ad9355935d75680f88cc14cdeec4e324d66da70.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Offhand/Shields/Uniques/Sunsplinter.webp",
+    "Sha256": "018e5b2a5c7e70eb7b7581c3f65e2114651224850792bbd761d7a3a4f1569514",
+    "Bytes": 13560
+  },
+  "Art/2DItems/Offhand/Shields/Uniques/Svalinn.dds": {
+    "File": "df1dfd5f75926f96d0d26dc4503c6ca610e29f93f4b6806f597902e9a1520c6b.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Offhand/Shields/Uniques/Svalinn.webp",
+    "Sha256": "4e0985d28b41212ec99255589313f362d64f31b3ac078641879ac37a13ef5ad8",
+    "Bytes": 27054
+  },
+  "Art/2DItems/Offhand/Shields/Uniques/TheSurrender.dds": {
+    "File": "3a4ca583f01db231d48a30d6616af7a1dc9a165c2558483b5443b5cf29b89eb8.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Offhand/Shields/Uniques/TheSurrender.webp",
+    "Sha256": "97a0818753c11c517353587bfe2af866bc980776df34cc1784f8be564e631f9d",
+    "Bytes": 29558
+  },
+  "Art/2DItems/Offhand/Shields/Uniques/TheWailingWall.dds": {
+    "File": "3e399b7a5489d87f1f7611a4b7597de8f64dd44511c40e857c8636e76e3bb4f6.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Offhand/Shields/Uniques/TheWailingWall.webp",
+    "Sha256": "9e1ef65f297c332bb9585343d733cfdffcae1017670b5b7f926cfea7fbf37d7e",
+    "Bytes": 30474
+  },
+  "Art/2DItems/Offhand/Shields/Uniques/TulShield.dds": {
+    "File": "00605df22a47783a9ff5a75980854d112690720d86a0a2417649b01a0dcb7c01.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Offhand/Shields/Uniques/TulShield.webp",
+    "Sha256": "57c67c65789c9c198fcd8c3f03e995734f35a8337339d2bee88240377f334d3a",
+    "Bytes": 13734
+  },
+  "Art/2DItems/Offhand/Shields/Uniques/Vindromyr.dds": {
+    "File": "b328d5ca42dc2930ed1c96bc277e53aacd2be16ff78f16310efd57fa4d3fee84.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Offhand/Shields/Uniques/Vindromyr.webp",
+    "Sha256": "2c3ac99a378c8cd65f7fbd75809e3d5ff551ccc2521b955f08fc54b7d278a855",
+    "Bytes": 21244
+  },
+  "Art/2DItems/Offhand/Shields/Uniques/WindowToParadise.dds": {
+    "File": "2831ea4874553dcf14292c5eccc1f6edadec385392957a29e940ea331f3cf1fc.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Offhand/Shields/Uniques/WindowToParadise.webp",
+    "Sha256": "be1caf9bf91a439acb0faddec9640593f7e0585c6641c2715501034a88efdeab",
+    "Bytes": 27178
+  },
+  "Art/2DItems/Offhand/Shields/Uniques/Wulfsbane.dds": {
+    "File": "924142b88d60d63d96b2b9f6721ae97739a1a5484fed9ba3c6aca25d739f3ca8.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Offhand/Shields/Uniques/Wulfsbane.webp",
+    "Sha256": "3457be2848dc51ceeb33747f250690f5a4e5a890395663e2948019ee0a045917",
+    "Bytes": 27018
+  },
+  "Art/2DItems/Offhand/Talismans/Uniques/AmorMandragora.dds": {
+    "File": "68d0e58e48d1403fb367594bacaf987f330c23452e750fdde8979837192c69ba.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Offhand/Talismans/Uniques/AmorMandragora.webp",
+    "Sha256": "acc445ea6e044c1beda33e6d21c9316989c92905dec7c4f40164add133ee2ce4",
+    "Bytes": 16118
+  },
+  "Art/2DItems/Offhand/Talismans/Uniques/CrimsonChrysalis.dds": {
+    "File": "68f30d5679e2c5c73a3d1f5c8d4164bdf0b868927f063761a87cef78679bd2bc.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Offhand/Talismans/Uniques/CrimsonChrysalis.webp",
+    "Sha256": "e52cf2f95c27ba62a6e04715aaa64b0b28a34cb3d6cc79ce2f11cd6364459cc5",
+    "Bytes": 17670
+  },
+  "Art/2DItems/Offhand/Talismans/Uniques/HandOfTheClan.dds": {
+    "File": "c1f6d22f5ac3d3e79dbfe0bf7be4976e4d2cb4e4bb02e66693fc96fb18b41d2a.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Offhand/Talismans/Uniques/HandOfTheClan.webp",
+    "Sha256": "297f9ff439baf15383865dde327eedc67492788aabc582246e53446396b09ea3",
+    "Bytes": 15610
+  },
+  "Art/2DItems/Offhand/Talismans/Uniques/TawhoasDominion.dds": {
+    "File": "4e649603ce094e84597c5350966d0e7bdb6c1ac64a84a5fd4b25b5ef17c224f7.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Offhand/Talismans/Uniques/TawhoasDominion.webp",
+    "Sha256": "f8fc28fd15fd32f24c9d3e3f8bec0690dbb933bc93264632c6d36fb83c38f5e9",
+    "Bytes": 16742
+  },
+  "Art/2DItems/Offhand/Talismans/Uniques/TheSkinThief.dds": {
+    "File": "b435f7a2533756e20d49b9a7a714dcd32e1a05ba6bce189e5b09c9c57d7afcc0.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Offhand/Talismans/Uniques/TheSkinThief.webp",
+    "Sha256": "2c0881ac9a25d1b5571f8615eece38d6113c144a15157fb22f577072ec3fe301",
+    "Bytes": 13992
+  },
+  "Art/2DItems/Offhand/Talismans/Uniques/VesselOfWrath.dds": {
+    "File": "e0d91952613862a1827c23c47f15af7c7dd81c3455afa7c1c795237ac437abe1.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Offhand/Talismans/Uniques/VesselOfWrath.webp",
+    "Sha256": "783714c8b8ef7913290608bbdfcbe62a8d1aaf6791f83b17d0bbef4eed810805",
+    "Bytes": 16102
+  },
+  "Art/2DItems/Quivers/Uniques/AsphyxiasWrath.dds": {
+    "File": "e479bace7ecf6d06c6c205c3df7fc352e8b1a9554f13a94fa03ef018af62332e.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Quivers/Uniques/AsphyxiasWrath.webp",
+    "Sha256": "3f084bab0af8f895f127483c3a08f981156dd4d999b8bb6e4419cd5aaf6542c8",
+    "Bytes": 27872
+  },
+  "Art/2DItems/Quivers/Uniques/Blackgleam.dds": {
+    "File": "0fa270e12a17817fd7d9d2044c3ddbc6baaef74538a67d9a4454f6b295b1a71b.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Quivers/Uniques/Blackgleam.webp",
+    "Sha256": "9b4eebc55bc62bfd77f1e33c6184b81abe01f797972a35a5fe1a044e4ba5708a",
+    "Bytes": 24478
+  },
+  "Art/2DItems/Quivers/Uniques/BreachQuiver.dds": {
+    "File": "7a3681ebdc2828743093261ab763821370060d6d4437990ca9185e3baecac48e.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Quivers/Uniques/BreachQuiver.webp",
+    "Sha256": "2299004eccd9e62da5ff81fca248cceefbada8a223ef369626285df7b3a059ec",
+    "Bytes": 28956
+  },
+  "Art/2DItems/Quivers/Uniques/Drillneck.dds": {
+    "File": "2f9812edccf2343ee6442af30caa8e18ecf957faf1f599772354dbe3ea7cd615.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Quivers/Uniques/Drillneck.webp",
+    "Sha256": "566d16a90256d318c884a42ee234db0175c904921ae8355563eb7b435a2cbdc4",
+    "Bytes": 20490
+  },
+  "Art/2DItems/Quivers/Uniques/Murkshaft.dds": {
+    "File": "2e4e260c383d9dc013a033784b0045770c04acd4c0d92d6c288ad52cd13769ff.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Quivers/Uniques/Murkshaft.webp",
+    "Sha256": "aa070bbbf5013c001cd055c438e12f63a267728aee0ea27d4c25713441939573",
+    "Bytes": 29648
+  },
+  "Art/2DItems/Quivers/Uniques/PerandusTurnstile.dds": {
+    "File": "389b66d0979f6d2d5c5b488d194e730f27cee0952c961efa72cb04c6d2cee4aa.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Quivers/Uniques/PerandusTurnstile.webp",
+    "Sha256": "a8be6a74608e3892b52b508838f2b336f9e141963e2b3c70a4088bae336da8b4",
+    "Bytes": 25928
+  },
+  "Art/2DItems/Quivers/Uniques/Rearguard.dds": {
+    "File": "8e3930035036b5081aba80a902667f7e77a2256637b732fe6e657884415e553d.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Quivers/Uniques/Rearguard.webp",
+    "Sha256": "a43f10ae77b82a1201879f0093d6a21cc8ec6a7c284cdd4a4be86aee978116aa",
+    "Bytes": 22492
+  },
+  "Art/2DItems/Quivers/Uniques/TheLethalDraw.dds": {
+    "File": "ce6792f3f883855dca992f9dc1fe29df9683cdce1e915feb60084d6ddd86c1e5.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Quivers/Uniques/TheLethalDraw.webp",
+    "Sha256": "fb9ab925dfb0f67b8f1fe4f85fb8c81a2ff0e4b88f5311f869e65bc725c365d4",
+    "Bytes": 26982
+  },
+  "Art/2DItems/Rings/MirrorRing.dds": {
+    "File": "3930eb5033519668d4b3939a18717d4d9fcebdea4ea2ebc1420e811f6720500f.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Rings/MirrorRing.webp",
+    "Sha256": "0aa51c0b7e3b0e3dfa2b16e96b896b5bf7ac13a814d4ffe9a1ec569d6ce3d972",
+    "Bytes": 3928
+  },
+  "Art/2DItems/Rings/Uniques/Andvarius.dds": {
+    "File": "fb375da4c6836192132a8059277159df5353e65b2dca90f51dad0bfd69b8caaf.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Rings/Uniques/Andvarius.webp",
+    "Sha256": "dad28619162c73190d628c42b4c5448f17d41efe00b2aea3ad5e6c0ad21c8a33",
+    "Bytes": 6104
+  },
+  "Art/2DItems/Rings/Uniques/BereksGrip.dds": {
+    "File": "37d0893fdd729633ab6cba0cd572068425bef3de6edcb42eee7cde693f440cc4.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Rings/Uniques/BereksGrip.webp",
+    "Sha256": "b326fd89f69459766f236066f169c7d3ae1fd1668ca442bee238d0b9a2f2b922",
+    "Bytes": 4338
+  },
+  "Art/2DItems/Rings/Uniques/BereksPass.dds": {
+    "File": "7545a04488bbfb733f58d3f190f7546d1fc003398731857225c5191116029d28.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Rings/Uniques/BereksPass.webp",
+    "Sha256": "54a2b0a88f52908f0c7e6b76178616d0b1501f02f51afa187dcba8f1faf7bc1d",
+    "Bytes": 5620
+  },
+  "Art/2DItems/Rings/Uniques/BereksRespite.dds": {
+    "File": "c54e66f0fe0e4c5d7c40f22c3aad81e4a625017f5d28b18d1bf0cc9446a65166.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Rings/Uniques/BereksRespite.webp",
+    "Sha256": "fb25fc1e152cd11d230458ae19035e5c46c69385e01f5a49ca542f6832698341",
+    "Bytes": 5538
+  },
+  "Art/2DItems/Rings/Uniques/Blackflame.dds": {
+    "File": "bf99240429d16dd06c723e30c00673c976a3820758027000d5008bb7ebf534df.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Rings/Uniques/Blackflame.webp",
+    "Sha256": "f23fedbf6ccb57d42b14edffb2d1c97d6e2fee14963ff58f2aed7ef391ecb449",
+    "Bytes": 4548
+  },
+  "Art/2DItems/Rings/Uniques/Blackheart.dds": {
+    "File": "0b321f616de339d7e7dfa65d46a3f2466218487b756b63be1f327e3a3da58edb.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Rings/Uniques/Blackheart.webp",
+    "Sha256": "e4e3817557c1bdc28827b158925a3472ec13ab1e72ff822e15b2433eed5d59a6",
+    "Bytes": 4780
+  },
+  "Art/2DItems/Rings/Uniques/BlisteringBond.dds": {
+    "File": "12424dfd2b0497f28b77c455c537ad6de70e446ada5e4eb7df3ca5c710a34335.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Rings/Uniques/BlisteringBond.webp",
+    "Sha256": "c8e2efe30e218fdcdd4d6658c757684cfa93ea1f060a518d65ee7d8bf9440e7a",
+    "Bytes": 5546
+  },
+  "Art/2DItems/Rings/Uniques/BurstingDecay.dds": {
+    "File": "15d0a446a11b32354eb1319aa7d1c3177251766c69ae372467ad61f9122ff9ab.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Rings/Uniques/BurstingDecay.webp",
+    "Sha256": "8001e1545f26b727cfd7bf97bd3e01e83f99558143ac8b649817cbcfe29b02ca",
+    "Bytes": 7586
+  },
+  "Art/2DItems/Rings/Uniques/CallOfTheBrotherhood.dds": {
+    "File": "7b17eb7ecff1368211ed3d28f0c3c3fd081943aac4c14c06293bf94810538e98.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Rings/Uniques/CallOfTheBrotherhood.webp",
+    "Sha256": "0096bc8c108965d7fdda6de2dd9eff6cdb76f889701372181de92368b4fbfa4d",
+    "Bytes": 4270
+  },
+  "Art/2DItems/Rings/Uniques/Cracklecreep.dds": {
+    "File": "ca8a04db7099f61ce1169751bbaf359166a90f7126d1589c7e15f62f3e7b3afb.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Rings/Uniques/Cracklecreep.webp",
+    "Sha256": "fafc306e45def02e0f6c08c8d2f81d2fca04d3b52727eb2afd67489c719808db",
+    "Bytes": 5324
+  },
+  "Art/2DItems/Rings/Uniques/DeathRush.dds": {
+    "File": "9abba16b1c090f19d7c4f2183a8806623b8892a8c2e4de3869824daea8e29816.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Rings/Uniques/DeathRush.webp",
+    "Sha256": "212e13b563932fba2096f91fb3216043da093768826639c3579df88e9340f95c",
+    "Bytes": 4910
+  },
+  "Art/2DItems/Rings/Uniques/DoedresDamning.dds": {
+    "File": "3e0918eb3458f2e95bbb699e68f5a571fbf9c05dad4fea09fefb78e99414b59a.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Rings/Uniques/DoedresDamning.webp",
+    "Sha256": "1b5ded8dbae25e420e764cb491f73a6b2edbbb2a73a4a00747dbca651e24ea7d",
+    "Bytes": 5024
+  },
+  "Art/2DItems/Rings/Uniques/DreamFragments.dds": {
+    "File": "036f3193d51ec71e33013e7c13f223d668fb1417f816801c53a51e77a8a15a48.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Rings/Uniques/DreamFragments.webp",
+    "Sha256": "addedd88f652e530190d1e035d39725ffcedfc5de44b95db4c1ef1a7a00e763e",
+    "Bytes": 5136
+  },
+  "Art/2DItems/Rings/Uniques/EmberheartSeal.dds": {
+    "File": "da3081dec6662f5f09647f9a1bd4393ef4097f5f2500ad42449e224ebe88e58e.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Rings/Uniques/EmberheartSeal.webp",
+    "Sha256": "e1f12a4e99137f9541b67e615b0837eb1349957255370ba161af7445fc0ff80b",
+    "Bytes": 5670
+  },
+  "Art/2DItems/Rings/Uniques/EvergraspingRing.dds": {
+    "File": "25b8b1992361db9c343d6c02726e2eb5c5c8f3eadea9696ab68de5fbaa9c52f4.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Rings/Uniques/EvergraspingRing.webp",
+    "Sha256": "98f0434dce60cc0afae0b56d2d84a748bdb08bc531d9a1c237ab48a67994e2b2",
+    "Bytes": 5980
+  },
+  "Art/2DItems/Rings/Uniques/GiftsFromAbove.dds": {
+    "File": "40edc023e355aa869d778540b1bf4a77c49df88b01e2d53ed503e28409c8443f.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Rings/Uniques/GiftsFromAbove.webp",
+    "Sha256": "8ea92392af33e5c0e0072e6dae3ef74138f497cee8689c711ecb1a8c372b1ef0",
+    "Bytes": 4872
+  },
+  "Art/2DItems/Rings/Uniques/Glowswarm.dds": {
+    "File": "759d6568ea499221f6f2aee886b943bf9cbb17cfbf5640396ee2951d52ef63b8.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Rings/Uniques/Glowswarm.webp",
+    "Sha256": "77566dcd902b83d3382cf1317642524965beed1a07ae50d19db4390adee00d12",
+    "Bytes": 7722
+  },
+  "Art/2DItems/Rings/Uniques/HeartboundLoop.dds": {
+    "File": "03857e049f37827d0e1db3b863080947fb664aefe7eb50195b95221858ec5f9a.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Rings/Uniques/HeartboundLoop.webp",
+    "Sha256": "3a3cc243139cbdcdf3ae02a35c9004b37345a7af5919b0eb15739c9438900e6c",
+    "Bytes": 5448
+  },
+  "Art/2DItems/Rings/Uniques/IcefangOrbit.dds": {
+    "File": "3d44ba8e2fc3d11692ea6f9fd7f4494f2739517cf77b821552da867a00a14093.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Rings/Uniques/IcefangOrbit.webp",
+    "Sha256": "d3c49751063dbf40e02d9a48e7552d9033fda89011fc806d68bad6f8ab655ee4",
+    "Bytes": 6956
+  },
+  "Art/2DItems/Rings/Uniques/MingsHeart.dds": {
+    "File": "60565d3f813b54a3f1615a34742aee168e666881269b60d6f7cb01f4d9a0e63e.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Rings/Uniques/MingsHeart.webp",
+    "Sha256": "e8cf2f8f52945b238c391de34843891ab54a676ac054efe59a1579f18fb5de95",
+    "Bytes": 5348
+  },
+  "Art/2DItems/Rings/Uniques/OriginalSin.dds": {
+    "File": "8f4e3e307abcf3399005bacdc0920a1b687e726a4ada905cc9aa0b91945e18a2.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Rings/Uniques/OriginalSin.webp",
+    "Sha256": "40346998004e0e01798ec3da3f472fa1951b2d97f63e164f0c97dd979f5b16eb",
+    "Bytes": 5142
+  },
+  "Art/2DItems/Rings/Uniques/PerandusSeal.dds": {
+    "File": "7fcde9affd707668f37dc0a175f9e6cf9315a6f354f46668f61495be8a8aa3c2.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Rings/Uniques/PerandusSeal.webp",
+    "Sha256": "71a48ade5d2b76ecdf6f1eae1008037c1ca4f9d177fd7432bbcacd5d1fecd249",
+    "Bytes": 4928
+  },
+  "Art/2DItems/Rings/Uniques/Polcirkeln.dds": {
+    "File": "daa5b708bc50dfb5ef785cd2f86465c8df0c254b5778956cc7303b560ccca40c.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Rings/Uniques/Polcirkeln.webp",
+    "Sha256": "0e1a5f3bbf4b1bb68a9e791ecf2ceff25d44bebce4577faaf4c839005e98516c",
+    "Bytes": 4738
+  },
+  "Art/2DItems/Rings/Uniques/PrizedPain.dds": {
+    "File": "0be3168883ac7d6e3b1d4912ce451f17acb4d38dd323f69935718a1562cb0830.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Rings/Uniques/PrizedPain.webp",
+    "Sha256": "df28ade58328126ec17f3bf308c4e3f0b0a85c32fcd421b3533e57dfba9c7a92",
+    "Bytes": 5394
+  },
+  "Art/2DItems/Rings/Uniques/RimeveilSeal.dds": {
+    "File": "c0d339000e998180fb12916606f42e73c3df9d4ebcca7662d5ba194f560519ad.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Rings/Uniques/RimeveilSeal.webp",
+    "Sha256": "1600d4745c567972aae70bde67a7d1933cf7aeedf66696fc34b9722ac7f6ec9e",
+    "Bytes": 5976
+  },
+  "Art/2DItems/Rings/Uniques/SeedOfCataclysm.dds": {
+    "File": "6d70006544946c7fb4a2b87048ba3fce3a7860fdcd932427e74956eaf2e8a105.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Rings/Uniques/SeedOfCataclysm.webp",
+    "Sha256": "c00475e2b45515d771af220e0dc5d6776f8051a812048cda8fa7830cb7b52c0b",
+    "Bytes": 5346
+  },
+  "Art/2DItems/Rings/Uniques/Snakepit.dds": {
+    "File": "22daa2218c6e06bd6654e2db0c21b291e70a892d036fa4e02f7589262c7ab50c.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Rings/Uniques/Snakepit.webp",
+    "Sha256": "81a79dd082e6957385878b495646ac9bc905152bae568a6f52b6c6a5b400b653",
+    "Bytes": 5660
+  },
+  "Art/2DItems/Rings/Uniques/StoneOfOndar.dds": {
+    "File": "0ac2970350698e710bfd69c6bfdc844bebb9aac4d2f6a2a35cc3089334f1f11e.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Rings/Uniques/StoneOfOndar.webp",
+    "Sha256": "fe8814e9d6b91a37bd40adebd9841bb6e26336a7b701c176784d22ef5524e6db",
+    "Bytes": 4666
+  },
+  "Art/2DItems/Rings/Uniques/StormforgedSeal.dds": {
+    "File": "6232660a7cc2bba346378b8230e22b06899da36177b24e001493c5096cd6c65e.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Rings/Uniques/StormforgedSeal.webp",
+    "Sha256": "2dca71b9bdeb1507b4d7f474b9e42ec3a6c5f98d911a0174a32a5c7ee7b8f349",
+    "Bytes": 5244
+  },
+  "Art/2DItems/Rings/Uniques/TheBurrower.dds": {
+    "File": "277f27b2fc699028929de524924b6ee94ea42d5c161080883fdd229ae6c75428.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Rings/Uniques/TheBurrower.webp",
+    "Sha256": "76fd981ac0fff21b2ebc3b637332732db3183cb3063e7e4f0378cec685e54b09",
+    "Bytes": 4642
+  },
+  "Art/2DItems/Rings/Uniques/TheTaming.dds": {
+    "File": "9055066319daed40d983cceebd0e761622e1105de55c6429bb730befb84d2b40.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Rings/Uniques/TheTaming.webp",
+    "Sha256": "d4af8c28828e0c0110063e0b4c7c9f068b2958b0345c9a632d0d70b1fc6d485e",
+    "Bytes": 5320
+  },
+  "Art/2DItems/Rings/Uniques/ThiefsTorment.dds": {
+    "File": "2719d62e97020dc0325a3111cedaaa4623b80edb3decfb04726ef4589d52f49f.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Rings/Uniques/ThiefsTorment.webp",
+    "Sha256": "f158c866d4ef43766031deee8cdc6129964a06f09f6afe213c39e20ecc86a8b5",
+    "Bytes": 4756
+  },
+  "Art/2DItems/Rings/Uniques/TokenOfPassage01.dds": {
+    "File": "618c62b08dd51bb92cc52bf0cea091ff6632cf373456955927ef88ec2a124557.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Rings/Uniques/TokenOfPassage01.webp",
+    "Sha256": "65e8f01e592f73ea079c2029cf187dd908faced97f4dda176c30f5ef6d91f7bf",
+    "Bytes": 4338
+  },
+  "Art/2DItems/Rings/Uniques/TokenOfPassage02.dds": {
+    "File": "64e1ab1c4b20f9a36785ee81852f2b964db91c206912ad7e5ecf8ef7ac484ce9.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Rings/Uniques/TokenOfPassage02.webp",
+    "Sha256": "2a117e035da106be4900da854db1a4ee99f9c490c3d0af2a1c2807ecdf3ba41f",
+    "Bytes": 5284
+  },
+  "Art/2DItems/Rings/Uniques/TokenOfPassage03.dds": {
+    "File": "4a572e12496ccc5fb90b8c616ba3ee145e145eedec193806260263e760de5d91.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Rings/Uniques/TokenOfPassage03.webp",
+    "Sha256": "0d6d810b86b9b471d9cb25d24422fbef810adc4d65f121a25173a8bd9ed15df5",
+    "Bytes": 5574
+  },
+  "Art/2DItems/Rings/Uniques/TokenOfPassage04.dds": {
+    "File": "dac930989adbf159c999dec4ab3ed32f4060d229df4836090293334c046f3558.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Rings/Uniques/TokenOfPassage04.webp",
+    "Sha256": "46b21e339ab51282c78db7273a343907a6d7c22a9485b53679f494274c70b624",
+    "Bytes": 6368
+  },
+  "Art/2DItems/Rings/Uniques/TokenOfPassage05.dds": {
+    "File": "b9910385c0b2de12b9e804c02c60a635366b4850decca61f7999616eed1147be.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Rings/Uniques/TokenOfPassage05.webp",
+    "Sha256": "217396757931b3725dc955a77ab36bc6bbe15d853648a55e91b8592948def57a",
+    "Bytes": 7688
+  },
+  "Art/2DItems/Rings/Uniques/Veilpiercer.dds": {
+    "File": "98cb22f128a0d37b7a0f91cbe06869300347d3b85f5432a0abff3037a17fd5cd.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Rings/Uniques/Veilpiercer.webp",
+    "Sha256": "8b238ce27eb6385d595328cfcee299d857927cea463a96638c6e97e20af4529a",
+    "Bytes": 3900
+  },
+  "Art/2DItems/Rings/Uniques/Venopuncture.dds": {
+    "File": "2b1dbf98ef293d4dca5f4b7f8cd5eabcf49f861af81306d087e1cf898f146226.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Rings/Uniques/Venopuncture.webp",
+    "Sha256": "e4fcec4fe6fec9060538beea99159b486ab016741a6c543c13f0f2226c27787e",
+    "Bytes": 6974
+  },
+  "Art/2DItems/Rings/Uniques/VentorsGamble.dds": {
+    "File": "9214d2e6fd4ce15d7f4964c0a3e5357316406b9892210dbc98a8d68feee7afbc.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Rings/Uniques/VentorsGamble.webp",
+    "Sha256": "68457c1ad63bb6739298acd0edd60079327abf86883cf6942aa14cae0a865c7c",
+    "Bytes": 5134
+  },
+  "Art/2DItems/Rings/Uniques/VigilantView.dds": {
+    "File": "6a1a88a561845fbb3197f6c101c734ebda4179937c58738a36f975b22819514b.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Rings/Uniques/VigilantView.webp",
+    "Sha256": "cb7e8cab0c2709575447160554c8d18e7d24518c0bd425bf0afc6abcecf1c081",
+    "Bytes": 5634
+  },
+  "Art/2DItems/Rings/Uniques/WhisperOfTheBrotherhood.dds": {
+    "File": "d0d7c19ddc016d17d66d533efb5394376ff4f04fc68f38c1fee128e7a2241b8c.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Rings/Uniques/WhisperOfTheBrotherhood.webp",
+    "Sha256": "3407880794ba1d5e571e025a609309aa656ee4b5ecf2a2c14a8d7da48afedfc2",
+    "Bytes": 4344
+  },
+  "Art/2DItems/Weapons/OneHandWeapons/OneHandMaces/Uniques/BrutusLeadSprinkler.dds": {
+    "File": "7bb521cf0b9ad27da8aead7a9d65fcd68359c38d46c5dd0c1eede291e1f7a4ce.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/OneHandWeapons/OneHandMaces/Uniques/BrutusLeadSprinkler.webp",
+    "Sha256": "7f9baf15ffdd620fcb60cb44ba87bdaeb013ae84581e3bcd9eb33af646487d32",
+    "Bytes": 7620
+  },
+  "Art/2DItems/Weapons/OneHandWeapons/OneHandMaces/Uniques/BrynhandsMark.dds": {
+    "File": "e593e7c4e6a1f24886d4825c64b65fc5bd6b6fed95f62b8c7586118db00b13be.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/OneHandWeapons/OneHandMaces/Uniques/BrynhandsMark.webp",
+    "Sha256": "91c75bb2c808a314411f6e186b9326cad06774f424d3da9e50db28f1f11b7d96",
+    "Bytes": 12428
+  },
+  "Art/2DItems/Weapons/OneHandWeapons/OneHandMaces/Uniques/Frostbreath.dds": {
+    "File": "e6b0f6368dcd6a9c45c50b101e6b255b0211143126834ed7c7cd2cf39b7e6de5.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/OneHandWeapons/OneHandMaces/Uniques/Frostbreath.webp",
+    "Sha256": "791d4d11fdbeaea5f30e521bd38bce117d696260989e51052b8f4dd72a92e96d",
+    "Bytes": 15552
+  },
+  "Art/2DItems/Weapons/OneHandWeapons/OneHandMaces/Uniques/Mjolner.dds": {
+    "File": "b08fe0138d3b0ef4332ddd44db9c72c320561f9c5c299f3d9445de2b3f80c204.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/OneHandWeapons/OneHandMaces/Uniques/Mjolner.webp",
+    "Sha256": "d7d6e598c5bf3dbb0992d3461129b6f4681912e646bc4f44de53278b2bdf3f49",
+    "Bytes": 19462
+  },
+  "Art/2DItems/Weapons/OneHandWeapons/OneHandMaces/Uniques/Murkmaw.dds": {
+    "File": "0cdb7f5b3447c9897d39e4761ef283abec3f3b6e8924a4be4ab2b3dcd5cc0414.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/OneHandWeapons/OneHandMaces/Uniques/Murkmaw.webp",
+    "Sha256": "050704da4abe75df574a2d434e5ef150164303b715368bfe3edc28bfe36952f3",
+    "Bytes": 10572
+  },
+  "Art/2DItems/Weapons/OneHandWeapons/OneHandMaces/Uniques/Nebuloch.dds": {
+    "File": "11ee49be4f11cca98493578ae9b0668f4f929adddef81473a40ca849f91d7afa.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/OneHandWeapons/OneHandMaces/Uniques/Nebuloch.webp",
+    "Sha256": "0b914d0edbd513e6388c60d5fab910978ff734a6909eeaf780b6eb41b3eb17d3",
+    "Bytes": 21460
+  },
+  "Art/2DItems/Weapons/OneHandWeapons/OneHandMaces/Uniques/Olrovasara.dds": {
+    "File": "41c82c5181bfdeea9c10abc6af2c591c840f51b6e47b7c966f8a7d38450397f9.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/OneHandWeapons/OneHandMaces/Uniques/Olrovasara.webp",
+    "Sha256": "6d001f6e1ec24a43fa498b4debb948210b509d5a4fd7bb082bb38ed19f36224c",
+    "Bytes": 11318
+  },
+  "Art/2DItems/Weapons/OneHandWeapons/OneHandMaces/Uniques/SculptedSuffering.dds": {
+    "File": "899a253c55ec2d83e105695dd43711de54997cc8650c2c4612c0d45e299379e5.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/OneHandWeapons/OneHandMaces/Uniques/SculptedSuffering.webp",
+    "Sha256": "de40f5ebe2f8256f5a51b9df68d1c62bef981c3e84b36a0b1721f51cb689bdf3",
+    "Bytes": 12414
+  },
+  "Art/2DItems/Weapons/OneHandWeapons/OneHandMaces/Uniques/SeeingStars.dds": {
+    "File": "2fb762a8b48c9e44013b6f1995baae8b8deb259dbed1b081e223e2dc4be08323.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/OneHandWeapons/OneHandMaces/Uniques/SeeingStars.webp",
+    "Sha256": "c7afeda7794e940b24c74952256afb18169c8eeeb98d13ee907b69dec7eb8c03",
+    "Bytes": 11256
+  },
+  "Art/2DItems/Weapons/OneHandWeapons/OneHandMaces/Uniques/SerlesMasterwork.dds": {
+    "File": "c93bf5a45a166605da4a7c6ea0cb6b6691fdc4fbee310557175e4f259a69564c.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/OneHandWeapons/OneHandMaces/Uniques/SerlesMasterwork.webp",
+    "Sha256": "15ba20fa462076c56053238cf5b187f59f52baa83e20815ebf0eb5d5a0fa2242",
+    "Bytes": 16300
+  },
+  "Art/2DItems/Weapons/OneHandWeapons/OneHandMaces/Uniques/TheStake.dds": {
+    "File": "ecd0d3d54e917d370a8216b94be93aafebeb8226103e4f442e2661eb75076c9b.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/OneHandWeapons/OneHandMaces/Uniques/TheStake.webp",
+    "Sha256": "e97e7cc2023cf3907e572c29a06e43c21dc0ed16a676c3b6e12f5aa8ba56ec9d",
+    "Bytes": 9954
+  },
+  "Art/2DItems/Weapons/OneHandWeapons/OneHandMaces/Uniques/Trenchtimbre.dds": {
+    "File": "e142f5956347f7f624008bec33720c7dcb5418ced5cc876a58f729cc26928580.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/OneHandWeapons/OneHandMaces/Uniques/Trenchtimbre.webp",
+    "Sha256": "62d7f9376560bc85f17b98cd4f35f49d606ca0d435d2e090b45b5eea75ba30ca",
+    "Bytes": 12602
+  },
+  "Art/2DItems/Weapons/OneHandWeapons/OneHandSpears/Uniques/ArmsLength.dds": {
+    "File": "51fdb04a71e38296936a25deb2af789a3f850de002be9a98c7772f048f452055.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/OneHandWeapons/OneHandSpears/Uniques/ArmsLength.webp",
+    "Sha256": "250457510627a38551066522a57d81913c8b9eb6c22a5aa4e6eed251ad423dec",
+    "Bytes": 10702
+  },
+  "Art/2DItems/Weapons/OneHandWeapons/OneHandSpears/Uniques/AtziriStaffBlood.dds": {
+    "File": "7d168c30dcb3850517aae62f3dc0f4a094ab9bd2778fa155c31303d8e591e6e9.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/OneHandWeapons/OneHandSpears/Uniques/AtziriStaffBlood.webp",
+    "Sha256": "49d265ad1b821d99360d43da3cb2b3530915272a0d96645661219d32782a6111",
+    "Bytes": 11812
+  },
+  "Art/2DItems/Weapons/OneHandWeapons/OneHandSpears/Uniques/Chainsting.dds": {
+    "File": "a143fcc2212ed795943c20dfa4d52ac0f902fe95e3e13b59c1f8f9f322b83c4f.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/OneHandWeapons/OneHandSpears/Uniques/Chainsting.webp",
+    "Sha256": "8f6e850422cf88288974ee35bf58bf7bf469b8fdf4ef8c0cc79e9b5f77fcbecb",
+    "Bytes": 13014
+  },
+  "Art/2DItems/Weapons/OneHandWeapons/OneHandSpears/Uniques/DaevatasWind.dds": {
+    "File": "637568664b2ab18bc8f987331647caaf464d722c04a3058b17ddfddd3e1aa144.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/OneHandWeapons/OneHandSpears/Uniques/DaevatasWind.webp",
+    "Sha256": "6067c06f558d557ee1125853343cfa0eea8a5601307b6f832363f3bba06cc5d2",
+    "Bytes": 8818
+  },
+  "Art/2DItems/Weapons/OneHandWeapons/OneHandSpears/Uniques/SaithasSpear.dds": {
+    "File": "2825aaa37ed8352c5e03eaf9152179c01ad2e10cb11802826db0669a14b99c72.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/OneHandWeapons/OneHandSpears/Uniques/SaithasSpear.webp",
+    "Sha256": "a14cf8674a19dd68250b58de05892e08d2bd6a906857f6a2066de81b34d5e48b",
+    "Bytes": 13676
+  },
+  "Art/2DItems/Weapons/OneHandWeapons/OneHandSpears/Uniques/Skysliver.dds": {
+    "File": "8243fe483bc41ce364a0ff4a2ad494d8dcddad7d3e45d35b6cd8a17c17278ef7.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/OneHandWeapons/OneHandSpears/Uniques/Skysliver.webp",
+    "Sha256": "75c7bc1d2f71daed6cb217c151a715c0e765c5a6d2ec36b6ec8c6ec39cc6a818",
+    "Bytes": 11304
+  },
+  "Art/2DItems/Weapons/OneHandWeapons/OneHandSpears/Uniques/SpireOfIre.dds": {
+    "File": "19db4e70ac9b6827de053019aa2246157340ed4938c22c125561bd2d0c4643c0.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/OneHandWeapons/OneHandSpears/Uniques/SpireOfIre.webp",
+    "Sha256": "e69175ce683375317e79284181e5cec56533d6e190bb54b274b5534c40d80155",
+    "Bytes": 12346
+  },
+  "Art/2DItems/Weapons/OneHandWeapons/OneHandSpears/Uniques/SplinterOfLorrata.dds": {
+    "File": "160725ec49501a0d2048c21f0eb87f7e1689cd0b161eceee151b37686639810a.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/OneHandWeapons/OneHandSpears/Uniques/SplinterOfLorrata.webp",
+    "Sha256": "adc7525e2b4df8a79a5ea690baa9fa41f3b8a40d4127b1f8716dbd98ee7f3cad",
+    "Bytes": 12010
+  },
+  "Art/2DItems/Weapons/OneHandWeapons/OneHandSpears/Uniques/Tangletongue.dds": {
+    "File": "7a3d91b72bfabcd0c25d9b904562cddacdcb6077df011ddd3f694506c93426fa.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/OneHandWeapons/OneHandSpears/Uniques/Tangletongue.webp",
+    "Sha256": "6d43fb0fc898f4e65021267a4ac19b0a840ecbb463ca8c8dda7a967e93192f47",
+    "Bytes": 9158
+  },
+  "Art/2DItems/Weapons/OneHandWeapons/OneHandSpears/Uniques/TheOrdained.dds": {
+    "File": "6b618ae25eac2bdf9b01b6631d026f950fe9c20f0e9c8d1d3ba642e13fcc5079.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/OneHandWeapons/OneHandSpears/Uniques/TheOrdained.webp",
+    "Sha256": "dcc5763236311e84e5b98a05c6f50c3916b559e10b6e42ae3a0dfa6b449d3698",
+    "Bytes": 10344
+  },
+  "Art/2DItems/Weapons/OneHandWeapons/Scepters/Uniques/DarkDefiler.dds": {
+    "File": "70c971e6f1805ffb5c878ccdf757b76a78ec98a0901695dcdd25cc6a8bf2399b.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/OneHandWeapons/Scepters/Uniques/DarkDefiler.webp",
+    "Sha256": "2aa4728dff2a97abaf127234d27950c395dff0e1cf90548a4ed24e7cb82c8ad7",
+    "Bytes": 8932
+  },
+  "Art/2DItems/Weapons/OneHandWeapons/Scepters/Uniques/FontOfPower.dds": {
+    "File": "bd79ebb2ade5a54af2042ea78befcef8de77dc7d14541f1a81d4e34cbf324293.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/OneHandWeapons/Scepters/Uniques/FontOfPower.webp",
+    "Sha256": "5bb45618b39929c41f560bdfb782fd19c78e929e7574bebca1e8939df552c876",
+    "Bytes": 11122
+  },
+  "Art/2DItems/Weapons/OneHandWeapons/Scepters/Uniques/GuidingPalmCold.dds": {
+    "File": "27e1b3b3c1ef926d920c10990bf2518cec8e821455c45c39b72c6beff3770d6d.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/OneHandWeapons/Scepters/Uniques/GuidingPalmCold.webp",
+    "Sha256": "f246896392edf11e54c08817fc48912824985bb5173e868110a52c311d990966",
+    "Bytes": 13464
+  },
+  "Art/2DItems/Weapons/OneHandWeapons/Scepters/Uniques/GuidingPalmFire.dds": {
+    "File": "2fdd6a2ae2ab81ebe1c50922ae10c1240608a168cd9f5822c6d6439f69adfbb3.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/OneHandWeapons/Scepters/Uniques/GuidingPalmFire.webp",
+    "Sha256": "a444da20a879f06974b92fd963f92f500e49c904318db5ac64f8ead08562bc5b",
+    "Bytes": 13114
+  },
+  "Art/2DItems/Weapons/OneHandWeapons/Scepters/Uniques/GuidingPalmLightning.dds": {
+    "File": "4b0c57ba0a940f14517fd27188bd66735ca49b1a7b9a78049ef986d44b7d7268.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/OneHandWeapons/Scepters/Uniques/GuidingPalmLightning.webp",
+    "Sha256": "6f1373d5dcbcec9be5fedaf31a3a636a2e3afd89e86745b23c56e805cab7ddf6",
+    "Bytes": 13924
+  },
+  "Art/2DItems/Weapons/OneHandWeapons/Scepters/Uniques/OpenPalmOfTheDreamer.dds": {
+    "File": "be01ca28b0d03c19976a790fe71c1086a6383820dc204b9d67a3c2030c988a54.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/OneHandWeapons/Scepters/Uniques/OpenPalmOfTheDreamer.webp",
+    "Sha256": "27e6fa1fba1db89b740a8530e59fdbbf19fc61a904075df0c1917a82d1ad21b3",
+    "Bytes": 13844
+  },
+  "Art/2DItems/Weapons/OneHandWeapons/Scepters/Uniques/Packleader.dds": {
+    "File": "b363a6c154304b58a966b7c0b98bc5e56f725f2497e21f8998fbd0239aa6b967.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/OneHandWeapons/Scepters/Uniques/Packleader.webp",
+    "Sha256": "96bea91f59f46f6f66b9c0d78db31163a29087c893028610c1673b734b4a8194",
+    "Bytes": 14926
+  },
+  "Art/2DItems/Weapons/OneHandWeapons/Scepters/Uniques/SacredFlame.dds": {
+    "File": "5e14da5846b03050b47091cdd94af9d634f9f5c6896759e4634b06be259cd81e.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/OneHandWeapons/Scepters/Uniques/SacredFlame.webp",
+    "Sha256": "093a65d38792c8de1e99ad957b56db8d20f33dce9fd0d7f0f7db8c7822652973",
+    "Bytes": 13026
+  },
+  "Art/2DItems/Weapons/OneHandWeapons/Wands/Uniques/Clawmark.dds": {
+    "File": "9bac5d77549dc786aa7a6ad8f8520d1350733c4281c6fa74becd0651ce7f7bc0.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/OneHandWeapons/Wands/Uniques/Clawmark.webp",
+    "Sha256": "60d783221f677b7138e0fdc8fdea63f101cb342c035e26a90e9f25f39f8af88e",
+    "Bytes": 9322
+  },
+  "Art/2DItems/Weapons/OneHandWeapons/Wands/Uniques/CoilOfUndoing.dds": {
+    "File": "a4ae34c13df36e106bec947dfdbb3ddf709e7639cb325fdc2c3efd1e936cce17.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/OneHandWeapons/Wands/Uniques/CoilOfUndoing.webp",
+    "Sha256": "d669bd4cce4c170b4bfce1e1acfc8c22153c8b72d42d0eba4f36f30565992535",
+    "Bytes": 9090
+  },
+  "Art/2DItems/Weapons/OneHandWeapons/Wands/Uniques/CourtlyDiscord.dds": {
+    "File": "f30d1f1ca7b0f1582a77063b04eea87efd5704d929a3ca223c542deca4b6be31.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/OneHandWeapons/Wands/Uniques/CourtlyDiscord.webp",
+    "Sha256": "65229e4be277b84d41546f0e89a2dcc2abdc8b0198b086be6adea6a83d68b83f",
+    "Bytes": 9890
+  },
+  "Art/2DItems/Weapons/OneHandWeapons/Wands/Uniques/EnezunsCharge.dds": {
+    "File": "06d200dda78a8fd9a929aeae491594d026631f61c0661f72bd1ab2101e55b238.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/OneHandWeapons/Wands/Uniques/EnezunsCharge.webp",
+    "Sha256": "ca23ef7083f7250a477249efe97cd8f4b84fb06b185eb1b87c24643bfc3edcf3",
+    "Bytes": 14092
+  },
+  "Art/2DItems/Weapons/OneHandWeapons/Wands/Uniques/Lifesprig.dds": {
+    "File": "3763f354c0e244ed70e95896833072ab7b8c8a27ba3e160506522eb49aec6a65.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/OneHandWeapons/Wands/Uniques/Lifesprig.webp",
+    "Sha256": "5b3506ec47ed0fc7c3cc4cb2528a31130288c052ff784561adddf270aea69f13",
+    "Bytes": 12018
+  },
+  "Art/2DItems/Weapons/OneHandWeapons/Wands/Uniques/RunicDiviner.dds": {
+    "File": "8635ff29e1a88d1dec2d1be24696500e0df4907cd9148c03fbe97367b9c04ed8.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/OneHandWeapons/Wands/Uniques/RunicDiviner.webp",
+    "Sha256": "0cdae169e50ba43faca22b3b984b5c43217ae900102400a3232c807122396343",
+    "Bytes": 12370
+  },
+  "Art/2DItems/Weapons/OneHandWeapons/Wands/Uniques/SanguineDiviner.dds": {
+    "File": "0492f213dbed082a3aa0a9a85d31f68362b28f131b0901d230e16e755e7023cd.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/OneHandWeapons/Wands/Uniques/SanguineDiviner.webp",
+    "Sha256": "a1d5cb899c89bd561f2e4969081bef9ce76673658ed41ddef7caff5d60e0eb74",
+    "Bytes": 8934
+  },
+  "Art/2DItems/Weapons/OneHandWeapons/Wands/Uniques/TheWickedQuill.dds": {
+    "File": "87a875ba53fff3bc7a87f121bb997340fcb829394ec254f45e33d8326a474686.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/OneHandWeapons/Wands/Uniques/TheWickedQuill.webp",
+    "Sha256": "64db0186ffe567dd91152018b1160ac40a97040181dcf7b37cdedb4cc2f0346a",
+    "Bytes": 8536
+  },
+  "Art/2DItems/Weapons/TwoHandWeapons/Bows/Uniques/DealersHand.dds": {
+    "File": "7e86485b2e83007a49c15a61f0ce8e02778c852f670d2ad7c97cdc42acd26323.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/TwoHandWeapons/Bows/Uniques/DealersHand.webp",
+    "Sha256": "eaf279fe7eeec6a2b3f8b5c125f3c3de7e2bc1db64151092cea179f6eefd3e9b",
+    "Bytes": 22854
+  },
+  "Art/2DItems/Weapons/TwoHandWeapons/Bows/Uniques/DeathsHarp.dds": {
+    "File": "b421b71b7d4d8422a0fb7126347d15f9f19b830159b5fe7074da6386832f5d23.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/TwoHandWeapons/Bows/Uniques/DeathsHarp.webp",
+    "Sha256": "30cf22dcbfca2494a8eaf294640b2ef3330fbb11d2e20b547a1f0620327b40f0",
+    "Bytes": 20556
+  },
+  "Art/2DItems/Weapons/TwoHandWeapons/Bows/Uniques/Doomfletch.dds": {
+    "File": "15dda8b37517d4e4cafc35ed24c49c6f65a876c33a11ade3c6be37012829b709.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/TwoHandWeapons/Bows/Uniques/Doomfletch.webp",
+    "Sha256": "6338ff190364a279f3e6378a4387828c24ac19f7d5e221466160cc00246922b2",
+    "Bytes": 17446
+  },
+  "Art/2DItems/Weapons/TwoHandWeapons/Bows/Uniques/Fluttermoth.dds": {
+    "File": "7b2cced4d7fc5f984a2753841d7cf520de78b34bf56d0faf965ba6be125a5283.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/TwoHandWeapons/Bows/Uniques/Fluttermoth.webp",
+    "Sha256": "382dff7abb298c6c7bb9101105fec678886ac20761c5baf1bb4fabe4d875ecff",
+    "Bytes": 32322
+  },
+  "Art/2DItems/Weapons/TwoHandWeapons/Bows/Uniques/Ironbound.dds": {
+    "File": "53c04f66c406085e5c5a9fe3addb47d1dcedb680b8d2995cd9c25d493fe3fe2c.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/TwoHandWeapons/Bows/Uniques/Ironbound.webp",
+    "Sha256": "a989c198a59d542196975b59a5c29e0c94ae5d97c4a22aaafce9dd1c1332d50c",
+    "Bytes": 13922
+  },
+  "Art/2DItems/Weapons/TwoHandWeapons/Bows/Uniques/LioneyesGlare.dds": {
+    "File": "6c7521f0692ac3e573a1a14d624d84e56f4f230db5ec5014254733429cba6444.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/TwoHandWeapons/Bows/Uniques/LioneyesGlare.webp",
+    "Sha256": "23f63a885b7abe0ca081b0485b6e53299ec159c52c25d2da25a158c87b5c542d",
+    "Bytes": 16470
+  },
+  "Art/2DItems/Weapons/TwoHandWeapons/Bows/Uniques/QuillRain.dds": {
+    "File": "b826327284d53e469fde6e82c7dd3231bd10f4fd55da68115f736fb4092ae3b2.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/TwoHandWeapons/Bows/Uniques/QuillRain.webp",
+    "Sha256": "ab1b433ed56a319f9dc64abb5ef75a8b65ffb054f025802623015374bb117d77",
+    "Bytes": 16990
+  },
+  "Art/2DItems/Weapons/TwoHandWeapons/Bows/Uniques/Slivertongue.dds": {
+    "File": "73b98b2fb8981ac8276d5dfbfbcc33b3eafc8783b2605133d83f93ca95cd5999.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/TwoHandWeapons/Bows/Uniques/Slivertongue.webp",
+    "Sha256": "25af4929e7dcc83d1d7a93e6f41ce690730745aae3c108719422532872bf8223",
+    "Bytes": 21482
+  },
+  "Art/2DItems/Weapons/TwoHandWeapons/Bows/Uniques/Splinterheart.dds": {
+    "File": "d1113f2bbb7c7ab3c3f5390327014a1ee839dd1bdb83212f8cf1cf0ec9240e70.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/TwoHandWeapons/Bows/Uniques/Splinterheart.webp",
+    "Sha256": "e9aa6959c50921f3f3841302dbcc94cc82a3e8bd1d9ad4eaf98834ffef40bb59",
+    "Bytes": 22976
+  },
+  "Art/2DItems/Weapons/TwoHandWeapons/Bows/Uniques/VoltaxicRift.dds": {
+    "File": "c2bbecc3d9e1843727e9501057de1c94245adff6c77b6e88a3ec0711cd42befc.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/TwoHandWeapons/Bows/Uniques/VoltaxicRift.webp",
+    "Sha256": "c23436570a19ce5287e56b0e23561e3424fbe5df08dc20bde3f3c8e62317da0e",
+    "Bytes": 25344
+  },
+  "Art/2DItems/Weapons/TwoHandWeapons/Bows/Uniques/Widowhail.dds": {
+    "File": "7eb48e17b6f27d8531e9903c94c724be7f59cc828f9488ccf337291f1f458e4b.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/TwoHandWeapons/Bows/Uniques/Widowhail.webp",
+    "Sha256": "0cea5680339a212c2ea5f05a54e6d5f4deba4c761eeaa46b9af717b8a639affb",
+    "Bytes": 17004
+  },
+  "Art/2DItems/Weapons/TwoHandWeapons/Crossbows/Uniques/DoubleVision.dds": {
+    "File": "ef642b406d8ef59aa57ab893c2b8d6bfa96ca87086e3f1948004cac812d518fe.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/TwoHandWeapons/Crossbows/Uniques/DoubleVision.webp",
+    "Sha256": "e2c5a3bc3641cd467eeed5c643417195b839dd88300c2b8927e5cff6cc60c89d",
+    "Bytes": 26604
+  },
+  "Art/2DItems/Weapons/TwoHandWeapons/Crossbows/Uniques/MistWhisper.dds": {
+    "File": "6f8060544000cf4f8356d270a822230a1c662fe617c0c4c1b27c1244d3f5cd17.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/TwoHandWeapons/Crossbows/Uniques/MistWhisper.webp",
+    "Sha256": "d64bb3c6586dbd5b8d53f83d948ac69a2bffc43a3f0d0635ad2b7cf99252ccea",
+    "Bytes": 27134
+  },
+  "Art/2DItems/Weapons/TwoHandWeapons/Crossbows/Uniques/RampartRaptor.dds": {
+    "File": "220611d99e0e81c726e5e98a12ab0b970a7cc34b5e9e8c5b29dc797e868b88f9.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/TwoHandWeapons/Crossbows/Uniques/RampartRaptor.webp",
+    "Sha256": "0376e030a5ad80d9d23910573ea7f585fe70610b4ecbeb8e0e75b330a3878c7a",
+    "Bytes": 22302
+  },
+  "Art/2DItems/Weapons/TwoHandWeapons/Crossbows/Uniques/TheGrandDesign.dds": {
+    "File": "bbce74dd3f86105b1f666cf4be5b1d53088877cf7f0bf15f6d8f278bc5b8cfd3.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/TwoHandWeapons/Crossbows/Uniques/TheGrandDesign.webp",
+    "Sha256": "9f461d4cf6261ef65c27523901a9e5a9f8116c5d45025a922183b378d4e94c3c",
+    "Bytes": 21612
+  },
+  "Art/2DItems/Weapons/TwoHandWeapons/Crossbows/Uniques/TheRedemption.dds": {
+    "File": "51df3068614db0c58d329ae6c21eecc931c3e5f9fca57a6452f82d3a010032be.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/TwoHandWeapons/Crossbows/Uniques/TheRedemption.webp",
+    "Sha256": "e7fb12781fe5bfd7b2321e35fd26853b6ae203a6664ce94443dd044311a0f94e",
+    "Bytes": 19226
+  },
+  "Art/2DItems/Weapons/TwoHandWeapons/Staves/Uniques/AtziriStaff.dds": {
+    "File": "df4983e12e5e545cad98fa61ced9d1b4c38bd34a2fd56106967b666e0d7dacbe.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/TwoHandWeapons/Staves/Uniques/AtziriStaff.webp",
+    "Sha256": "e8a524bb131073b0c7163e0393491dd84b354ead63817a4f954e411174554670",
+    "Bytes": 11136
+  },
+  "Art/2DItems/Weapons/TwoHandWeapons/Staves/Uniques/BurdenOfShadows.dds": {
+    "File": "6028520d860965b76608d6672eb2b4a07de38033b4479c589b614ea698dcda6d.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/TwoHandWeapons/Staves/Uniques/BurdenOfShadows.webp",
+    "Sha256": "a0bea759faaf57a741205a7e7c3ee96a55a2a809d5a19f4d1dd32d16e9bbdf47",
+    "Bytes": 10902
+  },
+  "Art/2DItems/Weapons/TwoHandWeapons/Staves/Uniques/DuskVigil.dds": {
+    "File": "3b9abefd7d1db009ddf15eb32d5ba40856deefe958fd63c19f7da11eb4457065.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/TwoHandWeapons/Staves/Uniques/DuskVigil.webp",
+    "Sha256": "593c2fa94f7f875bf02fb4090412d66e13623179c67a1ced9b95c2bd7a8dc894",
+    "Bytes": 11724
+  },
+  "Art/2DItems/Weapons/TwoHandWeapons/Staves/Uniques/Earthbound.dds": {
+    "File": "d54fb647859ff0df866d011f2d02bc0c0ec13a448ac751ebfb7181895f1ba811.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/TwoHandWeapons/Staves/Uniques/Earthbound.webp",
+    "Sha256": "ff85fba9244cbbf1655befbc288e4ed6bbca03cc743b12b1bd054f9fdf6ce5e1",
+    "Bytes": 11792
+  },
+  "Art/2DItems/Weapons/TwoHandWeapons/Staves/Uniques/KulemaksBirth.dds": {
+    "File": "1c5693ac4dc6b55437e76bb8d720b70a3c46e77329b0284141d282cc0ad29d6c.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/TwoHandWeapons/Staves/Uniques/KulemaksBirth.webp",
+    "Sha256": "1195c461f5eda2842626135fec038e02c207f48a6bbaf825d0907eaa8ea3332c",
+    "Bytes": 11718
+  },
+  "Art/2DItems/Weapons/TwoHandWeapons/Staves/Uniques/RoostOfTheRavenKing.dds": {
+    "File": "c1a7d497622c827f3f0a96eaed3d350976d50a215ffb2d9fdd67b6b0e7367125.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/TwoHandWeapons/Staves/Uniques/RoostOfTheRavenKing.webp",
+    "Sha256": "4e044848ffbb1070dc279a06aa95722953d7b6c5201cef951649590f61f7fa7e",
+    "Bytes": 13844
+  },
+  "Art/2DItems/Weapons/TwoHandWeapons/Staves/Uniques/SearingTouch.dds": {
+    "File": "a81f83c827ca1fe9835baaecf1ea534b464a95004cbf3844d637cf1204a3e565.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/TwoHandWeapons/Staves/Uniques/SearingTouch.webp",
+    "Sha256": "50654230ee8738c48c3e35b9ec0446cfe7637cff8f34ed51de912aba225a6254",
+    "Bytes": 10718
+  },
+  "Art/2DItems/Weapons/TwoHandWeapons/Staves/Uniques/SireOfShards.dds": {
+    "File": "f92717340ba1c6df134c9fadd2d00f16eddbd5c7950278ee6ba8cf7726fec7da.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/TwoHandWeapons/Staves/Uniques/SireOfShards.webp",
+    "Sha256": "3e3a8e79cad4607740c8288f6bdd5ccffc01c0377e750b1ce8b0593bc15dddec",
+    "Bytes": 14004
+  },
+  "Art/2DItems/Weapons/TwoHandWeapons/Staves/Uniques/TarynsShiver.dds": {
+    "File": "0d8bd200290681d21e9e67ff6a55cc0014e9fe8557d815bc069202d50f156a0e.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/TwoHandWeapons/Staves/Uniques/TarynsShiver.webp",
+    "Sha256": "934fd85e43d2a1b24b6d1701ffbd045d7c8e78b05ed1668830f8e11cae636480",
+    "Bytes": 11166
+  },
+  "Art/2DItems/Weapons/TwoHandWeapons/Staves/Uniques/WhisperingIce.dds": {
+    "File": "5f144d419371dbba4fe3ddd3e8663896427fc37be85b8594285ac386e759d9c0.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/TwoHandWeapons/Staves/Uniques/WhisperingIce.webp",
+    "Sha256": "b453d9f4dc5fcc4cf113e101db6cd9559a719089f5601a32fc307a2b3696fbc5",
+    "Bytes": 14476
+  },
+  "Art/2DItems/Weapons/TwoHandWeapons/TwoHandMaces/Uniques/Brainrattler.dds": {
+    "File": "cbe1bedeb7567d5810fc99d970d895548310bf1e55b0f27fb5f2d4548a5fa22c.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/TwoHandWeapons/TwoHandMaces/Uniques/Brainrattler.webp",
+    "Sha256": "66e2355f28eee7d0e83e9b9ed5ae8170410357cf2fbd931141be0ceac00ce053",
+    "Bytes": 10940
+  },
+  "Art/2DItems/Weapons/TwoHandWeapons/TwoHandMaces/Uniques/ChoberChaber.dds": {
+    "File": "4ea685eec94c773983c6a1e598e6535266473feb75d5e6e3de93d3952fd885df.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/TwoHandWeapons/TwoHandMaces/Uniques/ChoberChaber.webp",
+    "Sha256": "564907dd000678cf10ee794eabc78b6ad11b6911ff45a42a1d27153ecc74abd7",
+    "Bytes": 13680
+  },
+  "Art/2DItems/Weapons/TwoHandWeapons/TwoHandMaces/Uniques/HammerOfTheChurch.dds": {
+    "File": "e259e41b4500ee3488d84fbf7fa67b8af181b2a95a6e3eb451e1f2a2ed4ee56e.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/TwoHandWeapons/TwoHandMaces/Uniques/HammerOfTheChurch.webp",
+    "Sha256": "573474e0734724ce055943aefdd6603f5f0f453de7cd2801596d8e51dd9f6eb3",
+    "Bytes": 13588
+  },
+  "Art/2DItems/Weapons/TwoHandWeapons/TwoHandMaces/Uniques/Hoghunt.dds": {
+    "File": "7092daee83c868c1c5ff6997bd5a07c9479ca50351c6402afb090681025629a9.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/TwoHandWeapons/TwoHandMaces/Uniques/Hoghunt.webp",
+    "Sha256": "ef940b0328f4bf5d13484a86ceac8163ab6c4c88903eb57972c453ab0784e8dc",
+    "Bytes": 17114
+  },
+  "Art/2DItems/Weapons/TwoHandWeapons/TwoHandMaces/Uniques/HrimnorsHymn.dds": {
+    "File": "15f83392b7048b1bd0bafe1f71628f4cdae4e62656c548ad96c536a666260770.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/TwoHandWeapons/TwoHandMaces/Uniques/HrimnorsHymn.webp",
+    "Sha256": "16969a86777243dc12a6fad28bf76de2d770b662069306a27e3950b8ce0afada",
+    "Bytes": 10850
+  },
+  "Art/2DItems/Weapons/TwoHandWeapons/TwoHandMaces/Uniques/MarohiErqi.dds": {
+    "File": "ea9c886ce5210d81d1a471aa61d726f74d2b699d22c65b049fe2816b15c62be4.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/TwoHandWeapons/TwoHandMaces/Uniques/MarohiErqi.webp",
+    "Sha256": "9ee708deb1cfb2bcd696f111f9dd60aeedf9f90604c8de4494a2fef2d07bccc7",
+    "Bytes": 14462
+  },
+  "Art/2DItems/Weapons/TwoHandWeapons/TwoHandMaces/Uniques/Quecholli.dds": {
+    "File": "745792730bae3a28f1347a693ea08a0e2bef6a8b430464c84b1c8e700218cbe9.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/TwoHandWeapons/TwoHandMaces/Uniques/Quecholli.webp",
+    "Sha256": "6f3b2eed4f3ed42b272288a3fd01d2194a52f531a44cd3cece892605efbe441e",
+    "Bytes": 17688
+  },
+  "Art/2DItems/Weapons/TwoHandWeapons/TwoHandMaces/Uniques/Shyaba.dds": {
+    "File": "ee75f1192a93398b08939e1773393063e1005485ff15ddb2420543bf967aec19.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/TwoHandWeapons/TwoHandMaces/Uniques/Shyaba.webp",
+    "Sha256": "8c448c507fba193d3e43ccc1414169ab6b5e1b49e72cd7c51cbf227105e0fa4f",
+    "Bytes": 15088
+  },
+  "Art/2DItems/Weapons/TwoHandWeapons/TwoHandMaces/Uniques/SpiderVerisiumMaul.dds": {
+    "File": "3237f6b51ba52b2d40cf9510fc71d214e4a23810a55815dab5d8088f5d71aae2.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/TwoHandWeapons/TwoHandMaces/Uniques/SpiderVerisiumMaul.webp",
+    "Sha256": "94a2a6122d8f84f5f0b62a03130a58518e08b4c0f0ebf83c43ab8a124139a18d",
+    "Bytes": 23074
+  },
+  "Art/2DItems/Weapons/TwoHandWeapons/TwoHandMaces/Uniques/TheEmptyRoar.dds": {
+    "File": "2c45a498138a1e09ecf38f8f707aae4cd6e1fa1d93c4d55e7b2cda6f9fff2418.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/TwoHandWeapons/TwoHandMaces/Uniques/TheEmptyRoar.webp",
+    "Sha256": "3ab7f0cf49e03a8d9906032847073618b286f2dd4c6dc3ce22e6491e769d9ca7",
+    "Bytes": 13752
+  },
+  "Art/2DItems/Weapons/TwoHandWeapons/TwoHandMaces/Uniques/Tidebreaker.dds": {
+    "File": "056edef3091e559d944efa60ce8ae3e85393d5e43985534b0701e30b4d138262.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/TwoHandWeapons/TwoHandMaces/Uniques/Tidebreaker.webp",
+    "Sha256": "86d18aa53af001ec898f6086f6ed5d09162d41a8e4dece5a8ef03112f97ba1cf",
+    "Bytes": 15528
+  },
+  "Art/2DItems/Weapons/TwoHandWeapons/TwoHandMaces/Uniques/Trephina.dds": {
+    "File": "fe3f110feda7ecee976d7c03bdfc8ac80b4d0c8290e2463b8ed5e4ce07a376a2.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/TwoHandWeapons/TwoHandMaces/Uniques/Trephina.webp",
+    "Sha256": "1f44b9a63985f983c3b76398881409b5f00410a7ef77112dffcda42f8b90fa11",
+    "Bytes": 12828
+  },
+  "Art/2DItems/Weapons/TwoHandWeapons/WarStaves/Uniques/CollapsingHorizon.dds": {
+    "File": "c4ffe998c537b9413e5f02c99f6df3cd87b58b2a665557db8cbfea85b0383819.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/TwoHandWeapons/WarStaves/Uniques/CollapsingHorizon.webp",
+    "Sha256": "7b8bc46d500ae6f56b9e2fed5bf7db7c3abb45d173fad6f06ba4707c326cbf3b",
+    "Bytes": 12080
+  },
+  "Art/2DItems/Weapons/TwoHandWeapons/WarStaves/Uniques/Matsya.dds": {
+    "File": "5ca0a0988bfbefd99476998ae6157544e30ef48ee79ba88243c088825e3239a2.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/TwoHandWeapons/WarStaves/Uniques/Matsya.webp",
+    "Sha256": "f3cae419e128d8a4c00d522c9f1a1a56e5c23694cea8da24917535045c543c00",
+    "Bytes": 8660
+  },
+  "Art/2DItems/Weapons/TwoHandWeapons/WarStaves/Uniques/NazirsJudgement.dds": {
+    "File": "ccfbccb2f1a9533ba6bb6a8724c14bce9ec56774111b9c258dacbeba917135b9.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/TwoHandWeapons/WarStaves/Uniques/NazirsJudgement.webp",
+    "Sha256": "d6df30c3e5f823cdf9d03cfb1e8c5c344fba02daee3cc65ccb28b007d4e696b6",
+    "Bytes": 11276
+  },
+  "Art/2DItems/Weapons/TwoHandWeapons/WarStaves/Uniques/PillarOfTheCagedGod.dds": {
+    "File": "721fefc900f8cfa120a78966bc6c7ee983c791081a954f0f727cbc523861d5e9.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/TwoHandWeapons/WarStaves/Uniques/PillarOfTheCagedGod.webp",
+    "Sha256": "1b89620bea6b8a06b2b42a10fb53d4de1fad471d78c7bfbb38f1a9837c34650e",
+    "Bytes": 7970
+  },
+  "Art/2DItems/Weapons/TwoHandWeapons/WarStaves/Uniques/Stjorvar.dds": {
+    "File": "92de93391ca1da12806198a0e7aa16e43090b54c1ad40cf86afd3dd8f6b4b6d8.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/TwoHandWeapons/WarStaves/Uniques/Stjorvar.webp",
+    "Sha256": "9c777289cf83ac17e93a9a83be4fcd108490cd7d249ea8915fd6e790db7de949",
+    "Bytes": 9298
+  },
+  "Art/2DItems/Weapons/TwoHandWeapons/WarStaves/Uniques/TheBloodThorn.dds": {
+    "File": "88a076d07e20c2dfe57f6f427dc927831868f088fa4ef3c3d6337766f11074e8.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/TwoHandWeapons/WarStaves/Uniques/TheBloodThorn.webp",
+    "Sha256": "41bc6062405222ce2246b7fe7e7c0dda9a4175a6fec118d13a3784a8de997b7c",
+    "Bytes": 14402
+  },
+  "Art/2DItems/Weapons/TwoHandWeapons/WarStaves/Uniques/TheSentry.dds": {
+    "File": "9e7d8cac908afffea162147f54fa9294d77ee8a47873d6b647be30cc3dd4a426.webp",
+    "Url": "https://cdn.poe2db.tw/image/Art/2DItems/Weapons/TwoHandWeapons/WarStaves/Uniques/TheSentry.webp",
+    "Sha256": "e9f48b20d2353a05f4c2b5769a3e1eb0908b7d289a2a995d5ee98a9c4f4ff4a3",
+    "Bytes": 8656
+  }
+}
