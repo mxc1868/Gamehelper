@@ -1,15 +1,16 @@
 # GameHelper — WhereTheWispsAt / UniqueLoot 调试分支
 
-当前维护本地 `/home/ubuntu/Gamehelper` 的 **`main` 分支**，包含幽火和 UniqueLoot 插件。原 `mxc1868/Gamehelper` fork 已被用户删除，旧 Release 地址失效；本地源码和构建包仍在。Windows / 当前 PoE2 实机验证仍待完成。
+当前仓库：**[mxc1868/Gamehelper](https://github.com/mxc1868/Gamehelper)**，分支 `main`，包含幽火和 UniqueLoot 插件。此 fork 已恢复并保留上游更新；Windows / 当前 PoE2 实机验证仍待完成。
 
-- **完整 x64 包（含 UniqueLoot、幽火和 Radar）：** `artifacts/unique/GameHelper-unique-debug-win-x64.zip`，同目录提供 `.zip.sha256`。内含 .NET 10 运行时，无需编译环境。
+- **[完整 Windows x64 包（含 UniqueLoot、幽火和 Radar）](https://github.com/mxc1868/Gamehelper/releases/download/unique-debug-2026-09-23/GameHelper-unique-debug-win-x64.zip)**，内含 .NET 10 运行时，无需编译环境。
+- [Release 与 SHA-256 校验文件](https://github.com/mxc1868/Gamehelper/releases/tag/unique-debug-2026-09-23)。
 - [UniqueLoot 使用说明](Plugins/UniqueLoot/README.md)；仅幽火的构建输出为 `artifacts/wisps/WhereTheWispsAt-debug-win-x64.zip`。
 - [Windows 启动与实机调试](Plugins/WhereTheWispsAt/WINDOWS-DEBUG.zh-CN.md)
 - **[TODO / 后续 agent 接手上下文](TODO.md)**
 
 完整解压到新目录，右键 `Start-Debug.cmd`，以管理员身份运行；F12 启用 `WhereTheWispsAt`。本包包含修改后的核心，不能只把插件 DLL 放进原版 GameHelper。录制 60 秒会同时对比原有 API 与新增扫描，帮助决定正式版能否只维护插件。
 
-Linux 构建：`python3 scripts/package-wisps.py`。当前提供本地完整 ZIP 和 checksum，尚无远程发布目标；下面保留的上游安装器、更新器和发布脚本说明属于原项目，不用于下载或发布这里的调试包。
+Linux 构建：`python3 scripts/package-wisps.py`。完整 ZIP 和 checksum 发布到本 fork 的 GitHub Releases；下面保留的上游安装器、更新器和发布脚本说明属于原项目，不用于下载或发布这里的调试包。
 
 新增 **[UniqueLoot 暗金掉落识别](Plugins/UniqueLoot/README.md)**：根据完整 asset 路径显示未鉴定暗金的名称候选，独立于价格数据。内置 PoE2 映射包含 446 条路径、441 个名称；已通过 Linux 编译和 25 项离线检查，仍待实机验证。
 
