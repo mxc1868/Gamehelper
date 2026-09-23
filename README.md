@@ -1,20 +1,22 @@
-# GameHelper — WhereTheWispsAt / UniqueLoot 调试分支
+# GameHelper — WhereTheWispsAt / UniqueLoot
 
-当前仓库：**[mxc1868/Gamehelper](https://github.com/mxc1868/Gamehelper)**，分支 `main`，包含幽火和 UniqueLoot 插件。此 fork 已恢复并保留上游更新；Windows / 当前 PoE2 实机验证仍待完成。
+当前仓库：**[mxc1868/Gamehelper](https://github.com/mxc1868/Gamehelper)**，分支 `main`。包含幽火与 UniqueLoot 插件，保留恢复后 fork 的上游更新。Windows / 当前 PoE2 实机验证仍待完成。
 
-- **[完整 Windows x64 包（含 UniqueLoot、幽火和 Radar）](https://github.com/mxc1868/Gamehelper/releases/download/unique-debug-2026-09-23/GameHelper-unique-debug-win-x64.zip)**，内含 .NET 10 运行时，无需编译环境。
-- [Release 与 SHA-256 校验文件](https://github.com/mxc1868/Gamehelper/releases/tag/unique-debug-2026-09-23)。
-- [UniqueLoot 使用说明](Plugins/UniqueLoot/README.md)；仅幽火的构建输出为 `artifacts/wisps/WhereTheWispsAt-debug-win-x64.zip`。
-- [Windows 启动与实机调试](Plugins/WhereTheWispsAt/WINDOWS-DEBUG.zh-CN.md)
-- **[TODO / 后续 agent 接手上下文](TODO.md)**
+- **UniqueLoot**：按完整 asset 路径识别未鉴定暗金，默认猎首金色高亮、魔血紫红色高亮；可编辑 `Plugins/UniqueLoot/highlights.default.json`。详见 [插件说明](Plugins/UniqueLoot/README.md)。
+- **Sacred Wisp**：默认橙色；旧配置的默认白色会迁移为橙色。详见 [幽火说明](Plugins/WhereTheWispsAt/README.md)。
+- **[TODO / 后续 agent 接手上下文](TODO.md)**。
 
-完整解压到新目录，右键 `Start-Debug.cmd`，以管理员身份运行；F12 启用 `WhereTheWispsAt`。本包包含修改后的核心，不能只把插件 DLL 放进原版 GameHelper。录制 60 秒会同时对比原有 API 与新增扫描，帮助决定正式版能否只维护插件。
+用户现已在 Windows 自行编译，后续按要求提交源码到 `main`，不再自动制作测试包。安装 .NET 10 SDK 后，在仓库根目录执行：
 
-Linux 构建：`python3 scripts/package-wisps.py`。完整 ZIP 和 checksum 发布到本 fork 的 GitHub Releases；下面保留的上游安装器、更新器和发布脚本说明属于原项目，不用于下载或发布这里的调试包。
+```powershell
+git pull --ff-only
+dotnet build Plugins/UniqueLoot/UniqueLoot.csproj -c Release
+dotnet build Plugins/WhereTheWispsAt/WhereTheWispsAt.csproj -c Release
+```
 
-新增 **[UniqueLoot 暗金掉落识别](Plugins/UniqueLoot/README.md)**：根据完整 asset 路径显示未鉴定暗金的名称候选，独立于价格数据。内置 PoE2 映射包含 446 条路径、441 个名称；已通过 Linux 编译和 25 项离线检查，仍待实机验证。
+运行 `GameHelper/bin/Release/net10.0-windows/win-x64/GameHelper.exe`，F12 启用插件。两个项目均引用配套核心；插件和语言文件会复制到该目录的 `Plugins` 下。首次启用 UniqueLoot 会生成可编辑的 `Plugins/UniqueLoot/config/highlights.json`；修改后点击“重新加载高亮配置”。
 
-构建完整测试包：`python3 scripts/package-wisps.py --include-unique`，输出 `artifacts/unique/GameHelper-unique-debug-win-x64.zip` 及 SHA-256 文件。GitHub 发布状态见 [TODO](TODO.md)。
+当前 Linux 编译与 UniqueLoot 40 项、WhereTheWispsAt 67 项离线检查通过；这些检查不代表 Windows 游戏读取或绘制已经验证。此前的 [初版测试 Release](https://github.com/mxc1868/Gamehelper/releases/tag/unique-debug-2026-09-23) 保留，但不包含后续腰带高亮和橙色 Sacred Wisp 修改，请从 `main` 编译当前版本。
 
 原项目与作者信息保留如下。
 

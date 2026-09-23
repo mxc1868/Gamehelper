@@ -6,3 +6,14 @@
 - 参考行为：[Ground Items With Linq](https://github.com/exApiTools/Ground-Items-With-Linq/tree/568297fe1c99eed754a1b6f6fe08b51820b95da2)。其 `GetGameFileUniqueArtMapping` 联结 `ItemVisualIdentities` 与 `UniqueItemDescriptions`，按完整 `ArtPath` 分组；`CustomItemData.UniqueNameCandidates` 用物品 `RenderItem.ResourcePath` 查候选。
 
 此实现为 GameHelper 单独编写，没有引入 ExileCore 二进制、原插件 LINQ 规则引擎或其 PoE1 默认映射。GameHelper 没有相同的两张表读取 API，因此这里使用内嵌 PoE2 导出和用户可覆盖的 JSON。图标路径与名称是游戏数据；未打包图像文件。
+
+## 默认高亮核对（2026-09-23）
+
+按用户指定的 PoE2DB 核对两个腰带的 Icon 字段，并与上述固定 RePoE2 导出的 `.dds` 路径交叉确认：
+
+| 物品 | 完整 asset 路径 | 核对页面 |
+| --- | --- | --- |
+| Headhunter | `Art/2DItems/Belts/Uniques/Headhunter.dds` | [PoE2DB Headhunter](https://poe2db.tw/us/Headhunter) |
+| Mageblood | `Art/2DItems/Belts/Uniques/Mageblood.dds` | [PoE2DB Mageblood](https://poe2db.tw/us/Mageblood) |
+
+规则写在 `highlights.default.json`。这里只使用该物品自身的完整 art 路径；通用腰带的 `Metadata/Items/...` 路径、底材名或文件名片段不能唯一识别这两件暗金。PoE2DB 的 Icon 字段不带扩展名，`.dds` 来自固定 RePoE2 导出。

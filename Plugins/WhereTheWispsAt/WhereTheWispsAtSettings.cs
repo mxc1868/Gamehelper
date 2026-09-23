@@ -31,11 +31,18 @@ namespace WhereTheWispsAt
         public Vector4 Blue = new(0.35f, 0.75f, 1, 1);
         public Vector4 Yellow = new(1, 0.9f, 0.1f, 1);
         public Vector4 Purple = new(0.75f, 0.25f, 1, 1);
-        public Vector4 Sacred = Vector4.One;
+        public Vector4 Sacred = new(1, 0.5f, 0, 1);
+        public int SacredColorVersion;
         public Vector4 Chest = Vector4.One;
 
         public void Normalize()
         {
+            if (this.SacredColorVersion < 1)
+            {
+                // Upgrade the old white default once while retaining other custom colors.
+                if (this.Sacred == Vector4.One) this.Sacred = new(1, 0.5f, 0, 1);
+                this.SacredColorVersion = 1;
+            }
             this.ScanIntervalMs = Math.Clamp(this.ScanIntervalMs, 100, 5000);
             this.MarkerSize = Clamp(this.MarkerSize, 1, 30, 5);
             this.LineWidth = Clamp(this.LineWidth, 0.5f, 10, 2);

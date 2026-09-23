@@ -52,7 +52,7 @@ def main():
             "Radar": ["icons.png", "important_tgt_files.txt", "boss_arena_tgt_files.txt", "stairs_tgt_files.txt"],
         }
         if args.include_unique:
-            plugins["UniqueLoot"] = []
+            plugins["UniqueLoot"] = ["highlights.default.json"]
         for name, assets in plugins.items():
             output = root / "Plugins" / name / "bin/Release/net10.0-windows/win-x64"
             target = package / "Plugins" / name
@@ -70,6 +70,9 @@ def main():
             shutil.copy2(root / "Plugins/UniqueLoot/Data/SOURCES.md", data_target / "SOURCES.md")
             startup = package / "START-HERE.zh-CN.md"
             startup.write_text(startup.read_text().replace("(Data/SOURCES.md)", "(Plugins/UniqueLoot/Data/SOURCES.md)"))
+            config_target = package / "Plugins/UniqueLoot/config"
+            config_target.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(root / "Plugins/UniqueLoot/highlights.default.json", config_target / "highlights.json")
         shutil.copy2(root / "TODO.md", package / "TODO.zh-CN.md")
         # Redirect the existing host's stdout/stderr too: plugin logging cannot diagnose a failed load.
         (package / "Start-Debug.cmd").write_bytes((
@@ -85,6 +88,7 @@ def main():
                     "Plugins/WhereTheWispsAt/Localization/zh-CN.json", "Plugins/Radar/Radar.dll"]
         if args.include_unique:
             required += ["Plugins/UniqueLoot/UniqueLoot.dll", "Plugins/UniqueLoot/Localization/zh-CN.json", "Plugins/UniqueLoot/Data/SOURCES.md"]
+            required += ["Plugins/UniqueLoot/highlights.default.json", "Plugins/UniqueLoot/config/highlights.json"]
         for file in required:
             if not (package / file).is_file():
                 raise RuntimeError("Required package file missing: " + file)

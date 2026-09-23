@@ -7,6 +7,8 @@
     <NoWarn>1701;1702;1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
+    <None Update="Localization/*.json" CopyToOutputDirectory="PreserveNewest" />
+    <PluginLocalization Include="Localization/*.json" />
     <ProjectReference Include="..\..\GameHelper\GameHelper.csproj">
       <Private>false</Private>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
@@ -15,6 +17,9 @@
   <Target Name="CopyFiles" AfterTargets="Build">
     <Copy SourceFiles="$(OutDir)$(TargetName)$(TargetExt);$(OutDir)$(TargetName).pdb"
           DestinationFolder="..\..\GameHelper\$(OutDir)Plugins\$(ProjectName)"
+          SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(PluginLocalization)"
+          DestinationFolder="..\..\GameHelper\$(OutDir)Plugins\$(ProjectName)\Localization"
           SkipUnchangedFiles="true" />
   </Target>
 </Project>

@@ -7,6 +7,7 @@ public sealed class UniqueLootSettings : IPSettings
     public bool ShowGroundNames = true;
     public bool ShowList = true;
     public bool ShowUnknown = true;
+    public bool HighlightPriorityDrops = true;
     public bool HideWhenUnfocused = true;
     public bool HideWhenPanelsOpen = true;
     public int ScanIntervalMs = 500;

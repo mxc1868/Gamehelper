@@ -40,6 +40,8 @@ python3 scripts/package-wisps.py
 
 插件通过新增的 `AreaInstance.ScanEntities(EntityScanSource.Awake, ...)` 遍历当前 awake 实体树，不受默认视觉 ID 过滤影响。先按 metadata 过滤，再为目标建立新的实体与组件对象；不会修改全局 `ProcessAllRenderableEntities` 设置，也不会沿用停更的组件缓存。定时采集会重新尝试读取首次未就绪的 Animated 路径。
 
+Sacred Wisp（神圣幽火）默认颜色为橙色（RGBA `1, 0.5, 0, 1`）。旧配置中的默认白色在首次加载新版时迁移为橙色，其他自定义颜色保留；迁移后仍可在设置中调整。
+
 颜色依赖 Animated 的子实体路径：`_primal`、`_warden`、`_vodoo`、`_sacred`。缺失或未知路径显示灰色 `?`，不会根据名字猜测颜色。ModelPath 只进入诊断样本，尚未用作替代分类依据。
 
 只展示本次读到的有效目标，不推断未加载区域，不自动扫描 sleeping 实体树；只有明确点击一次性诊断按钮才进行 awake / sleeping 对比，探测结果不进入渲染。若游戏将目标移至其他实体源，需要先用实际样本验证再扩展。读取失败导致目标暂时消失时，不将其记录为已采集。对象状态读取不可用时不会假定其已使用，设置页面会统计这类样本。

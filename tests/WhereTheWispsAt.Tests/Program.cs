@@ -10,6 +10,17 @@ void Check(string name, bool condition)
     passed++;
 }
 bool Near(Vector2 actual, Vector2 expected, float epsilon = 0.0001f) => Vector2.Distance(actual, expected) < epsilon;
+var orange = new Vector4(1, 0.5f, 0, 1);
+Check("new Sacred wisp default is orange", new WhereTheWispsAtSettings().Sacred == orange);
+var legacySacred = new WhereTheWispsAtSettings { Sacred = Vector4.One };
+legacySacred.Normalize();
+Check("old white Sacred configuration migrates to orange", legacySacred.Sacred == orange && legacySacred.SacredColorVersion == 1);
+legacySacred.Sacred = Vector4.One;
+legacySacred.Normalize();
+Check("Sacred migration only runs once", legacySacred.Sacred == Vector4.One);
+var customSacred = new WhereTheWispsAtSettings { Sacred = new(0.2f, 0.3f, 0.4f, 1) };
+customSacred.Normalize();
+Check("Sacred migration retains existing custom colors", customSacred.Sacred == new Vector4(0.2f, 0.3f, 0.4f, 1));
 const string resource = "Metadata/MiscellaneousObjects/Azmeri/AzmeriResource";
 foreach (var (suffix, kind) in new[]
 {

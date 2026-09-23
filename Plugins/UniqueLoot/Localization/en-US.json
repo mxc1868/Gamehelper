@@ -20,5 +20,8 @@
   "stats": "Scanned: {0}; ground: {1}; unique: {2}; single: {3}; multiple: {4}; unknown: {5}; missing art: {6}",
   "reads": "Unreadable items: {0}; missing rarity: {1}; errors: {2}; scan: {3:F1} ms; truncated: {4}",
   "limits": "Only ground entities exposed by GameHelper are scanned. Zero results do not prove there were no drops. Windows/game validation pending.",
-  "export": "Export latest scan"
+  "export": "Export latest scan",
+  "highlights": "Highlight priority drops",
+  "highlights_help": "Headhunter: gold; Mageblood: magenta. Edit config/highlights.json to change the rules.",
+  "highlights_reload": "Reload highlight config"
 }

@@ -55,4 +55,29 @@ Check("real shared art preserves renamed variants", bundled.Resolve("Art/2DItems
 var settings = new UniqueLootSettings { ScanIntervalMs = -1, MaxLabels = 999, ListX = -20, ListY = int.MaxValue, GroundOffsetY = -999 };
 settings.Normalize();
 Check("invalid config cannot cause unbounded drawing or tight polling", settings.ScanIntervalMs == 200 && settings.MaxLabels == 100 && settings.ListX == 0 && settings.ListY == 10000 && settings.GroundOffsetY == -300);
+var highlightJson = File.ReadAllText(Path.Join(AppContext.BaseDirectory, "highlights.default.json"));
+var highlights = UniqueHighlights.Parse(highlightJson);
+const string hhArt = "Art/2DItems/Belts/Uniques/Headhunter.dds";
+const string mbArt = "Art/2DItems/Belts/Uniques/Mageblood.dds";
+Check("priority highlights enabled for existing settings without new field", new UniqueLootSettings().HighlightPriorityDrops);
+Check("default config highlights both requested belts", highlights.Count == 2 && highlights.Match(hhArt)?.Name == "Headhunter" && highlights.Match(mbArt)?.Name == "Mageblood");
+Check("priority paths agree with bundled PoE2 data", bundled.Resolve(hhArt).Candidates.Single() == "Headhunter" && bundled.Resolve(mbArt).Candidates.Single() == "Mageblood");
+Check("gold config is converted to ImGui ABGR", highlights.Match(hhArt)?.TextColor == 0xFF00D7FF);
+Check("magenta config and font size are applied", highlights.Match(mbArt)?.TextColor == 0xFFFF70FF && highlights.Match(mbArt)?.FontScale == 1.3f);
+Check("background preserves configured opacity", highlights.Match(hhArt)?.BackgroundColor == 0xEE002633);
+Check("base metadata cannot highlight every belt", highlights.Match("Metadata/Items/Belts/BeltHeavy") == null);
+Check("same filename in a different art directory is not highlighted", highlights.Match("Art/2DItems/Belts/Mageblood.dds") == null);
+Check("highlight path normalization preserves exact asset identity", highlights.Match(@"art\2ditems\belts\uniques\headhunter.DDS") != null);
+Check("other unique belts retain ordinary display", highlights.Match("Art/2DItems/Belts/Uniques/MeginordsGirdle.dds") == null);
+Check("empty rules intentionally disable all highlights", UniqueHighlights.Parse("""{"Rules":[]}""").Count == 0);
+var disabledJson = highlightJson.Replace("\"Enabled\": true", "\"Enabled\": false");
+Check("per-rule disabling is honored", UniqueHighlights.Parse(disabledJson).Count == 0);
+bool RejectsHighlights(string json)
+{
+    try { UniqueHighlights.Parse(json); return false; }
+    catch (Exception e) when (e is FormatException or System.Text.Json.JsonException) { return true; }
+}
+Check("invalid color config is rejected instead of silently changing colors", RejectsHighlights(highlightJson.Replace("#FFD700", "orange")));
+Check("unbounded text scale is rejected", RejectsHighlights(highlightJson.Replace("1.3", "100")));
+Check("missing rule list is not treated as deliberate removal", RejectsHighlights("{}"));
 Console.WriteLine($"{passed} offline checks passed; memory reads and Windows rendering are NOT tested.");

@@ -45,6 +45,9 @@ public sealed class UniqueLootCore : PCore<UniqueLootSettings>
     }
 
     private UniqueArtCatalog catalog = UniqueArtCatalog.Empty;
+    private UniqueHighlights highlights = UniqueHighlights.Empty;
+    private bool highlightsLoaded;
+    private string highlightStatus = string.Empty;
     private Drop[] drops = [];
     private ScanReport report = new();
     private ActiveCoroutine? areaChanged, gameClosed;
@@ -55,6 +58,7 @@ public sealed class UniqueLootCore : PCore<UniqueLootSettings>
     private bool customMapping;
     private string catalogStatus = string.Empty, actionStatus = string.Empty;
     private string SettingsPath => Path.Join(this.DllDirectory, "config", "settings.json");
+    private string HighlightsPath => Path.Join(this.DllDirectory, "config", "highlights.json");
     private string T(string key, string fallback) => this.PluginText.T(key, fallback);
     private string L(string key, string fallback) => this.PluginText.Label(key, fallback, "UniqueLoot_" + key);
 
@@ -69,6 +73,7 @@ public sealed class UniqueLootCore : PCore<UniqueLootSettings>
         catch (Exception ex) { this.Settings = new(); this.actionStatus = ex.Message; }
         this.Settings.Normalize();
         this.LoadCatalog();
+        this.LoadHighlights();
         this.areaChanged = CoroutineHandler.Start(this.ResetOn(RemoteEvents.AreaChanged));
         this.gameClosed = CoroutineHandler.Start(this.ResetOn(GameHelperEvents.OnClose));
     }
@@ -144,6 +149,46 @@ public sealed class UniqueLootCore : PCore<UniqueLootSettings>
                 catch { this.catalog = UniqueArtCatalog.Empty; }
             }
         }
+    }
+
+    private void LoadHighlights()
+    {
+        try
+        {
+            if (File.Exists(this.HighlightsPath))
+            {
+                if (new FileInfo(this.HighlightsPath).Length > 256 * 1024)
+                    throw new FormatException("Highlight config exceeds 256 KiB.");
+                this.highlights = UniqueHighlights.Parse(File.ReadAllText(this.HighlightsPath));
+            }
+            else
+            {
+                var defaultsPath = Path.Join(this.DllDirectory, "highlights.default.json");
+                using var stream = typeof(UniqueLootCore).Assembly.GetManifestResourceStream("UniqueLoot.DefaultHighlights")!;
+                using var reader = new StreamReader(stream);
+                var json = File.Exists(defaultsPath) ? File.ReadAllText(defaultsPath) : reader.ReadToEnd();
+                this.highlights = UniqueHighlights.Parse(json);
+                Directory.CreateDirectory(Path.GetDirectoryName(this.HighlightsPath)!);
+                // Existing user configuration is never overwritten by default rules.
+                using var output = new StreamWriter(new FileStream(this.HighlightsPath, FileMode.CreateNew));
+                output.Write(json);
+            }
+            this.highlightsLoaded = true;
+            this.highlightStatus = string.Empty;
+        }
+        catch (Exception ex)
+        {
+            this.highlightStatus = ex.Message;
+            if (!this.highlightsLoaded)
+            {
+                using var stream = typeof(UniqueLootCore).Assembly.GetManifestResourceStream("UniqueLoot.DefaultHighlights")!;
+                using var reader = new StreamReader(stream);
+                this.highlights = UniqueHighlights.Parse(reader.ReadToEnd());
+                this.highlightsLoaded = true;
+            }
+        }
+        this.nextScan = 0;
+        this.drops = [];
     }
 
     public override void DrawUI()
@@ -266,7 +311,8 @@ public sealed class UniqueLootCore : PCore<UniqueLootSettings>
         sample.Milliseconds = watch.Elapsed.TotalMilliseconds;
         if (scanGeneration != this.generation || area.Address != scanAddress || area.AreaHash != sample.AreaHash) return;
         // Replace each scan: picked-up/unreadable drops cannot persist in a historical alert cache.
-        this.drops = result.OrderBy(x => x.Distance).ThenBy(x => x.Id).ToArray();
+        this.drops = result.OrderByDescending(x => this.Settings.HighlightPriorityDrops && this.highlights.Match(x.Match.AssetPath) != null)
+            .ThenBy(x => x.Distance).ThenBy(x => x.Id).ToArray();
         this.report = sample;
     }
 
@@ -293,14 +339,17 @@ public sealed class UniqueLootCore : PCore<UniqueLootSettings>
             if (!this.Settings.ShowUnknown && drop.Match.Kind is ArtMatchKind.Unknown or ArtMatchKind.MissingArt) continue;
             if (count++ >= this.Settings.MaxLabels) break;
             var text = this.DropText(drop);
+            var highlight = this.Settings.HighlightPriorityDrops ? this.highlights.Match(drop.Match.AssetPath) : null;
+            if (highlight != null) text = "[!] " + text;
             var color = drop.Match.Kind == ArtMatchKind.Single ? 0xFF55AAFFu : 0xFF80DCFFu;
+            var fontSize = ImGui.GetFontSize() * (highlight?.FontScale ?? 1);
             if (this.Settings.ShowGroundNames && float.IsFinite(drop.Position.X) && float.IsFinite(drop.Position.Y) &&
                 float.IsFinite(drop.Position.Z) && float.IsFinite(drop.TerrainHeight))
             {
                 var point = world.WorldToScreen(drop.Position, drop.TerrainHeight);
                 if (float.IsFinite(point.X) && float.IsFinite(point.Y) && point != Vector2.Zero &&
                     point.X >= 0 && point.Y >= 0 && point.X <= screenSize.X && point.Y <= screenSize.Y)
-                    DrawText(draw, point + new Vector2(-ImGui.CalcTextSize(text).X / 2, this.Settings.GroundOffsetY), text, color);
+                    DrawText(draw, point + new Vector2(-ImGui.CalcTextSize(text).X * (highlight?.FontScale ?? 1) / 2, this.Settings.GroundOffsetY), text, color, highlight);
             }
             if (this.Settings.ShowList)
             {
@@ -310,18 +359,21 @@ public sealed class UniqueLootCore : PCore<UniqueLootSettings>
                     listPos.Y += ImGui.GetTextLineHeightWithSpacing() + 4;
                 }
                 var distance = float.IsFinite(drop.Distance) ? $"  [{drop.Distance:0}]" : string.Empty;
-                if (listPos.Y + ImGui.GetTextLineHeightWithSpacing() < screenSize.Y)
-                    DrawText(draw, listPos, text + distance, color);
-                listPos.Y += ImGui.GetTextLineHeightWithSpacing() + 3;
+                if (listPos.Y + fontSize + 6 < screenSize.Y)
+                    DrawText(draw, listPos, text + distance, color, highlight);
+                listPos.Y += fontSize + ImGui.GetStyle().ItemSpacing.Y + 6;
             }
         }
     }
 
-    private static void DrawText(ImDrawListPtr draw, Vector2 position, string text, uint color)
+    private static void DrawText(ImDrawListPtr draw, Vector2 position, string text, uint color, HighlightStyle? highlight = null)
     {
-        var size = ImGui.CalcTextSize(text);
-        draw.AddRectFilled(position - new Vector2(3, 2), position + size + new Vector2(3, 2), 0xBB000000, 3);
-        draw.AddText(position, color, text);
+        var size = ImGui.CalcTextSize(text) * (highlight?.FontScale ?? 1);
+        var start = position - new Vector2(4, 3);
+        var end = position + size + new Vector2(4, 3);
+        draw.AddRectFilled(start, end, highlight?.BackgroundColor ?? 0xBB000000, 3);
+        if (highlight != null) draw.AddRect(start, end, highlight.BorderColor, 3, ImDrawFlags.None, 2);
+        draw.AddText(ImGui.GetFont(), ImGui.GetFontSize() * (highlight?.FontScale ?? 1), position, highlight?.TextColor ?? color, text);
     }
 
     public override void DrawSettings()
@@ -330,6 +382,10 @@ public sealed class UniqueLootCore : PCore<UniqueLootSettings>
         ImGui.Checkbox(this.L("ground", "Names beside ground items"), ref this.Settings.ShowGroundNames);
         ImGui.Checkbox(this.L("list", "Drop list"), ref this.Settings.ShowList);
         ImGui.Checkbox(this.L("show_unknown", "Show unknown / unreadable uniques"), ref this.Settings.ShowUnknown);
+        if (ImGui.Checkbox(this.L("highlights", "Highlight priority drops"), ref this.Settings.HighlightPriorityDrops)) this.nextScan = 0;
+        ImGui.TextWrapped(this.T("highlights_help", "Headhunter: gold; Mageblood: magenta. Edit config/highlights.json to change the rules."));
+        if (ImGui.Button(this.L("highlights_reload", "Reload highlight config"))) this.LoadHighlights();
+        if (!string.IsNullOrEmpty(this.highlightStatus)) ImGui.TextWrapped(this.highlightStatus);
         ImGui.Checkbox(this.L("unfocused", "Hide when unfocused"), ref this.Settings.HideWhenUnfocused);
         ImGui.Checkbox(this.L("panels", "Hide while large panels are open"), ref this.Settings.HideWhenPanelsOpen);
         ImGui.SliderInt(this.L("interval", "Scan interval (ms)"), ref this.Settings.ScanIntervalMs, 200, 5000);

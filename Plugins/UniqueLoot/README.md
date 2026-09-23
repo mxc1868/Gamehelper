@@ -1,15 +1,29 @@
 # UniqueLoot：PoE2 未鉴定暗金掉落提示
 
-根据地面物品本身的 `RenderItem.ResourcePath` 匹配完整图标 asset 路径，显示暗金名称。无需鉴定，无需联网查询价格。物品旁文字和屏幕列表可分别关闭；列表按距离排序。此版本是 **Linux 编译通过、尚待 Windows / 当前游戏实测的原型**。
+根据地面物品本身的 `RenderItem.ResourcePath` 匹配完整图标 asset 路径，显示暗金名称。无需鉴定，无需联网查询价格。物品旁文字和屏幕列表可分别关闭；重要掉落优先，其余按距离排序。此版本是 **Linux 编译通过、尚待 Windows / 当前游戏实测的原型**。
 
-## Windows 使用
+## Windows 构建与使用
 
-1. 从 [本 fork 的调试 Release](https://github.com/mxc1868/Gamehelper/releases/tag/unique-debug-2026-09-23) 下载 `GameHelper-unique-debug-win-x64.zip` 和 `.zip.sha256`，将整个 ZIP 解压到新的可写目录。包内包含 GameHelper 核心、UniqueLoot、WhereTheWispsAt、Radar 和 Windows x64 .NET 10 运行时，不需要编译器或另外安装 .NET。
-2. 关闭旧 GameHelper，右键 `Start-Debug.cmd`，以管理员身份运行。权限要求来自原有 `app.manifest`。此包直接运行配套核心，不使用指向上游的更新启动器。
-3. F12 打开插件管理，启用 `UniqueLoot`。默认显示物品旁名称及左侧掉落列表；在插件设置中调整位置、最多数量或显示开关。设置界面支持中文/英文，内置物品名称为英文。
-4. 在战斗区域观察暗金掉落。只有一个映射名称时显示名称；共用贴图时显示“可能为：A / B”；表中未收录时显示“未知暗金”；贴图读取失败另行标明。城镇和藏身处不扫描。
+用户已确认自行在 Windows 编译。安装 .NET 10 SDK，在仓库根目录执行：
 
-不能只替换 DLL：此实现新增核心 `WorldItem.TryReadItem` 接口。包内保留此前幽火相关核心改动；这不代表原版 GameHelper 已经提供该接口。
+```powershell
+git pull --ff-only
+dotnet build Plugins/UniqueLoot/UniqueLoot.csproj -c Release
+dotnet build Plugins/WhereTheWispsAt/WhereTheWispsAt.csproj -c Release
+```
+
+运行 `GameHelper/bin/Release/net10.0-windows/win-x64/GameHelper.exe`，接受原有 manifest 的管理员权限提示，F12 启用 `UniqueLoot`。默认显示物品旁名称及左侧掉落列表；设置界面支持中文/英文，内置物品名称为英文。
+
+项目同时编译引用的配套核心，并把插件 DLL、语言资源和默认高亮配置复制到输出目录。不能只换 DLL 到原版核心：本实现新增 `WorldItem.TryReadItem` 接口。此前的初版测试 ZIP 不含本次高亮修改；当前按用户要求只提交源码，不制作新版测试包。
+
+在战斗区域观察暗金掉落。单候选显示名称，共用贴图显示“可能为：A / B”，未收录显示“未知暗金”，贴图读取失败另行标明。城镇和藏身处不扫描。
+
+## 默认高亮
+
+- **Headhunter：金色**；**Mageblood：紫红色**。两者在地面文字和屏幕列表都带 `[!]`、描边、深色背景和 1.3 倍字号，并优先占用显示名额。
+- 默认规则文件为 `Plugins/UniqueLoot/highlights.default.json`；首次启用会在运行目录生成可编辑的 `Plugins/UniqueLoot/config/highlights.json`；已有规则不会被自动覆盖。
+- 修改 `config/highlights.json` 后，在设置里点“重新加载高亮配置”。可改每条规则的 `Enabled`、完整 `AssetPath`、`#RRGGBB` / `#RRGGBBAA` 颜色和 `FontScale`（1–2 倍），也可通过“高亮重要掉落”统一开关。
+- 高亮依据两个物品的完整 asset 路径，已核对 PoE2DB 及内置 PoE2 导出。不会把相同底材的所有腰带高亮，规则名称也不会覆盖识别出的名称/候选。
 
 ## 识别边界
 
@@ -50,4 +64,4 @@ dotnet run --project tests/WhereTheWispsAt.Tests/WhereTheWispsAt.Tests.csproj -c
 python3 scripts/package-wisps.py --include-unique
 ```
 
-输出 `artifacts/unique/GameHelper-unique-debug-win-x64.zip` 和 `.sha256`。脚本只构建，不发布；用户已恢复并授权同步到 `mxc1868/Gamehelper` 的 `main`，完整 ZIP 与 checksum 发布在这个 fork 的 GitHub Releases。离线映射检查与内存读数/Windows 绘制验证分别记录。
+输出 `artifacts/unique/GameHelper-unique-debug-win-x64.zip` 和 `.sha256`。脚本只构建，不发布；用户已恢复并授权同步到 `mxc1868/Gamehelper` 的 `main`。用户目前自行在 Windows 编译，除非再次要求，不执行打包或发布 Release。离线映射检查与内存读数/Windows 绘制验证分别记录。

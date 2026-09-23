@@ -8,13 +8,17 @@
   <ItemGroup>
     <ProjectReference Include="../../GameHelper/GameHelper.csproj" Private="false" />
     <EmbeddedResource Include="Data/uniqueArtMapping.json" LogicalName="UniqueLoot.ArtMapping" />
+    <EmbeddedResource Include="highlights.default.json" LogicalName="UniqueLoot.DefaultHighlights" />
     <None Update="Localization/*.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="highlights.default.json" CopyToOutputDirectory="PreserveNewest" />
+    <PluginLocalization Include="Localization/*.json" />
   </ItemGroup>
   <Target Name="CopyPlugin" AfterTargets="Build">
     <Copy SourceFiles="$(OutDir)$(TargetName).dll;$(OutDir)$(TargetName).pdb"
           DestinationFolder="../../GameHelper/$(OutDir)Plugins/UniqueLoot" SkipUnchangedFiles="true" />
-    <Copy SourceFiles="@(None->WithMetadataValue('Extension', '.json'))"
-          DestinationFolder="../../GameHelper/$(OutDir)Plugins/UniqueLoot/Localization" SkipUnchangedFiles="true"
-          Condition="'%(None.CopyToOutputDirectory)' == 'PreserveNewest'" />
+    <Copy SourceFiles="@(PluginLocalization)"
+          DestinationFolder="../../GameHelper/$(OutDir)Plugins/UniqueLoot/Localization" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(OutDir)highlights.default.json"
+          DestinationFolder="../../GameHelper/$(OutDir)Plugins/UniqueLoot" SkipUnchangedFiles="true" />
   </Target>
 </Project>

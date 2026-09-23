@@ -9,7 +9,9 @@
   <ItemGroup>
     <Compile Include="../../Plugins/UniqueLoot/UniqueArtCatalog.cs" Link="UniqueArtCatalog.cs" />
     <Compile Include="../../Plugins/UniqueLoot/UniqueLootSettings.cs" Link="UniqueLootSettings.cs" />
+    <Compile Include="../../Plugins/UniqueLoot/UniqueHighlights.cs" Link="UniqueHighlights.cs" />
     <Compile Include="../../GameHelper/Plugin/IPSettings.cs" Link="IPSettings.cs" />
     <None Include="../../Plugins/UniqueLoot/Data/uniqueArtMapping.json" Link="uniqueArtMapping.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../Plugins/UniqueLoot/highlights.default.json" Link="highlights.default.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>
