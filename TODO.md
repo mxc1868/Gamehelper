@@ -1,6 +1,21 @@
-# WhereTheWispsAt 迁移：TODO 与接手上下文
+# GameHelper 插件：TODO 与接手上下文
 
-更新日期：2026-09-14。后续 agent 请先读本文，再读 [插件说明](Plugins/WhereTheWispsAt/README.md) 和 [Windows 调试说明](Plugins/WhereTheWispsAt/WINDOWS-DEBUG.zh-CN.md)。
+更新日期：2026-09-23。后续 agent 请先读本文，再读 [插件说明](Plugins/WhereTheWispsAt/README.md) 和 [Windows 调试说明](Plugins/WhereTheWispsAt/WINDOWS-DEBUG.zh-CN.md)。
+
+## 新功能：UniqueLoot 暗金 asset 识别（2026-09-23）
+
+用户要求参考 [exApiTools/Ground-Items-With-Linq](https://github.com/exApiTools/Ground-Items-With-Linq)，在 GameHelper 中无需鉴定即可提示暗金掉落名称。按当前项目 PoE2 实现；这是新增任务，幽火实机验证仍未完成。
+
+- [x] 核对原插件：`ItemVisualIdentities` 与 `UniqueItemDescriptions` 联结并按完整 ArtPath 分组，`RenderItem.ResourcePath` 查询多个名称候选。没有移植 LINQ 规则引擎。
+- [x] 新增 `Plugins/UniqueLoot`：物品旁文字和屏幕列表、全路径匹配、多候选/未知/贴图读取失败状态、中英文设置、自定义映射覆盖、扫描上限和有界诊断导出。
+- [x] 复用本仓库原有 `AwakeEntities`、`WorldItem`、`RenderItem`、`Mods`、`Render`。**本次新增核心 API 是 `WorldItem.TryReadItem(out Item)`**：重建内部物品并校验读取前后指针；未新增或改动 offsets 数值。插件不依赖此前幽火 `ScanEntities` API。
+- [x] 内置 PoE2 导出版本 `4.5.5.2`，源提交 `repoe-fork/poe2@b818b843337cae43b090b272fd98bbc0fd3a34f3`，446 条路径、441 个名称、3 条共用路径；来源及更新方式见 [数据说明](Plugins/UniqueLoot/Data/SOURCES.md)。与价格数据无关。
+- [x] Linux 编译成功。UniqueLoot **25 项离线检查通过**；原 WhereTheWispsAt **63 项回归检查通过**。前者检验映射/覆盖/配置，不是游戏内存和绘制测试；后者验证范围不变。干净编译有 3 条既存核心警告。
+- [x] `scripts/package-wisps.py --include-unique` 生成完整自包含 Windows x64 ZIP + SHA-256（约 45.4 MiB），包含三个插件和 .NET 10.0.12。检查必要文件、x64 PE、自包含运行时配置、ZIP CRC、252 个包内文件哈希与双语资源键。
+- [ ] **发布尚未完成**：2026-09-23 已登录 GitHub CLI 与连接器均无法读取 `mxc1868/Gamehelper`（Not Found / 无访问权限），已向用户询问是否改名或迁移。没有改用其他仓库，也没有创建虚构 Release。确认目标或恢复权限后，推送本次源码提交、按对应提交核对构建清单，再上传完整 ZIP 与 checksum。
+- [ ] Windows 实测：未鉴定暗金名称与鉴定后对照；地面投影；拾取/丢回；切区、禁用/重启；过滤设置、扫描截断与性能。读取失败时交回 `Plugins/UniqueLoot/diagnostics/latest-scan.json`、host 日志及构建清单。
+
+当前构建：`artifacts/unique/GameHelper-unique-debug-win-x64.zip`。使用和限制详见 [UniqueLoot 说明](Plugins/UniqueLoot/README.md)。没有可靠的原有 `Identified` 属性，所以显示地面所有暗金的 asset 候选（包括已鉴定的），不猜测该字段；不读取随机词缀/数值。仅扫描公开 awake 集合，是否漏掉当前客户端地面实体仍待实机证据；静态映射不会自动覆盖未来更新。新增说明不代表原版框架已经提供新接口。
 
 ## 用户目标与当前交付
 

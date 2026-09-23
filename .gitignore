@@ -4,6 +4,7 @@ obj/
 publish/
 publish-downloader/
 artifacts/wisps/
+artifacts/unique/
 __pycache__/
 Test/
 test-runtime-backup/
@@ -23,6 +24,8 @@ update.config.json
 configs/
 Plugins/*/config/
 Plugins/WhereTheWispsAt/diagnostics/
+Plugins/UniqueLoot/diagnostics/
+Plugins/UniqueLoot/uniqueArtMapping.json
 Plugins/*/price_cache.json
 Plugins/*/prices.json
 Plugins/Atlas/bin/

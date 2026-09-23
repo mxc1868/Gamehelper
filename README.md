@@ -1,4 +1,4 @@
-# GameHelper — WhereTheWispsAt 调试分支
+# GameHelper — WhereTheWispsAt / UniqueLoot 调试分支
 
 当前仓库：**[mxc1868/Gamehelper](https://github.com/mxc1868/Gamehelper)**。此分支在 GameHelper 上迁移幽火插件；已有可编译原型与诊断日志，Windows / 当前 PoE2 实机验证仍待完成。
 
@@ -10,6 +10,10 @@
 完整解压到新目录，右键 `Start-Debug.cmd`，以管理员身份运行；F12 启用 `WhereTheWispsAt`。本包包含修改后的核心，不能只把插件 DLL 放进原版 GameHelper。录制 60 秒会同时对比原有 API 与新增扫描，帮助决定正式版能否只维护插件。
 
 Linux 构建：`python3 scripts/package-wisps.py`。编译包发布到本仓库 GitHub Release；下面保留的上游安装器、更新器和发布脚本说明属于原项目，不用于下载或发布此幽火调试包。
+
+新增 **[UniqueLoot 暗金掉落识别](Plugins/UniqueLoot/README.md)**：根据完整 asset 路径显示未鉴定暗金的名称候选，独立于价格数据。内置 PoE2 映射包含 446 条路径、441 个名称；已通过 Linux 编译和 25 项离线检查，仍待实机验证。
+
+构建完整测试包：`python3 scripts/package-wisps.py --include-unique`，输出 `artifacts/unique/GameHelper-unique-debug-win-x64.zip` 及 SHA-256 文件。GitHub 发布状态见 [TODO](TODO.md)。
 
 原项目与作者信息保留如下。
 

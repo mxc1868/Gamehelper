@@ -5,6 +5,9 @@
 namespace GameHelper.RemoteObjects.Components
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
+    using GameHelper.RemoteObjects.States.InGameStateObjects;
+    using GameHelper.Utils;
     using GameOffsets.Objects.Components;
     using ImGuiNET;
 
@@ -27,6 +30,27 @@ namespace GameHelper.RemoteObjects.Components
         ///     <see cref="IntPtr.Zero" /> when unavailable.
         /// </summary>
         public IntPtr ItemEntityAddress { get; private set; } = IntPtr.Zero;
+
+        /// <summary>
+        ///     Reads a fresh inner item without caching it on the ground entity.
+        ///     This fork API returns false for an unreadable or changing item pointer.
+        /// </summary>
+        public bool TryReadItem([NotNullWhen(true)] out Item? item)
+        {
+            item = null;
+            var reader = Core.Process.Handle;
+            if (!reader.TryReadMemory<WorldItemOffsets>(this.Address, out var before) ||
+                before.Header.EntityPtr == IntPtr.Zero || before.Header.EntityPtr != this.OwnerEntityAddress ||
+                !SafeMemoryHandle.IsValidAddress(before.ItemEntityPtr)) return false;
+
+            var candidate = new Item(before.ItemEntityPtr);
+            if (!candidate.IsValid || !candidate.Path.StartsWith("Metadata/Items/", StringComparison.Ordinal) ||
+                !reader.TryReadMemory<WorldItemOffsets>(this.Address, out var after) ||
+                before.Header.EntityPtr != after.Header.EntityPtr || before.ItemEntityPtr != after.ItemEntityPtr) return false;
+
+            item = candidate;
+            return true;
+        }
 
         /// <summary>
         ///     Converts the <see cref="WorldItem" /> class data to ImGui.

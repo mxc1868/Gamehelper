@@ -9,8 +9,7 @@ namespace GameOffsets.Objects.Components
     /// </summary>
     /// <remarks>
     ///     Recovered from the POE2Radar project. <c>+0x28</c> is a pointer to the UTF-16 .dds art
-    ///     path; its basename is a stable, unambiguous price-lookup key for uniques (each unique
-    ///     has its own icon, and it matches poe.ninja / poe2scout's IconUrl basename). NB: later
+    ///     path. Multiple uniques may share art, so identity lookup must retain candidates. Later
     ///     offsets list socketed-gem art, so the FIRST entry (this one) is the item's own art.
     /// </remarks>
     [StructLayout(LayoutKind.Explicit, Pack = 1)]

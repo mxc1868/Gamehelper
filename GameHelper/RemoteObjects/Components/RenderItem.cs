@@ -13,10 +13,9 @@ namespace GameHelper.RemoteObjects.Components
     ///     exposes the item's 2D inventory art (.dds) path.
     /// </summary>
     /// <remarks>
-    ///     The art basename is a stable, unambiguous identity for uniques (each unique has its
-    ///     own icon) and matches poe.ninja / poe2scout's IconUrl basename, so it can be used as a
-    ///     price-lookup key without reading the unique's name. Currency tiers share one art, so
-    ///     prefer the <see cref="Base" /> name for non-uniques.
+    ///     The full art path can be matched against an external unique-item catalog without
+    ///     reading identified modifiers. Multiple items may share art; callers must preserve
+    ///     all candidates. A basename alone is not a guaranteed unique identity.
     /// </remarks>
     public class RenderItem : ComponentBase
     {

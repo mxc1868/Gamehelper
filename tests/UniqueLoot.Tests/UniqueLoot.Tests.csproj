@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <RuntimeIdentifier></RuntimeIdentifier>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../Plugins/UniqueLoot/UniqueArtCatalog.cs" Link="UniqueArtCatalog.cs" />
+    <Compile Include="../../Plugins/UniqueLoot/UniqueLootSettings.cs" Link="UniqueLootSettings.cs" />
+    <Compile Include="../../GameHelper/Plugin/IPSettings.cs" Link="IPSettings.cs" />
+    <None Include="../../Plugins/UniqueLoot/Data/uniqueArtMapping.json" Link="uniqueArtMapping.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>
