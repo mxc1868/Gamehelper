@@ -10,6 +10,7 @@ public sealed class UniqueHighlights
 {
     private sealed class Config
     {
+        public int DefaultColorVersion { get; set; }
         public List<Rule>? Rules { get; set; }
     }
 
@@ -18,9 +19,9 @@ public sealed class UniqueHighlights
         public string Name { get; set; } = string.Empty;
         public bool Enabled { get; set; } = true;
         public string AssetPath { get; set; } = string.Empty;
-        public string TextColor { get; set; } = "#FFFFFF";
-        public string BackgroundColor { get; set; } = "#000000EE";
-        public string BorderColor { get; set; } = "#FFFFFF";
+        public string TextColor { get; set; } = "#FFD700";
+        public string BackgroundColor { get; set; } = "#332600EE";
+        public string BorderColor { get; set; } = "#FFD700";
         public float FontScale { get; set; } = 1.3f;
     }
 
@@ -32,8 +33,14 @@ public sealed class UniqueHighlights
     public int Count => this.rules.Count;
     public HighlightStyle? Match(string? asset) => this.rules.GetValueOrDefault(UniqueArtCatalog.NormalizePath(asset));
     public IEnumerable<(string Name, string AssetPath)> ConfiguredItems => this.savedRules.Values.Select(x => (x.Name, x.AssetPath));
+    public uint ColorFor(string asset) => ParseColor(this.savedRules.GetValueOrDefault(UniqueArtCatalog.NormalizePath(asset))?.TextColor ?? "#FFD700");
 
-    public UniqueHighlights WithSelection(string name, IEnumerable<string> assets, bool enabled)
+    public UniqueHighlights WithSelection(string name, IEnumerable<string> assets, bool enabled) => this.WithChange(name, assets, enabled, null);
+
+    public UniqueHighlights WithColor(string name, IEnumerable<string> assets, uint color) =>
+        this.WithChange(name, assets, null, $"#{color & 255:X2}{(color >> 8) & 255:X2}{(color >> 16) & 255:X2}");
+
+    private UniqueHighlights WithChange(string name, IEnumerable<string> assets, bool? enabled, string? color)
     {
         var replacement = new Dictionary<string, Rule>(this.savedRules, StringComparer.OrdinalIgnoreCase);
         foreach (var path in assets)
@@ -42,15 +49,15 @@ public sealed class UniqueHighlights
             var old = replacement.GetValueOrDefault(asset);
             replacement[asset] = new Rule
             {
-                Name = old?.Name ?? name, AssetPath = asset, Enabled = enabled,
-                TextColor = old?.TextColor ?? "#FFD700", BackgroundColor = old?.BackgroundColor ?? "#332600EE",
-                BorderColor = old?.BorderColor ?? "#FFD700", FontScale = old?.FontScale ?? 1.6f,
+                Name = old?.Name ?? name, AssetPath = asset, Enabled = enabled ?? old?.Enabled ?? false,
+                TextColor = color ?? old?.TextColor ?? "#FFD700", BackgroundColor = old?.BackgroundColor ?? "#332600EE",
+                BorderColor = color ?? old?.BorderColor ?? "#FFD700", FontScale = old?.FontScale ?? 1.6f,
             };
         }
-        return Parse(JsonSerializer.Serialize(new Config { Rules = replacement.Values.ToList() }));
+        return Parse(JsonSerializer.Serialize(new Config { DefaultColorVersion = 1, Rules = replacement.Values.ToList() }));
     }
 
-    public string ToJson() => JsonSerializer.Serialize(new Config { Rules = this.savedRules.Values.ToList() },
+    public string ToJson() => JsonSerializer.Serialize(new Config { DefaultColorVersion = 1, Rules = this.savedRules.Values.ToList() },
         new JsonSerializerOptions { WriteIndented = true });
 
     public static UniqueHighlights Parse(string json)
@@ -72,8 +79,20 @@ public sealed class UniqueHighlights
             if (string.IsNullOrWhiteSpace(rule.Name) || rule.Name.Length > 200 || rule.Name.Any(char.IsControl) ||
                 !float.IsFinite(rule.FontScale) || rule.FontScale < 1 || rule.FontScale > 2)
                 throw new FormatException("Invalid highlight name or font scale: " + asset);
-            var style = new HighlightStyle(rule.Name.Trim(), asset, ParseColor(rule.TextColor),
-                ParseColor(rule.BackgroundColor), ParseColor(rule.BorderColor), rule.FontScale);
+            var text = ParseColor(rule.TextColor);
+            var background = ParseColor(rule.BackgroundColor);
+            var border = ParseColor(rule.BorderColor);
+            // Replace only the old bundled Mageblood palette. Versioned color edits
+            // may deliberately choose magenta again and must survive future reloads.
+            if (config.DefaultColorVersion < 1 && asset.Equals("Art/2DItems/Belts/Uniques/Mageblood.dds", StringComparison.OrdinalIgnoreCase) &&
+                text == 0xFFFF70FF && background == 0xEE330B33 && border == 0xFFFF70FF && rule.FontScale == 1.3f)
+            {
+                rule.TextColor = rule.BorderColor = "#FFD700";
+                rule.BackgroundColor = "#332600EE";
+                text = border = ParseColor(rule.TextColor);
+                background = ParseColor(rule.BackgroundColor);
+            }
+            var style = new HighlightStyle(rule.Name.Trim(), asset, text, background, border, rule.FontScale);
             rule.Name = rule.Name.Trim();
             rule.AssetPath = asset;
             saved.Add(asset, rule);

@@ -25,6 +25,7 @@
   "highlights_help": "Select the items to highlight below. The drop list only shows selected highlights. Choices are saved immediately.",
   "highlight_font": "Highlight text size",
   "item_icons": "Show item icons",
+  "item_color": "Highlight color",
   "highlight_items": "Items to highlight",
   "highlight_search": "Search item name...",
   "selected_only": "Show selected items only",

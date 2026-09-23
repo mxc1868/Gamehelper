@@ -25,6 +25,7 @@
   "highlights_help": "在下方勾选需要高亮的物品，掉落列表只显示选中的高亮物品。勾选后立即保存。",
   "highlight_font": "高亮文字大小",
   "item_icons": "显示物品图标",
+  "item_color": "高亮颜色",
   "highlight_items": "选择高亮物品",
   "highlight_search": "搜索物品名称…",
   "selected_only": "仅查看已勾选物品",

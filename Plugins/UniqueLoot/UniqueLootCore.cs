@@ -198,11 +198,13 @@ public sealed class UniqueLootCore : PCore<UniqueLootSettings>
         this.highlightChoices = HighlightChoices.Build(this.catalog, this.highlights);
     }
 
-    private void SetHighlight(HighlightChoice choice, bool enabled)
+    private void SetHighlight(HighlightChoice choice, bool? enabled = null, uint? color = null)
     {
         try
         {
-            var replacement = this.highlights.WithSelection(choice.Name, choice.AssetPaths, enabled);
+            var replacement = color is { } selectedColor
+                ? this.highlights.WithColor(choice.Name, choice.AssetPaths, selectedColor)
+                : this.highlights.WithSelection(choice.Name, choice.AssetPaths, enabled!.Value);
             Directory.CreateDirectory(Path.GetDirectoryName(this.HighlightsPath)!);
             File.WriteAllText(this.HighlightsPath + ".tmp", replacement.ToJson());
             File.Move(this.HighlightsPath + ".tmp", this.HighlightsPath, overwrite: true);
@@ -362,9 +364,7 @@ public sealed class UniqueLootCore : PCore<UniqueLootSettings>
             var highlight = HighlightChoices.DisplayStyle(drop.Match.AssetPath, this.highlights, this.Settings);
             if (highlight == null && !this.Settings.ShowUnknown && drop.Match.Kind is ArtMatchKind.Unknown or ArtMatchKind.MissingArt) continue;
             var text = this.DropText(drop);
-            if (highlight != null) text = "[!] " + text;
             var color = drop.Match.Kind == ArtMatchKind.Single ? 0xFF55AAFFu : 0xFF80DCFFu;
-            var fontSize = ImGui.GetFontSize() * (highlight?.FontScale ?? 1);
             var icon = highlight != null && this.Settings.ShowItemIcons ? this.icons.Find(this.DllDirectory, drop.Match.AssetPath) : null;
             if (this.Settings.ShowGroundNames && groundCount < this.Settings.MaxLabels && float.IsFinite(drop.Position.X) && float.IsFinite(drop.Position.Y) &&
                 float.IsFinite(drop.Position.Z) && float.IsFinite(drop.TerrainHeight))
@@ -373,7 +373,7 @@ public sealed class UniqueLootCore : PCore<UniqueLootSettings>
                 if (float.IsFinite(point.X) && float.IsFinite(point.Y) && point != Vector2.Zero &&
                     point.X >= 0 && point.Y >= 0 && point.X <= screenSize.X && point.Y <= screenSize.Y)
                 {
-                    DrawText(draw, point + new Vector2(-(ImGui.CalcTextSize(text).X * (highlight?.FontScale ?? 1) + (icon == null ? 0 : 44)) / 2, this.Settings.GroundOffsetY), text, color, highlight, icon);
+                    DrawText(draw, point + new Vector2(-LabelSize(text, highlight, icon != null).X / 2, this.Settings.GroundOffsetY), text, color, highlight, icon);
                     groundCount++;
                 }
             }
@@ -387,7 +387,7 @@ public sealed class UniqueLootCore : PCore<UniqueLootSettings>
                     listPos.Y += ImGui.GetTextLineHeightWithSpacing() + 4;
                 }
                 var distance = float.IsFinite(drop.Distance) ? $"  [{drop.Distance:0}]" : string.Empty;
-                var rowHeight = Math.Max(fontSize, icon == null ? 0 : 36);
+                var rowHeight = LabelSize(text + distance, highlight, icon != null).Y;
                 if (listPos.Y + rowHeight + 6 < screenSize.Y)
                     DrawText(draw, listPos, text + distance, color, highlight, icon);
                 listPos.Y += rowHeight + ImGui.GetStyle().ItemSpacing.Y + 8;
@@ -395,22 +395,27 @@ public sealed class UniqueLootCore : PCore<UniqueLootSettings>
         }
     }
 
+    private static Vector2 LabelSize(string text, HighlightStyle? highlight, bool hasIcon)
+    {
+        var textSize = ImGui.CalcTextSize(text) * (highlight?.FontScale ?? 1);
+        return new Vector2(Math.Max(textSize.X, hasIcon ? 36 : 0), textSize.Y + (hasIcon ? 42 : 0));
+    }
+
     private static void DrawText(ImDrawListPtr draw, Vector2 position, string text, uint color, HighlightStyle? highlight = null, UniqueIcons.Icon? icon = null)
     {
-        var size = ImGui.CalcTextSize(text) * (highlight?.FontScale ?? 1);
-        var iconSpace = icon == null ? 0 : 44;
-        var height = Math.Max(size.Y, icon == null ? 0 : 36);
+        var textSize = ImGui.CalcTextSize(text) * (highlight?.FontScale ?? 1);
+        var size = LabelSize(text, highlight, icon != null);
         var start = position - new Vector2(4, 3);
-        var end = position + new Vector2(size.X + iconSpace + 4, height + 3);
+        var end = position + size + new Vector2(4, 3);
         draw.AddRectFilled(start, end, highlight?.BackgroundColor ?? 0xBB000000, 3);
         if (highlight != null) draw.AddRect(start, end, highlight.BorderColor, 3, ImDrawFlags.None, 2);
         if (icon is { } image)
         {
             var fitted = image.Size * Math.Min(36 / image.Size.X, 36 / image.Size.Y);
-            var topLeft = position + (new Vector2(36, height) - fitted) / 2;
+            var topLeft = position + (new Vector2(size.X, 36) - fitted) / 2;
             draw.AddImage(image.Texture, topLeft, topLeft + fitted);
         }
-        position += new Vector2(iconSpace, (height - size.Y) / 2);
+        position += new Vector2((size.X - textSize.X) / 2, icon == null ? 0 : 42);
         draw.AddText(ImGui.GetFont(), ImGui.GetFontSize() * (highlight?.FontScale ?? 1), position, highlight?.TextColor ?? color, text);
     }
 
@@ -467,6 +472,12 @@ public sealed class UniqueLootCore : PCore<UniqueLootSettings>
                 ImGui.PushID(choice.AssetPaths[0]);
                 var visible = ImGui.IsRectVisible(new Vector2(32));
                 if (ImGui.Checkbox("##selected", ref enabled)) this.SetHighlight(choice, enabled);
+                ImGui.SameLine();
+                var rgba = ImGui.ColorConvertU32ToFloat4(this.highlights.ColorFor(choice.AssetPaths[0]));
+                var itemColor = new Vector3(rgba.X, rgba.Y, rgba.Z);
+                if (ImGui.ColorEdit3("##highlight_color", ref itemColor, ImGuiColorEditFlags.NoInputs))
+                    this.SetHighlight(choice, color: ImGui.ColorConvertFloat4ToU32(new Vector4(itemColor, 1)));
+                if (ImGui.IsItemHovered()) ImGui.SetTooltip(this.T("item_color", "Highlight color"));
                 ImGui.SameLine();
                 if (this.Settings.ShowItemIcons)
                 {

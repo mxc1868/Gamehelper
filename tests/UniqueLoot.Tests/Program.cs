@@ -63,7 +63,7 @@ Check("priority highlights enabled for existing settings without new field", new
 Check("default config highlights both requested belts", highlights.Count == 2 && highlights.Match(hhArt)?.Name == "Headhunter" && highlights.Match(mbArt)?.Name == "Mageblood");
 Check("priority paths agree with bundled PoE2 data", bundled.Resolve(hhArt).Candidates.Single() == "Headhunter" && bundled.Resolve(mbArt).Candidates.Single() == "Mageblood");
 Check("gold config is converted to ImGui ABGR", highlights.Match(hhArt)?.TextColor == 0xFF00D7FF);
-Check("magenta config and font size are applied", highlights.Match(mbArt)?.TextColor == 0xFFFF70FF && highlights.Match(mbArt)?.FontScale == 1.3f);
+Check("all bundled highlights default to gold with their existing scale", highlights.Match(mbArt)?.TextColor == 0xFF00D7FF && highlights.Match(mbArt)?.FontScale == 1.3f);
 Check("background preserves configured opacity", highlights.Match(hhArt)?.BackgroundColor == 0xEE002633);
 Check("base metadata cannot highlight every belt", highlights.Match("Metadata/Items/Belts/BeltHeavy") == null);
 Check("same filename in a different art directory is not highlighted", highlights.Match("Art/2DItems/Belts/Mageblood.dds") == null);
@@ -106,4 +106,18 @@ Check("master switch suppresses highlighted list eligibility", HighlightChoices.
 displaySettings.HighlightFontScale = float.NaN;
 displaySettings.Normalize();
 Check("invalid highlight font size falls back to visible default", displaySettings.HighlightFontScale == 1.6f);
+const string legacyMageblood = """
+{"Rules":[{"Name":"Mageblood","Enabled":false,"AssetPath":"Art/2DItems/Belts/Uniques/Mageblood.dds","TextColor":"#FF70FF","BackgroundColor":"#330B33EE","BorderColor":"#FF70FF","FontScale":1.3}]}
+""";
+var migrated = UniqueHighlights.Parse(legacyMageblood);
+Check("legacy default magenta migrates to gold without enabling the item", migrated.ColorFor(mbArt) == 0xFF00D7FF && migrated.Match(mbArt) == null);
+Check("migration preserves customized legacy colors", UniqueHighlights.Parse(legacyMageblood.Replace("#FF70FF", "#11AA33")).ColorFor(mbArt) == 0xFF33AA11);
+Check("versioned magenta choices survive reload", UniqueHighlights.Parse(legacyMageblood.Replace("{\"Rules\"", "{\"DefaultColorVersion\":1,\"Rules\"")).ColorFor(mbArt) == 0xFFFF70FF);
+var colored = highlights.WithColor(hhChoice.Name, hhChoice.AssetPaths, 0xFF33AA11);
+Check("item color changes text and border with correct channel order", colored.Match(hhArt) is { TextColor: 0xFF33AA11, BorderColor: 0xFF33AA11 } && highlights.ColorFor(hhArt) == 0xFF00D7FF);
+var recolored = UniqueHighlights.Parse(colored.WithSelection(hhChoice.Name, hhChoice.AssetPaths, false).ToJson()).WithSelection(hhChoice.Name, hhChoice.AssetPaths, true);
+Check("custom color survives disable save reload and recheck", recolored.Match(hhArt) == colored.Match(hhArt));
+var pendingColor = UniqueHighlights.Empty.WithColor(variantChoice.Name, variantChoice.AssetPaths, 0xFF33AA11);
+Check("editing colors of unselected variants keeps them disabled", pendingColor.Count == 0 && variantChoice.AssetPaths.All(x => pendingColor.ColorFor(x) == 0xFF33AA11));
+Check("newly selected items default to gold", UniqueHighlights.Empty.WithSelection(variantChoice.Name, variantChoice.AssetPaths, true).Match(variantChoice.AssetPaths[0])?.TextColor == 0xFF00D7FF);
 Console.WriteLine($"{passed} offline checks passed; memory reads and Windows rendering are NOT tested.");

@@ -1,4 +1,5 @@
 {
+  "DefaultColorVersion": 1,
   "Rules": [
     {
       "Name": "Headhunter",
@@ -13,9 +14,9 @@
       "Name": "Mageblood",
       "Enabled": true,
       "AssetPath": "Art/2DItems/Belts/Uniques/Mageblood.dds",
-      "TextColor": "#FF70FF",
-      "BackgroundColor": "#330B33EE",
-      "BorderColor": "#FF70FF",
+      "TextColor": "#FFD700",
+      "BackgroundColor": "#332600EE",
+      "BorderColor": "#FFD700",
       "FontScale": 1.3
     }
   ]
