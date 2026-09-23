@@ -362,6 +362,7 @@ public sealed class UniqueLootCore : PCore<UniqueLootSettings>
         foreach (var drop in this.drops.OrderByDescending(x => this.Settings.HighlightPriorityDrops && this.highlights.Match(x.Match.AssetPath) != null))
         {
             var highlight = HighlightChoices.DisplayStyle(drop.Match.AssetPath, this.highlights, this.Settings);
+            if (this.Settings.OnlyShowHighlightedItemNames && highlight == null) continue;
             if (highlight == null && !this.Settings.ShowUnknown && drop.Match.Kind is ArtMatchKind.Unknown or ArtMatchKind.MissingArt) continue;
             var text = this.DropText(drop);
             var color = drop.Match.Kind == ArtMatchKind.Single ? 0xFF55AAFFu : 0xFF80DCFFu;
@@ -423,8 +424,11 @@ public sealed class UniqueLootCore : PCore<UniqueLootSettings>
     {
         ImGui.TextWrapped(this.T("intro", "Reveal unique drop names from item art, without identification or price data. Shared art shows all candidates."));
         ImGui.Checkbox(this.L("ground", "Names beside ground items"), ref this.Settings.ShowGroundNames);
+        ImGui.Checkbox(this.L("only_highlighted_names", "Only show highlighted item names"), ref this.Settings.OnlyShowHighlightedItemNames);
         ImGui.Checkbox(this.L("list", "Drop list"), ref this.Settings.ShowList);
+        ImGui.BeginDisabled(this.Settings.OnlyShowHighlightedItemNames);
         ImGui.Checkbox(this.L("show_unknown", "Show unknown / unreadable uniques"), ref this.Settings.ShowUnknown);
+        ImGui.EndDisabled();
         if (ImGui.Checkbox(this.L("highlights", "Highlight priority drops"), ref this.Settings.HighlightPriorityDrops)) this.nextScan = 0;
         ImGui.SliderFloat(this.L("highlight_font", "Highlight text size"), ref this.Settings.HighlightFontScale, 1.3f, 2.5f, "%.1fx");
         ImGui.Checkbox(this.L("item_icons", "Show item icons"), ref this.Settings.ShowItemIcons);

@@ -6,6 +6,7 @@
   "unknown": "Unknown unique",
   "list.title": "Highlighted drops",
   "ground": "Names beside ground items",
+  "only_highlighted_names": "Only show highlighted item names",
   "list": "Highlighted drop list",
   "show_unknown": "Show unknown / unreadable uniques",
   "unfocused": "Hide when unfocused",

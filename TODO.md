@@ -2,13 +2,19 @@
 
 更新日期：2026-09-23。后续 agent 请先读本文，再读 [插件说明](Plugins/ShowMeWisp/README.md) 和 [Windows 调试说明](Plugins/ShowMeWisp/WINDOWS-DEBUG.zh-CN.md)。
 
+## UniqueLoot 默认只显示高亮名称（2026-09-23 UTC）
+
+- [x] 增加 `OnlyShowHighlightedItemNames=true` 及中英文设置项。默认地面名称也只显示勾选且高亮启用的物品，旧配置缺少该字段时默认开启；关闭该项恢复普通名称及原 ShowUnknown 过滤。屏幕列表仍始终只含高亮项。
+- [x] 用户明确选择“本次只提交源码，我稍后自行更新”。不再尝试覆盖 Test，也不再等待用户退出程序；后续部署需新请求。
+- [x] 此选项加入后 Windows Release 构建成功，0 错误、3 条既存核心警告；现有 UniqueLoot 60 项回归通过，未进行游戏内显示验证。
+
 ## UniqueLoot 高亮样式调整（2026-09-23 UTC）
 
 - [x] 用户要求所有高亮默认金色，去掉 `[!]`，图标与文字分别占上、下两行；地面高亮与屏幕列表共用居中布局，列表间距按两行总高度计算，缺图时不保留空白图片行。
 - [x] 物品勾选列表增加逐项颜色选择，修改文字和边框颜色并立即保存；保留启用状态，同名称不同外观一起改色，取消/重选和重启保留配色。
 - [x] 新增高亮配置 `DefaultColorVersion=1`，仅把完全匹配旧魔血默认紫色方案的未版本化配置迁移为金色；保留其他自定义颜色，后续主动选紫色不会反复迁移。
 - [x] Windows Release 插件构建成功，0 错误、3 条既存核心警告；UniqueLoot 60 项回归和构建目录的 10 项真实插件发现/加载/API 检查通过。
-- [ ] Test 更新首次因运行中的 GameHelper 占用 `UniqueLoot.dll` 而中止（尚未替换文件）；已询问用户退出程序后继续，更新前备份为 `artifacts/unique/before-gold-stacked-20260922-235517/UniqueLoot`。游戏内视觉效果仍待用户确认。
+- [x] 高亮样式源码已提交并推送 `32f25b8`。Test 更新首次因运行中的 GameHelper 占用 `UniqueLoot.dll` 而中止（尚未替换文件）；用户随后取消本次部署，选择自行更新。备份为 `artifacts/unique/before-gold-stacked-20260922-235517/UniqueLoot`。游戏内视觉效果仍待用户确认。
 
 ## ShowMeWisp 改名与幽火三档方框（2026-09-23 UTC）
 

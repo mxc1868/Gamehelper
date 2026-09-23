@@ -5,6 +5,7 @@ using GameHelper.Plugin;
 public sealed class UniqueLootSettings : IPSettings
 {
     public bool ShowGroundNames = true;
+    public bool OnlyShowHighlightedItemNames = true;
     public bool ShowList = true;
     public bool ShowUnknown = true;
     public bool HighlightPriorityDrops = true;
