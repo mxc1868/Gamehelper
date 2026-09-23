@@ -1,5 +1,13 @@
 # Windows 实机调试
 
+## 当前 Windows 源码构建
+
+在仓库根目录编译 `dotnet build GameOverlay.sln -c Release`，运行 `GameHelper/bin/Release/net10.0-windows/win-x64/GameHelper.exe`，F12 查找 `WhereTheWispsAt`。核心和启动器现为 1.5.11，保留本 fork 新增 API；启动器跳过在线二进制更新，后续更新请拉取源码后重新编译。已有 `Test` 安装可用 `rebuild-test.ps1` 重建，需关闭该目录运行中的程序。
+
+已在 Windows 通过加载检查：`dotnet run --project tests/PluginLoad.Tests/PluginLoad.Tests.csproj -c Release -- Test`（将最后的目录改为自己的部署目录）。它调用实际插件加载器并检查核心依赖，不启用插件或读取游戏。原版上游 1.5.11 缺少 `MapProjection`，会使幽火在进入列表前被跳过；版本号相同也需要核对配套核心。
+
+## 历史 Linux 自包含调试包
+
 此包是可编译原型的实机验证包，尚未在 Windows / 当前 PoE2 中验证读取和显示。包含 Windows x64 的 .NET 10 运行时；这台 Windows 机器无需安装 SDK、Visual Studio 或单独安装 .NET。运行仍依赖 Windows 与其图形环境。
 
 ## 启动

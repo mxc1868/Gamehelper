@@ -29,7 +29,7 @@ namespace GameHelper
         private static async Task Main()
         {
             // If the user started GameHelper.exe directly (not via launcher),
-            // redirect to GameHelper.App.exe so they get update checks.
+            // redirect to GameHelper.App.exe for the normal launcher startup path.
             if (!WasStartedByLauncher())
             {
                 var launcherPath = Path.Combine(AppContext.BaseDirectory, "GameHelper.App.exe");

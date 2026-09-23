@@ -2,6 +2,21 @@
 
 更新日期：2026-09-23。后续 agent 请先读本文，再读 [插件说明](Plugins/WhereTheWispsAt/README.md) 和 [Windows 调试说明](Plugins/WhereTheWispsAt/WINDOWS-DEBUG.zh-CN.md)。
 
+## Windows：同步 1.5.11、恢复插件加载（2026-09-23 UTC）
+
+用户报告插件列表没有幽火，并要求同步 1.5.11、保留本 fork 补丁后重新编译。
+
+- [x] 联网核对 `MordWraith/Gamehelper` 的 `v1.5.11` 标签和 main：均为 `0d11fe76014862c45a21d759fefd28129eeddfc5`，发布页也指向该提交。已抓取到 `upstream/v1.5.11`；它早已是本地 main 的祖先，无待合并的上游提交。该标签源码中的核心版本仍写着 1.5.10，不能仅凭版本字段认定未同步。未运行覆盖式 `sync-gordin.ps1`。
+- [x] 实际复现：`Test/launcher.log` 记录启动器安装上游 1.5.11；上游核心在 `PManager.LoadPlugin` 的类型枚举阶段抛出 `ReflectionTypeLoadException`，明确缺少 `GameHelper.Utils.MapProjection`。同一个幽火 DLL 在配套核心成功加载。上游核心同时缺少实体扫描接口及 `WorldItem.TryReadItem`；UniqueLoot 虽可实例化，仍不能据此认定扫描可用。
+- [x] 保留全部现有幽火/UniqueLoot 核心与插件补丁，将核心和启动器版本统一为 1.5.11。本 fork 的 `Launcher/Program.cs` 跳过在线更新，继续正常启动 overlay；后续从 fork 拉取源码并编译更新。原有上游下载器与维护/发布工具未改造，不要用于本 fork 的更新或发布。
+- [x] Windows .NET SDK 10.0.302 整套 `GameOverlay.sln` Release 编译成功，0 错误。首次整套重编译有 7 条既存警告（核心 3 条、WorldDrawing 4 条）；最后增量编译有 3 条核心警告。
+- [x] Windows 离线检查：幽火 67 项、UniqueLoot 40 项通过。修正幽火测试读取正在写入的日志时的 Windows 共享模式（测试读取端使用 `FileShare.ReadWrite`），未更改插件日志写入行为。
+- [x] 新增 `tests/PluginLoad.Tests`：直接调用部署核心的实际 `PluginAssemblyLoadContext` / `PManager.LoadPlugin`，验证 WhereTheWispsAt、UniqueLoot、Radar 的加载与实例化，并检查 6 项新增核心类型/接口。已在原版 Test 核心复现失败，配套 1.5.11 编译目录和更新后的 Test 目录均通过全部 9 项检查。不启动 overlay、不调用 OnEnable、不读取游戏、不写设置。
+- [x] 已更新本机 `D:\PoE Trade\Gamehelper\Test` 的程序文件；覆盖前完整备份到 `test-runtime-backup/before-patched-1.5.11-20260922-224142/Test`，哈希确认原有 33 个配置/诊断文件保持不变。用户可直接运行 `Test/GameHelper.exe`，F12 启用 `WhereTheWispsAt`。未制作新 ZIP 或 Release。
+- [ ] 当前 PoE2 场景中的幽火分类、地图显示、UniqueLoot 掉落读取和 API 对比仍待用户实测；加载检查通过不等于这些功能已验证。
+
+后续重现：`dotnet build GameOverlay.sln -c Release`；`dotnet run --project tests/PluginLoad.Tests/PluginLoad.Tests.csproj -c Release -- Test`。后者最后一个参数应指向要验证的实际运行目录。
+
 ## 新功能：UniqueLoot 暗金 asset 识别（2026-09-23）
 
 用户要求参考 [exApiTools/Ground-Items-With-Linq](https://github.com/exApiTools/Ground-Items-With-Linq)，在 GameHelper 中无需鉴定即可提示暗金掉落名称。按当前项目 PoE2 实现；这是新增任务，幽火实机验证仍未完成。
@@ -24,7 +39,7 @@
 
 把 [exCore2/WhereTheWispsAt](https://github.com/exCore2/WhereTheWispsAt) 的幽火标记功能迁移到 GameHelper，最终希望尽量只维护插件。用户在 Windows 玩游戏；现已明确可自行编译（2026-09-23），当前交付 main 源码，先前 Linux 打包流程保留但不再默认执行。
 
-- 当前仓库：<https://github.com/mxc1868/Gamehelper>，本地 `/home/ubuntu/Gamehelper`，分支 `main`。幽火实现提交 `05d1116`，UniqueLoot 实现提交 `dfee696`，均在同一分支上；恢复后的 fork 已有更新 `0d11fe7`，通过 merge 保留。
+- 当前仓库：<https://github.com/mxc1868/Gamehelper>，本地 Windows `D:\PoE Trade\Gamehelper`，分支 `main`（历史 Linux 工作区为 `/home/ubuntu/Gamehelper`）。幽火实现提交 `05d1116`，UniqueLoot 实现提交 `dfee696`，均在同一分支上；恢复后的 fork 已有更新 `0d11fe7`，通过 merge 保留，现已确认它也是上游 `v1.5.11` 标签指向的提交。
 - 历史 fork 删除后于 2026-09-23 恢复。旧 `wisps-debug-2026-09-14` Release 未恢复，不再作为下载入口；使用新的 `unique-debug-2026-09-23` 完整包（包含 UniqueLoot、WhereTheWispsAt、Radar）。
 - 源码同步到本 fork 的 main；如用户另行要求打包，完整 ZIP 和 checksum 放 GitHub Releases。不把 DLL 和运行时逐个提交进源码历史。
 - 初始基础源码来自 `MordWraith/Gamehelper` 提交 `5e581b16c834bbdee831e28910f4786f9e22ab94`；本次同步保留恢复后 fork 中的 `0d11fe7`（核心版本 1.5.10、部署实体记录及地形容量等更新）。与 Gordin/GameHelper2 共用大量核心及 offsets 源码，但不能推断未来版本始终兼容。
@@ -49,11 +64,11 @@
 
 已完成 Linux 编译，当前 **67 项**不依赖游戏的幽火回归检查通过（原 63 项 + Sacred 色彩默认值/迁移 4 项）。测试覆盖分类、连线、地图数学、配置边界、并发采样上限、日志轮换/超时/I/O 错误、API 差异比较。**测试输入是合成数据，不是 Windows 实机样本。** 后续版本以测试运行输出和 Release 说明为准。
 
-打包检查包括必要文件、自包含 runtimeconfig、Windows x64 PE、ZIP CRC 和 SHA-256 清单。尚未执行 Windows EXE、验证原版插件管理器实际加载、读取游戏或观察最终显示。
+历史打包检查包括必要文件、自包含 runtimeconfig、Windows x64 PE、ZIP CRC 和 SHA-256 清单。本次已在 Windows 通过实际插件管理器的加载/实例化检查；尚未验证 overlay 启动与游戏内读取、最终显示，详见本页最新 Windows 验证记录。
 
 ## P0：用实机证据决定是否保留新核心 API
 
-- [ ] 用户将本地构建的完整调试包下载/传到 Windows，解压到新的可写目录，以管理员身份启动 `Start-Debug.cmd`，F12 启用插件。管理员要求来自已有 `GameHelper/app.manifest`。
+- [ ] 用户运行已更新的 Windows `Test/GameHelper.exe`，接受现有 `app.manifest` 要求的管理员权限，F12 启用插件并进行游戏内测试。
 - [ ] 在确实有幽火/宝箱/井的区域录制 60 秒，覆盖静止、移动、采集、开启/激活、切图；收集 `diagnostics/`、host 日志、`build-manifest.json` 和实际观察说明。
 - [ ] 检查 `api_comparison`：公开集合是否缺少新增扫描能读到的目标？是否仅因 `ProcessAllRenderableEntities=false`？报告只记录设置，不自动切换。
 - [ ] 若要排除过滤设置影响，可在 GH 原有设置中手动短时开启“处理所有可渲染实体”后再录制，并核对开关值与耗时。该设置会扩大整个框架处理范围，需要观察实际性能；测试后恢复自己的配置。

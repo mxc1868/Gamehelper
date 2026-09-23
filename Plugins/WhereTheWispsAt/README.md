@@ -26,6 +26,10 @@ dotnet build Plugins/WhereTheWispsAt/WhereTheWispsAt.csproj -c Release
 
 插件及语言文件会自动复制到 `GameHelper/bin/Release/net10.0-windows/win-x64/Plugins/WhereTheWispsAt/`。运行同一构建目录中的 GameHelper，在插件管理中启用 `WhereTheWispsAt`。也可以使用已包含本插件的 `GameOverlay.sln` 和仓库 `scripts/build.ps1` 构建整套程序。
 
+当前基于上游 `v1.5.11` / `0d11fe7` 加本 fork 补丁。该上游提交此前已合并，但其源码版本号仍为 1.5.10；本 fork 已将核心和启动器统一为 1.5.11。首次更新此修复请构建整个 `GameOverlay.sln`，确保启动器也更新：新版启动器跳过在线更新，防止上游原版 DLL 覆盖新增接口。仅凭核心版本号不能判断是否包含补丁。
+
+若插件不出现在列表中，可以从仓库根目录执行 `dotnet run --project tests/PluginLoad.Tests/PluginLoad.Tests.csproj -c Release -- Test` 检查实际部署目录。上游原版核心已复现 `Could not load type 'GameHelper.Utils.MapProjection'`；配套 1.5.11 核心通过实际 `PManager` 加载和实例化检查。此检查不启动图形界面，也不代表游戏内功能已验证。
+
 Linux 打包（需要 Python 3 和 .NET 10 SDK，首次还原需要访问 NuGet）：
 
 ```bash

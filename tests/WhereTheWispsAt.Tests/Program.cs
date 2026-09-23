@@ -10,6 +10,13 @@ void Check(string name, bool condition)
     passed++;
 }
 bool Near(Vector2 actual, Vector2 expected, float epsilon = 0.0001f) => Vector2.Distance(actual, expected) < epsilon;
+string ReadActiveCapture(string path)
+{
+    // On Windows a reader must also share write access with the active capture writer.
+    using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+    using var reader = new StreamReader(stream);
+    return reader.ReadToEnd();
+}
 var orange = new Vector4(1, 0.5f, 0, 1);
 Check("new Sacred wisp default is orange", new WhereTheWispsAtSettings().Sacred == orange);
 var legacySacred = new WhereTheWispsAtSettings { Sacred = Vector4.One };
@@ -95,14 +102,14 @@ try
     using var capture = new WispDebugCapture(Path.Join(temp, "capture"), 1024, 3);
     Check("capture starts without Windows or a game", capture.Start(100));
     capture.Write("nonfinite", new { Position = new Vector2(float.NaN, float.PositiveInfinity) });
-    var firstLines = File.ReadAllLines(capture.CurrentFile);
+    var firstLines = ReadActiveCapture(capture.CurrentFile).Split('\n', StringSplitOptions.RemoveEmptyEntries);
     using (var json = System.Text.Json.JsonDocument.Parse(firstLines.Last()))
         Check("nonfinite coordinates remain valid JSON diagnostic values", json.RootElement.GetProperty("Data").GetProperty("Position").GetProperty("X").GetString() == "NaN");
     Check("capture stays active before its deadline", !capture.Expire(60099) && capture.Active);
     for (var i = 0; i < 100; i++) capture.Write("test", new { Index = i, Text = new string('x', 150) });
     Check("capture rotates and bounds all files", Directory.GetFiles(Path.Join(temp, "capture")).Length == 3 && Directory.GetFiles(Path.Join(temp, "capture")).All(x => new FileInfo(x).Length <= 1024));
     capture.Write("huge", new { Text = new string('x', 3000) });
-    Check("oversized record is replaced by explicit omission evidence", File.ReadAllText(capture.CurrentFile).Contains("record_omitted"));
+    Check("oversized record is replaced by explicit omission evidence", ReadActiveCapture(capture.CurrentFile).Contains("record_omitted"));
     Check("60-second deadline stops capture", capture.Expire(60100) && !capture.Active);
     var validLines = 0;
     foreach (var file in Directory.GetFiles(Path.Join(temp, "capture")))

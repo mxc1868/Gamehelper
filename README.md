@@ -1,6 +1,6 @@
 # GameHelper — WhereTheWispsAt / UniqueLoot
 
-当前仓库：**[mxc1868/Gamehelper](https://github.com/mxc1868/Gamehelper)**，分支 `main`。包含幽火与 UniqueLoot 插件，保留恢复后 fork 的上游更新。Windows / 当前 PoE2 实机验证仍待完成。
+当前仓库：**[mxc1868/Gamehelper](https://github.com/mxc1868/Gamehelper)**，分支 `main`。基于上游 `v1.5.11` 标签的 `0d11fe7`，保留幽火与 UniqueLoot 补丁；核心和启动器版本统一为 1.5.11。Windows 编译和插件加载已验证，当前 PoE2 游戏读取与绘制仍待实测。
 
 - **UniqueLoot**：按完整 asset 路径识别未鉴定暗金，默认猎首金色高亮、魔血紫红色高亮；可编辑 `Plugins/UniqueLoot/highlights.default.json`。详见 [插件说明](Plugins/UniqueLoot/README.md)。
 - **Sacred Wisp**：默认橙色；旧配置的默认白色会迁移为橙色。详见 [幽火说明](Plugins/WhereTheWispsAt/README.md)。
@@ -10,15 +10,22 @@
 
 ```powershell
 git pull --ff-only
-dotnet build Plugins/UniqueLoot/UniqueLoot.csproj -c Release
-dotnet build Plugins/WhereTheWispsAt/WhereTheWispsAt.csproj -c Release
+dotnet build GameOverlay.sln -c Release
 ```
 
 运行 `GameHelper/bin/Release/net10.0-windows/win-x64/GameHelper.exe`，F12 启用插件。两个项目均引用配套核心；插件和语言文件会复制到该目录的 `Plugins` 下。首次启用 UniqueLoot 会生成可编辑的 `Plugins/UniqueLoot/config/highlights.json`；修改后点击“重新加载高亮配置”。
 
-当前 Linux 编译与 UniqueLoot 40 项、WhereTheWispsAt 67 项离线检查通过；这些检查不代表 Windows 游戏读取或绘制已经验证。此前的 [初版测试 Release](https://github.com/mxc1868/Gamehelper/releases/tag/unique-debug-2026-09-23) 保留，但不包含后续腰带高亮和橙色 Sacred Wisp 修改，请从 `main` 编译当前版本。
+**本 fork 的启动器已跳过在线二进制更新**，后续使用源码更新与编译。上游原版 1.5.11 缺少本 fork 新增的 `MapProjection`、实体扫描接口和 `WorldItem.TryReadItem`；覆盖核心会导致幽火在加载阶段消失、UniqueLoot 扫描接口不可用。已有 `Test` 目录可用 `rebuild-test.ps1` 重建，需一起更新启动器、核心与插件，保留自己的配置。
 
-原项目与作者信息保留如下。
+Windows 验证：整套 Release 编译成功，UniqueLoot 40 项、WhereTheWispsAt 67 项离线检查通过。新增 [插件加载检查](tests/PluginLoad.Tests/Program.cs) 调用实际 `PManager` 加载器，并检查新增核心接口：
+
+```powershell
+dotnet run --project tests/PluginLoad.Tests/PluginLoad.Tests.csproj -c Release -- GameHelper/bin/Release/net10.0-windows/win-x64
+```
+
+9 项加载/接口检查通过；不启动 overlay、不启用插件、不读取游戏或改写设置。此前的 [初版测试 Release](https://github.com/mxc1868/Gamehelper/releases/tag/unique-debug-2026-09-23) 保留，但不包含后续修复，请从 `main` 编译当前版本。
+
+原项目与作者信息保留如下；其中上游下载与自动更新说明不适用于本 fork 的配套构建。
 
 ---
 
