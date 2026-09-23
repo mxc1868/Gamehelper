@@ -4,7 +4,7 @@
 
 ## Windows 使用
 
-1. 从 [本仓库 Releases](https://github.com/mxc1868/Gamehelper/releases) 下载 `GameHelper-unique-debug-win-x64.zip` 和 `.sha256`，将整个 ZIP 解压到新的可写目录。包内包含 GameHelper 核心、UniqueLoot、WhereTheWispsAt、Radar 和 Windows x64 .NET 10 运行时，不需要编译器或另外安装 .NET。
+1. 将本地构建目录 `artifacts/unique/` 下的 `GameHelper-unique-debug-win-x64.zip` 和 `.zip.sha256` 下载/传到 Windows，将整个 ZIP 解压到新的可写目录。原 GitHub fork 已删除，当前没有可用的 Release 下载地址。包内包含 GameHelper 核心、UniqueLoot、WhereTheWispsAt、Radar 和 Windows x64 .NET 10 运行时，不需要编译器或另外安装 .NET。
 2. 关闭旧 GameHelper，右键 `Start-Debug.cmd`，以管理员身份运行。权限要求来自原有 `app.manifest`。此包直接运行配套核心，不使用指向上游的更新启动器。
 3. F12 打开插件管理，启用 `UniqueLoot`。默认显示物品旁名称及左侧掉落列表；在插件设置中调整位置、最多数量或显示开关。设置界面支持中文/英文，内置物品名称为英文。
 4. 在战斗区域观察暗金掉落。只有一个映射名称时显示名称；共用贴图时显示“可能为：A / B”；表中未收录时显示“未知暗金”；贴图读取失败另行标明。城镇和藏身处不扫描。
@@ -50,4 +50,4 @@ dotnet run --project tests/WhereTheWispsAt.Tests/WhereTheWispsAt.Tests.csproj -c
 python3 scripts/package-wisps.py --include-unique
 ```
 
-输出 `artifacts/unique/GameHelper-unique-debug-win-x64.zip` 和 `.sha256`。脚本只构建，不发布；发布目标必须是 `mxc1868/Gamehelper`。离线映射检查与内存读数/Windows 绘制验证分别记录。
+输出 `artifacts/unique/GameHelper-unique-debug-win-x64.zip` 和 `.sha256`。脚本只构建，不发布；当前本地 `main` 无有效远程发布目标，用户另行指定仓库后才能发布。离线映射检查与内存读数/Windows 绘制验证分别记录。

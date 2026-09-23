@@ -12,7 +12,7 @@
 - [x] 内置 PoE2 导出版本 `4.5.5.2`，源提交 `repoe-fork/poe2@b818b843337cae43b090b272fd98bbc0fd3a34f3`，446 条路径、441 个名称、3 条共用路径；来源及更新方式见 [数据说明](Plugins/UniqueLoot/Data/SOURCES.md)。与价格数据无关。
 - [x] Linux 编译成功。UniqueLoot **25 项离线检查通过**；原 WhereTheWispsAt **63 项回归检查通过**。前者检验映射/覆盖/配置，不是游戏内存和绘制测试；后者验证范围不变。干净编译有 3 条既存核心警告。
 - [x] `scripts/package-wisps.py --include-unique` 生成完整自包含 Windows x64 ZIP + SHA-256（约 45.4 MiB），包含三个插件和 .NET 10.0.12。检查必要文件、x64 PE、自包含运行时配置、ZIP CRC、252 个包内文件哈希与双语资源键。
-- [ ] **发布尚未完成**：2026-09-23 已登录 GitHub CLI 与连接器均无法读取 `mxc1868/Gamehelper`（Not Found / 无访问权限），已向用户询问是否改名或迁移。没有改用其他仓库，也没有创建虚构 Release。确认目标或恢复权限后，推送本次源码提交、按对应提交核对构建清单，再上传完整 ZIP 与 checksum。
+- [x] **交付方式已澄清**：2026-09-23 用户确认已删除 `mxc1868/Gamehelper` fork。当前继续维护本地 `/home/ubuntu/Gamehelper` 的 `main`，`origin` 只是残留旧地址；没有可用的 GitHub 发布目标。提供本地完整 ZIP 与 checksum，不再把失效 Release 当作下载入口，也不自动重建 fork。需要远程发布时由用户另行指定目标。
 - [ ] Windows 实测：未鉴定暗金名称与鉴定后对照；地面投影；拾取/丢回；切区、禁用/重启；过滤设置、扫描截断与性能。读取失败时交回 `Plugins/UniqueLoot/diagnostics/latest-scan.json`、host 日志及构建清单。
 
 当前构建：`artifacts/unique/GameHelper-unique-debug-win-x64.zip`。使用和限制详见 [UniqueLoot 说明](Plugins/UniqueLoot/README.md)。没有可靠的原有 `Identified` 属性，所以显示地面所有暗金的 asset 候选（包括已鉴定的），不猜测该字段；不读取随机词缀/数值。仅扫描公开 awake 集合，是否漏掉当前客户端地面实体仍待实机证据；静态映射不会自动覆盖未来更新。新增说明不代表原版框架已经提供新接口。
@@ -21,9 +21,9 @@
 
 把 [exCore2/WhereTheWispsAt](https://github.com/exCore2/WhereTheWispsAt) 的幽火标记功能迁移到 GameHelper，最终希望尽量只维护插件。用户在 Windows 玩游戏，没有编译环境；在 Linux 构建后从自己的 GitHub 下载完整 x64 包。
 
-- 当前仓库：<https://github.com/mxc1868/Gamehelper>，`origin` 指向这里，分支 `main`。
-- [Windows 调试预发布](https://github.com/mxc1868/Gamehelper/releases/tag/wisps-debug-2026-09-14)：完整 ZIP、SHA-256 文件。
-- 源码进入 Git；编译包放 GitHub Release，不把 DLL 和运行时逐个提交进源码历史。
+- 当前仓库：本地 `/home/ubuntu/Gamehelper`，分支 `main`。幽火实现提交 `05d1116`，UniqueLoot 实现提交 `dfee696`，均在同一分支上；当前没有独立的幽火分支或额外 worktree。
+- 历史 fork `mxc1868/Gamehelper` 已被用户删除，旧 `wisps-debug-2026-09-14` Release 不再作为下载入口；本地 `origin/main` 是删除前的跟踪记录，不代表远端还存在。
+- 源码保存在本地 Git；完整 ZIP 和 checksum 放 `artifacts/`。不把 DLL 和运行时逐个提交进源码历史；当前没有远程发布目标。
 - 基础源码来自 `MordWraith/Gamehelper` 提交 `5e581b16c834bbdee831e28910f4786f9e22ab94`。与 Gordin/GameHelper2 共用大量核心及 offsets 源码，但不能推断未来版本始终兼容。
 - 用户已要求清理此前的 ExileCore2 / ExileApi 逆向研究，并转向 GameHelper；此前研究文档和临时目录已经清理。当前不做付费授权绕过或相关研究。
 
@@ -40,7 +40,7 @@
 - [x] 60 秒录制内以最短 2 秒间隔进行 API 对照，也有手动单次按钮。公开集合读取使用 `shouldCache:false` 避免额外填充共享缓存；不会自动修改全局实体过滤设置。
 - [x] 日志轮换最多 3 × 2 MiB；自动停止、报告导出、写入失败展示。独立定时协程确保 F9 跳过 DrawUI 时仍可记录心跳和停止。
 - [x] Linux 可构建 Windows x64 自包含包，包含配套核心、WhereTheWispsAt、Radar、.NET 10 运行时、字体、语言文件、启动脚本及构建清单。
-- [x] 根目录 `AGENTS.md` 指向此接手文档；仓库首页提供本仓库下载与调试入口。
+- [x] 根目录 `AGENTS.md` 指向此接手文档；仓库首页提供本地完整包路径与调试入口。
 
 ## 已验证与尚未验证
 
@@ -50,7 +50,7 @@
 
 ## P0：用实机证据决定是否保留新核心 API
 
-- [ ] 用户下载本仓库最新调试包，解压到新的可写目录，以管理员身份启动 `Start-Debug.cmd`，F12 启用插件。管理员要求来自已有 `GameHelper/app.manifest`。
+- [ ] 用户将本地构建的完整调试包下载/传到 Windows，解压到新的可写目录，以管理员身份启动 `Start-Debug.cmd`，F12 启用插件。管理员要求来自已有 `GameHelper/app.manifest`。
 - [ ] 在确实有幽火/宝箱/井的区域录制 60 秒，覆盖静止、移动、采集、开启/激活、切图；收集 `diagnostics/`、host 日志、`build-manifest.json` 和实际观察说明。
 - [ ] 检查 `api_comparison`：公开集合是否缺少新增扫描能读到的目标？是否仅因 `ProcessAllRenderableEntities=false`？报告只记录设置，不自动切换。
 - [ ] 若要排除过滤设置影响，可在 GH 原有设置中手动短时开启“处理所有可渲染实体”后再录制，并核对开关值与耗时。该设置会扩大整个框架处理范围，需要观察实际性能；测试后恢复自己的配置。
@@ -104,11 +104,11 @@ python3 scripts/package-wisps.py
 当前工作区已还原依赖的离线方式（路径是开发缓存，不是项目依赖）：
 
 ```bash
-DOTNET_CLI_HOME=/tmp/gamehelper-wisps/dotnet-home dotnet build tests/WhereTheWispsAt.Tests/WhereTheWispsAt.Tests.csproj -c Release --no-restore -m:1 -nr:false --disable-build-servers
-DOTNET_CLI_HOME=/tmp/gamehelper-wisps/dotnet-home dotnet tests/WhereTheWispsAt.Tests/bin/Release/net10.0/WhereTheWispsAt.Tests.dll
-DOTNET_CLI_HOME=/tmp/gamehelper-wisps/dotnet-home python3 scripts/package-wisps.py --packages /tmp/gamehelper-wisps/nuget --source /tmp/gamehelper-wisps/nuget
+DOTNET_CLI_HOME=/tmp/gamehelper-unique/dotnet-home dotnet build tests/WhereTheWispsAt.Tests/WhereTheWispsAt.Tests.csproj -c Release --no-restore -m:1 -nr:false --disable-build-servers
+DOTNET_CLI_HOME=/tmp/gamehelper-unique/dotnet-home dotnet tests/WhereTheWispsAt.Tests/bin/Release/net10.0/WhereTheWispsAt.Tests.dll
+DOTNET_CLI_HOME=/tmp/gamehelper-unique/dotnet-home python3 scripts/package-wisps.py --packages /tmp/gamehelper-unique/nuget --source /tmp/gamehelper-unique/nuget
 ```
 
-发布前先提交源码，再重新打包，让清单中的 BaseCommit 对应所发布提交。输出 `artifacts/wisps/WhereTheWispsAt-debug-win-x64.zip` 及 `.sha256`，上传到明确指向该提交的新 GitHub Release。给用户 Release 下载地址；单独更新插件 DLL 目前不够。
+交付前先提交源码，再重新打包，让清单中的 BaseCommit 对应本地提交。默认输出 `artifacts/wisps/WhereTheWispsAt-debug-win-x64.zip` 及 `.sha256`；加 `--include-unique` 输出 `artifacts/unique/GameHelper-unique-debug-win-x64.zip` 及 `.sha256`。提供完整包，单独更新插件 DLL 目前不够。只有用户另行指定有效仓库时才恢复 GitHub Release 发布。
 
 原仓库的 `scripts/sync-gordin.ps1` 使用覆盖式同步，其他维护/启动器脚本也可能仍指向上游。不要直接运行它们更新当前分支或发布本 fork；先检查目标和差异，避免丢掉新增 API 或拿错编译包。
