@@ -10,7 +10,9 @@
 - [x] 新增 `Plugins/Follower` 并加入整套解决方案构建。扫描附近有效 Player，排除小号自己、按名字去重排序后下拉选择，选中立即保存；不提供手动输入框，也不自动选择最近玩家。名单是附近可见玩家，尚不能保证都是队友。
 - [x] 复用现有公开 AwakeEntities/Player/Render/Life/TriggerableBlockage/地形/投影接口；独立实现有界可取消 A*、严格边界与墙角检查、离墙间距、已知开门覆盖/关门阻挡、路线更新和屏幕方向到 WASD 转换。无 GameHelper 核心、GameOffsets 或 Radar 改动，无新增框架 API，无 Radar DLL 依赖。
 - [x] 默认仅预览、F8 启停、Esc 停止、停止/恢复距离滞回、卡住超时；失焦、目标丢失/身份变化、切图、死亡、聊天/大面板/设置、异常时停止。独立按键租期定时器处理 F9/绘制卡顿与焦点变化；正常禁用/退出释放按键。关闭预览才发送前台 SendInput；不支持后台双开、自动开门、传送门或跨区。
-- [x] Windows Release 插件及整套解决方案构建成功；Follower 62 项纯逻辑测试通过；真实 PManager 插件发现/加载/API 检查扩展到 Follower，共 11 项通过。首次插件构建有 3 条既存核心警告；整套构建另有 4 条既存 WorldDrawing 警告，NuGet 漏洞元数据网络不可达产生 NU1900 警告。无新插件编译警告，无游戏输入实测。
+- [x] Windows Release 插件及整套解决方案构建成功；Follower 62 项纯逻辑测试通过；真实 PManager 插件发现/加载/API 检查扩展到 Follower，共 11 项通过。首次插件构建有 3 条既存核心警告；整套构建另有 4 条既存 WorldDrawing 警告，NuGet 漏洞元数据网络不可达产生 NU1900 警告。无新插件编译警告；构建时未做游戏输入实测，后续单键验证见下。
+- [x] 用户随后要求测试同机客户端的后台输入。2026-09-25 本地时间（UTC 2026-09-26），对当前 PoE2 定向发送 `PostMessage WM_KEYDOWN/WM_KEYUP`：后台多轮、前台对照均返回投递成功，但用户均未观察到移动。不能据此启用后台跟随，也不能将消息投递成功当作游戏接受输入。
+- [x] 改用与 Follower 相同的 `SendInput` W 扫描码 0x11，于 UTC 02:15:37 在游戏前台按住约 510 毫秒后松开；按下/松开各接受 1 个输入，系统 W 状态由按下恢复未按下，全程游戏保持前台。用户明确确认“这次动了”。这是独立探针的前台 W 实测，未启动完整 Follower，不代表寻路、其他方向或插件生命周期已通过实测。保持现有 SendInput 实现和前台限制。
 - [ ] 实机验证：附近名字选择与保存；预览方向；WASD 直行/斜行；拐角/窄道/坡道/开关门；距离启停；手动接管；目标走远、死亡、切区；Alt-Tab、聊天、F9 和禁用后的释放。操作系统强制结束进程不执行清理；同时按住插件已按下的同一个移动键不能可靠识别，使用 Esc/F8 接管。
 
 说明：[Follower README](Plugins/Follower/README.md)。验证命令：`dotnet run --project tests/Follower.Tests/Follower.Tests.csproj -c Release`；`dotnet run --project tests/PluginLoad.Tests/PluginLoad.Tests.csproj -c Release -- GameHelper/bin/Release/net10.0-windows/win-x64`。当前加载检查要求构建目录包含 Follower，旧 Test 未部署该插件。

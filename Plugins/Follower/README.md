@@ -1,6 +1,6 @@
 # Follower
 
-GameHelper 原生跟随插件：在小号端扫描附近玩家，从下拉列表选择队长，按地形路线发送 WASD。适用于另一台电脑或虚拟机内、小号游戏窗口保持前台的用法。当前是可编译、通过离线检查的原型，尚未在当前 PoE2 中验证实际移动。
+GameHelper 原生跟随插件：在小号端扫描附近玩家，从下拉列表选择队长，按地形路线发送 WASD。适用于另一台电脑或虚拟机内、小号游戏窗口保持前台的用法。当前是可编译、通过离线检查的原型；已用独立探针验证前台 SendInput 的 W 能让角色移动，完整插件的自动寻路跟随仍待实测。
 
 ## 使用
 
@@ -18,7 +18,7 @@ GameHelper 原生跟随插件：在小号端扫描附近玩家，从下拉列表
 - 读取原有 `GridWalkableData` / `TerrainMetadata.BytesPerRow`。沿用 Radar 的半字节地形解码与八方向 A* 思路，在插件内实现坐标边界、墙体间距、禁止斜穿墙角、节点/耗时预算，以及可取消的后台寻路。无需启用或依赖 Radar DLL。
 - Radar 的 `BuildDoorOverrideMap` 会无条件把门附近设为可通行。Follower 只为已知 `TriggerableBlockage.IsBlocked == false` 的门提供通行修正；关闭或无法确认状态的门当作障碍。门的组件状态与修正范围仍需实机验证。**不会点击开门、使用传送门或自动跨区。**
 - 通过原有 `WorldToScreen` 计算当前位置的投影方向，将下一段路线转换成 WASD/斜向组合，并检查该方向的短距离地形。路线预览按玩家当前高度绘制，坡道上可能与地面不完全贴合；真实键盘方向、走速、碰撞和窄道表现待实测。
-- 仅使用标准 Windows `SendInput` 扫描码；调用前核对前台窗口 PID。此 API 受 Windows 完整性级别限制，输入是否被当前游戏接受需要现场确认，参考 [Microsoft SendInput 文档](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendinput)。不提供后台双开输入。
+- 仅使用标准 Windows `SendInput` 扫描码；调用前核对前台窗口 PID。当前客户端已由用户确认前台 W 单键测试能移动，其他环境仍需验证；此 API 受 Windows 完整性级别限制，参考 [Microsoft SendInput 文档](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendinput)。不提供后台双开输入。
 - 死亡、目标不可见/身份变化、切区、游戏失焦、聊天或大面板打开、设置打开、异常均停止；恢复后需要 F8。卡住约 2.5 秒停止，默认不反复撞墙。客户端看不到队长时，没有远距离坐标可用，也不会追逐旧坐标。
 - 不持久化运行状态。独立 25 毫秒定时器检查按键租期：没有有效绘制帧续期 200 毫秒后释放按键，因此 F9 暂停绘制或主循环卡顿不会一直保持 WASD；重新绘制时超过 300 毫秒间隔会停止跟随。正常禁用和进程退出也释放已发送的键。操作系统强制终止进程不执行清理回调。
 - 检测到额外的手动 WASD 或 Ctrl/Alt/Windows 键时停止；无法区分用户是否物理按住了插件已经按下的同一个键，手动接管请用 Esc/F8。
@@ -33,5 +33,7 @@ dotnet run --project tests/PluginLoad.Tests/PluginLoad.Tests.csproj -c Release -
 ```
 
 Follower 离线检查覆盖障碍绕行、门覆盖、边界、墙角、寻路取消/预算、投影方向、按键释放/发送失败、跟随距离和卡住检测；不会连接游戏或发送真实按键。插件加载检查调用真实 `PManager`，包括 Follower，但不调用 `OnEnable`，不等于实机测试。
+
+2026-09-25 本地实测：独立探针用与插件相同的 `SendInput` W 扫描码按住约半秒再松开，系统按键状态恢复，全程游戏前台，用户确认角色移动。此前通过 `PostMessage` 发送窗口按下/松开消息，后台与前台对照均未观察到移动，虽然 Windows 返回投递成功。因此保留前台 SendInput，不把窗口消息方式列为可用的后台输入方案。完整跟随、A/S/D 与斜向移动、地形避障和失焦清理仍需游戏内验证。
 
 2026-09-25 检查本地插件目录与 [MordWraith 上游插件目录](https://github.com/MordWraith/Gamehelper/tree/main/Plugins)，未发现可直接复用的 Follower；公开搜索也未确认兼容此框架的现成版本。实现参考本仓库 `Plugins/Radar/Pathfinder.cs`、`LineWalker.cs`、`GameHelper/RemoteObjects/States/InGameStateObjects/Entity.cs`。
