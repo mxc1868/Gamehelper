@@ -13,6 +13,8 @@
 - [x] Windows Release 插件及整套解决方案构建成功；Follower 62 项纯逻辑测试通过；真实 PManager 插件发现/加载/API 检查扩展到 Follower，共 11 项通过。首次插件构建有 3 条既存核心警告；整套构建另有 4 条既存 WorldDrawing 警告，NuGet 漏洞元数据网络不可达产生 NU1900 警告。无新插件编译警告；构建时未做游戏输入实测，后续单键验证见下。
 - [x] 用户随后要求测试同机客户端的后台输入。2026-09-25 本地时间（UTC 2026-09-26），对当前 PoE2 定向发送 `PostMessage WM_KEYDOWN/WM_KEYUP`：后台多轮、前台对照均返回投递成功，但用户均未观察到移动。不能据此启用后台跟随，也不能将消息投递成功当作游戏接受输入。
 - [x] 改用与 Follower 相同的 `SendInput` W 扫描码 0x11，于 UTC 02:15:37 在游戏前台按住约 510 毫秒后松开；按下/松开各接受 1 个输入，系统 W 状态由按下恢复未按下，全程游戏保持前台。用户明确确认“这次动了”。这是独立探针的前台 W 实测，未启动完整 Follower，不代表寻路、其他方向或插件生命周期已通过实测。保持现有 SendInput 实现和前台限制。
+- [x] 后续依次测试后台 `SendMessageTimeout`、`AttachThreadInput + SetKeyboardState + 窗口消息`、真实 `SendInput`（临时测试窗前台、游戏后台），每项均发送 3 次约半秒 W；用户逐项确认没有移动。测试已释放 W、恢复线程键盘状态并解除连接，临时测试窗已关闭。API 成功仅表示系统接受调用，不代表角色移动。
+- [x] 用户最终选择两台机器，取消继续测试后台输入。虚拟手柄测试未执行，未安装驱动或下载手柄 SDK。已删除本轮 `gamehelper-follower-probe` 临时目录及两张截图（共 17,858,978 字节），核对无测试进程残留。保留 Follower 源码与前台限制，不自动重启后台输入调查；未更新 Test。
 - [ ] 实机验证：附近名字选择与保存；预览方向；WASD 直行/斜行；拐角/窄道/坡道/开关门；距离启停；手动接管；目标走远、死亡、切区；Alt-Tab、聊天、F9 和禁用后的释放。操作系统强制结束进程不执行清理；同时按住插件已按下的同一个移动键不能可靠识别，使用 Esc/F8 接管。
 
 说明：[Follower README](Plugins/Follower/README.md)。验证命令：`dotnet run --project tests/Follower.Tests/Follower.Tests.csproj -c Release`；`dotnet run --project tests/PluginLoad.Tests/PluginLoad.Tests.csproj -c Release -- GameHelper/bin/Release/net10.0-windows/win-x64`。当前加载检查要求构建目录包含 Follower，旧 Test 未部署该插件。
