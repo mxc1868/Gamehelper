@@ -147,7 +147,8 @@ public sealed class FollowerCore : PCore<FollowerSettings>
         ImGui.Checkbox(this.PluginText.Label("preview", "Preview only (no keyboard input)", "Preview"), ref this.Settings.PreviewOnly);
         ImGui.SliderFloat(this.PluginText.Label("stop", "Stop distance (grid cells)", "Stop"), ref this.Settings.StopDistance, 3, 100);
         ImGui.SliderFloat(this.PluginText.Label("resume", "Resume distance", "Resume"), ref this.Settings.ResumeDistance, this.Settings.StopDistance + 3, 150);
-        ImGui.SliderInt(this.PluginText.Label("clearance", "Wall clearance (grid cells)", "Clearance"), ref this.Settings.Clearance, 0, 2);
+        ImGui.SliderInt(this.PluginText.Label("clearance", "Preferred wall clearance (grid cells)", "Clearance"), ref this.Settings.Clearance, 0, 2);
+        ImGui.TextWrapped(this.PluginText.T("clearance_hint", "Prefer routes away from walls, but allow closer movement when starting beside a wall or passing through a narrow corridor."));
         ImGui.SliderInt(this.PluginText.Label("repath", "Recalculate route (ms)", "Repath"), ref this.Settings.RepathMilliseconds, 150, 1000);
         ImGui.SliderInt(this.PluginText.Label("stuck", "Stop if stuck for (ms)", "Stuck"), ref this.Settings.StuckMilliseconds, 1000, 10000);
         ImGui.Checkbox(this.PluginText.Label("show_status", "Show status", "Status"), ref this.Settings.ShowStatus);

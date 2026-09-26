@@ -5,33 +5,41 @@ using System.Numerics;
 
 // Uses the same packed terrain format and 8-neighbour A* approach as Radar.
 // Movement requires stricter edges than a display route: bounded coordinates,
-// no endpoint snapping across walls, clearance, and no diagonal corner cutting.
+// no endpoint snapping across walls and no diagonal corner cutting. Clearance is
+// a route preference, never a reason to declare a physically open cell blocked.
 internal sealed class NavigationGrid(byte[] data, int stride, int clearance,
     HashSet<(int, int)> openDoors, HashSet<(int, int)> closedDoors)
 {
     public bool Contains(Vector2 p) => float.IsFinite(p.X) && float.IsFinite(p.Y) &&
         stride > 0 && p.X >= 0 && p.Y >= 0 && p.X < stride * 2L && p.Y < data.Length / stride;
 
-    private bool Cell(int x, int y)
+    public bool Walkable(int x, int y)
     {
         if (stride <= 0 || x < 0 || y < 0 || x >= stride * 2L || y >= data.Length / stride) return false;
         if (closedDoors.Contains((x, y))) return false;
         return openDoors.Contains((x, y)) || ((data[y * stride + x / 2] >> ((x & 1) * 4)) & 15) != 0;
     }
 
-    public bool Walkable(int x, int y)
+    private float CellCost(int x, int y)
     {
-        for (var dx = -clearance; dx <= clearance; dx++)
-            for (var dy = -clearance; dy <= clearance; dy++)
-                if (!this.Cell(x + dx, y + dy)) return false;
-        return true;
+        if (!this.Walkable(x, y)) return float.PositiveInfinity;
+        // Search the nearest wall first. Penalize proximity while preserving
+        // narrow corridors and allowing the player to leave a wall-adjacent cell.
+        for (var radius = 1; radius <= clearance; radius++)
+            for (var dx = -radius; dx <= radius; dx++)
+                for (var dy = -radius; dy <= radius; dy++)
+                    if (Math.Max(Math.Abs(dx), Math.Abs(dy)) == radius && !this.Walkable(x + dx, y + dy))
+                        return 1 + 3 * (clearance - radius + 1);
+        return 1;
     }
 
     // Supercover traversal: when the segment hits a corner, both adjacent cells
     // must be clear. Sampling only Bresenham's centre cells can cut a wall corner.
-    public bool Clear(Vector2 a, Vector2 b)
+    public bool Clear(Vector2 a, Vector2 b) => float.IsFinite(this.LineCost(a, b, false));
+
+    private float LineCost(Vector2 a, Vector2 b, bool preferClearance = true)
     {
-        if (!this.Contains(a) || !this.Contains(b)) return false;
+        if (!this.Contains(a) || !this.Contains(b)) return float.PositiveInfinity;
         var x = (int)MathF.Round(a.X);
         var y = (int)MathF.Round(a.Y);
         var endX = (int)MathF.Round(b.X);
@@ -45,19 +53,26 @@ internal sealed class NavigationGrid(byte[] data, int stride, int clearance,
         var stepX = sx == 0 ? float.PositiveInfinity : 1 / MathF.Abs(dx);
         var stepY = sy == 0 ? float.PositiveInfinity : 1 / MathF.Abs(dy);
         var limit = Math.Abs(endX - x) + Math.Abs(endY - y) + 2;
+        var length = Vector2.Distance(a, b);
+        var cost = 0f;
+        var previousT = 0f;
         while (limit-- > 0)
         {
-            if (!this.Walkable(x, y)) return false;
-            if (x == endX && y == endY) return true;
+            if (!this.Walkable(x, y)) return float.PositiveInfinity;
+            var weight = preferClearance ? this.CellCost(x, y) : 1;
+            if (x == endX && y == endY) return cost + (1 - previousT) * length * weight;
+            var nextT = Math.Clamp(MathF.Min(tx, ty), previousT, 1);
+            cost += (nextT - previousT) * length * weight;
+            previousT = nextT;
             if (MathF.Abs(tx - ty) < 0.00001f)
             {
-                if (!this.Walkable(x + sx, y) || !this.Walkable(x, y + sy)) return false;
+                if (!this.Walkable(x + sx, y) || !this.Walkable(x, y + sy)) return float.PositiveInfinity;
                 x += sx; y += sy; tx += stepX; ty += stepY;
             }
             else if (tx < ty) { x += sx; tx += stepX; }
             else { y += sy; ty += stepY; }
         }
-        return false;
+        return float.PositiveInfinity;
     }
 
     public List<Vector2>? FindPath(Vector2 start, Vector2 goal, CancellationToken cancellation,
@@ -67,12 +82,20 @@ internal sealed class NavigationGrid(byte[] data, int stride, int clearance,
         var first = ((int)MathF.Round(start.X), (int)MathF.Round(start.Y));
         var last = ((int)MathF.Round(goal.X), (int)MathF.Round(goal.Y));
         if (!this.Walkable(first.Item1, first.Item2) || !this.Walkable(last.Item1, last.Item2)) return null;
-        if (this.Clear(start, goal)) return [start, goal];
+        // A wall-adjacent straight line can be walkable yet unnecessarily hug
+        // the wall. Only bypass A* when the line has no clearance penalty.
+        if (this.LineCost(start, goal) <= Vector2.Distance(start, goal) + 0.001f) return [start, goal];
         var clock = Stopwatch.StartNew();
         var queue = new PriorityQueue<(int x, int y), float>();
         var costs = new Dictionary<(int, int), float> { [first] = 0 };
         var parents = new Dictionary<(int, int), (int, int)>();
         var visited = new HashSet<(int, int)>();
+        var weights = new Dictionary<(int x, int y), float>();
+        float Weight((int x, int y) cell)
+        {
+            if (!weights.TryGetValue(cell, out var weight)) weights[cell] = weight = this.CellCost(cell.x, cell.y);
+            return weight;
+        }
         queue.Enqueue(first, 0);
         var count = 0;
         while (queue.TryDequeue(out var current, out _) && count++ < maxNodes)
@@ -98,7 +121,8 @@ internal sealed class NavigationGrid(byte[] data, int stride, int clearance,
                 var next = (x: current.x + dx, y: current.y + dy);
                 if (visited.Contains(next) || !this.Walkable(next.x, next.y)) continue;
                 if (dx != 0 && dy != 0 && (!this.Walkable(current.x + dx, current.y) || !this.Walkable(current.x, current.y + dy))) continue;
-                var cost = costs[current] + (dx == 0 || dy == 0 ? 1 : 1.41421356f);
+                var cost = costs[current] + (dx == 0 || dy == 0 ? 1 : 1.41421356f) *
+                    (Weight(current) + Weight(next)) * 0.5f;
                 if (costs.TryGetValue(next, out var old) && old <= cost) continue;
                 costs[next] = cost;
                 parents[next] = current;
@@ -110,8 +134,8 @@ internal sealed class NavigationGrid(byte[] data, int stride, int clearance,
 
     public Vector2? Steer(IReadOnlyList<Vector2> route, Vector2 player)
     {
-        // The farthest visible point within a short horizon avoids old path nodes
-        // pulling the character backwards while keeping turns close to the route.
+        // Keep the clearance preference when skipping path nodes. A merely
+        // visible shortcut may undo A* and send the player straight along a wall.
         var nearest = 0;
         var nearestDistance = float.MaxValue;
         for (var i = 0; i < route.Count; i++)
@@ -119,13 +143,22 @@ internal sealed class NavigationGrid(byte[] data, int stride, int clearance,
             var distance = Vector2.DistanceSquared(route[i], player);
             if (distance < nearestDistance) { nearestDistance = distance; nearest = i; }
         }
-        for (var i = Math.Min(route.Count - 1, nearest + 60); i >= nearest; i--)
+        var alongRoute = 0f;
+        var previous = player;
+        Vector2? aim = null;
+        for (var i = nearest; i <= Math.Min(route.Count - 1, nearest + 60); i++)
         {
+            alongRoute += this.LineCost(previous, route[i]);
+            previous = route[i];
+            var direct = this.LineCost(player, route[i]);
+            // Rejoin a still-visible forward section if an old connector became
+            // blocked. Every returned segment is checked against current terrain.
+            if (!float.IsFinite(alongRoute)) alongRoute = direct;
             var delta = route[i] - player;
-            if (delta.LengthSquared() < 0.25f || !this.Clear(player, route[i])) continue;
-            return player + Vector2.Normalize(delta) * MathF.Min(8, delta.Length());
+            if (delta.LengthSquared() < 0.25f || !float.IsFinite(direct) || direct > alongRoute * 1.05f + 0.05f) continue;
+            aim = player + Vector2.Normalize(delta) * MathF.Min(8, delta.Length());
         }
-        return null;
+        return aim;
     }
 }
 

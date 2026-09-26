@@ -51,8 +51,64 @@ Check(Grid(split, open: [(10, 5)], closed: [(10, 5)]).FindPath(new(3, 5), new(17
 var corner = Grid(Map(20, 20, (x, y) => (x, y) != (3, 2) && (x, y) != (2, 3)));
 Check(!corner.Clear(new(2, 2), new(3, 3)), "supercover rejects diagonal corner cutting");
 Check(!corner.Clear(new(2.4f, 2.4f), new(3.2f, 3.2f)), "fractional diagonal rejects corner cutting");
-Check(Grid(all, 1).Walkable(1, 1) && !Grid(all, 1).Walkable(0, 1), "clearance includes map edge");
-Check(!Grid(wall, 1).Walkable(9, 5), "clearance keeps distance from wall");
+Check(Grid(all, 1).Walkable(0, 1) && !Grid(all, 1).Walkable(-1, 1), "clearance preserves walkable map-edge cells without extending bounds");
+Check(Grid(wall, 1).Walkable(9, 5) && !Grid(wall, 1).Walkable(10, 5), "clearance distinguishes wall proximity from a solid wall");
+var nearWallGrid = Grid(split, 1);
+var wallStart = new Vector2(9, 5);
+var awayFromWall = new Vector2(3, 5);
+var escapePath = nearWallGrid.FindPath(wallStart, awayFromWall, default);
+Check(escapePath != null, "default clearance allows starting beside a wall");
+Check(escapePath != null && nearWallGrid.Steer(escapePath, wallStart) is Vector2 escapeAim &&
+    escapeAim.X < wallStart.X && nearWallGrid.Clear(wallStart, escapeAim), "near-wall start has a usable outward steering segment");
+Check(nearWallGrid.FindPath(awayFromWall, wallStart, default) != null, "default clearance allows leader beside a wall");
+Check(nearWallGrid.FindPath(wallStart, new(11, 5), default) == null, "soft clearance cannot connect opposite sides of a solid wall");
+var narrowGrid = Grid(Map(20, 20, (_, y) => y == 10), 2);
+var narrowPath = narrowGrid.FindPath(new(2, 10), new(17, 10), default);
+Check(narrowPath != null && narrowPath.All(p => p.Y == 10), "one-cell corridor remains connected with clearance two");
+Check(narrowPath != null && narrowGrid.Steer(narrowPath, new(2, 10)) is Vector2 narrowAim &&
+    Steering.Choose(narrowAim - new Vector2(2, 10), Vector2.UnitX, Vector2.UnitY,
+        step => narrowGrid.Clear(new(2, 10), new Vector2(2, 10) + step)) == MoveKeys.D,
+    "narrow corridor produces a valid movement key");
+var alongWall = nearWallGrid.FindPath(new(9, 2), new(9, 17), default);
+Check(alongWall != null && alongWall.Any(p => p.X <= 8), "clearance prefers an interior route over a long wall-hugging line");
+Check(alongWall != null && nearWallGrid.Steer(alongWall, new(9, 2)) is Vector2 interiorAim && interiorAim.X < 8.75f,
+    "steering shortcuts preserve the preference to move away from a wall");
+var noClearanceAlongWall = Grid(split).FindPath(new(9, 2), new(9, 17), default);
+Check(noClearanceAlongWall?.Count == 2, "zero clearance keeps direct wall-adjacent routes");
+var bendGrid = Grid(Map(20, 20, (x, y) => (y == 10 && x <= 10) || (x == 10 && y >= 10)), 2);
+var bendPath = bendGrid.FindPath(new(2, 10), new(10, 17), default);
+Check(bendPath != null && bendPath.Zip(bendPath.Skip(1)).All(pair => bendGrid.Clear(pair.First, pair.Second)),
+    "tight corridor bend produces only physically walkable path segments");
+Check(bendPath != null && bendGrid.Steer(bendPath, new(9, 10)) is Vector2 bendAim && bendAim.Y == 10 && bendAim.X > 9,
+    "tight bend steering reaches the corner before turning");
+Check(bendPath != null && bendGrid.Steer(bendPath, new(10, 10)) is Vector2 turnAim && turnAim.X == 10 && turnAim.Y > 10,
+    "tight bend steering advances after reaching the corner");
+foreach (var preferredGap in new[] { 1, 2 })
+{
+    var nearWall = Grid(split, preferredGap);
+    foreach (var (from, to) in new[]
+    {
+        (new Vector2(9.4f, 4.2f), new Vector2(3.2f, 8.4f)),
+        (new Vector2(3.2f, 8.4f), new Vector2(9.4f, 4.2f)),
+        (new Vector2(11, 5), new Vector2(17, 5)),
+    })
+    {
+        var fractionalPath = nearWall.FindPath(from, to, default);
+        Check(fractionalPath != null && fractionalPath[0] == from && fractionalPath[^1] == to &&
+            fractionalPath.Zip(fractionalPath.Skip(1)).All(pair => nearWall.Clear(pair.First, pair.Second)),
+            $"near-wall endpoints remain connected without snapping: clearance {preferredGap}, {from} -> {to}");
+    }
+    var opening = Grid(split, preferredGap, open: [(10, 5)]);
+    var openingPath = opening.FindPath(new(9, 5), new(11, 5), default);
+    Check(openingPath != null, $"narrow open doorway remains usable with clearance {preferredGap}");
+    var shutDoor = Grid(split, preferredGap, open: [(10, 5)], closed: [(10, 5)]);
+    Check(shutDoor.FindPath(new(9, 5), new(11, 5), default) == null &&
+        openingPath != null && shutDoor.Steer(openingPath, new(9, 5)) == null,
+        $"closed doorway blocks both new search and old-route steering with clearance {preferredGap}");
+    var tightCorner = Grid(Map(20, 20, (x, y) => (x, y) is (2, 2) or (3, 3)), preferredGap);
+    Check(tightCorner.FindPath(new(2, 2), new(3, 3), default) == null,
+        $"clearance preference cannot cut diagonally through a closed corner: {preferredGap}");
+}
 Check(detourGrid.FindPath(new(3, 5), new(17, 5), default, maxNodes: 1) == null, "search node budget");
 using (var cancel = new CancellationTokenSource())
 {
@@ -104,6 +160,9 @@ Check(session.NeedsMovement(30, true, 18, 25), "resume outside distance");
 Check(session.NeedsMovement(20, true, 18, 25), "continue within hysteresis band");
 Check(!session.NeedsMovement(18, true, 18, 25), "stop at following distance");
 Check(session.NeedsMovement(10, false, 18, 25), "nearby target behind wall still needs route");
+session.Reset();
+Check(!session.NeedsMovement(5, nearWallGrid.Clear(new(9, 2), new(9, 7)), 18, 25),
+    "wall proximity alone does not prevent stopping within following distance");
 Check(!session.IsStuck(new(2, 2), true, 100, 2500), "start progress monitor");
 Check(session.IsStuck(new(2, 2), true, 2600, 2500), "stationary movement times out");
 Check(!session.IsStuck(new(5, 2), true, 2601, 2500), "movement resets progress timer");
