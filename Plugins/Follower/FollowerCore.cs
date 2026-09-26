@@ -1,6 +1,7 @@
 namespace Follower;
 
 using System.Numerics;
+using ClickableTransparentOverlay.Win32;
 using Coroutine;
 using GameHelper;
 using GameHelper.CoroutineEvents;
@@ -41,6 +42,7 @@ public sealed class FollowerCore : PCore<FollowerSettings>
     private string error = string.Empty;
     private string SettingsPath => Path.Join(this.DllDirectory, "config", "settings.txt");
     private string LeaderName => this.Settings.LeaderName.Trim();
+    private string ToggleKeyName => ((VK)this.Settings.ToggleKey).ToString();
 
     public override void OnEnable(bool isGameOpened)
     {
@@ -56,7 +58,7 @@ public sealed class FollowerCore : PCore<FollowerSettings>
         this.areaChanged = CoroutineHandler.Start(this.StopOn(RemoteEvents.AreaChanged));
         this.gameClosed = CoroutineHandler.Start(this.StopOn(GameHelperEvents.OnClose));
         this.lastFrame = 0;
-        this.toggleWasDown = MovementInput.IsDown(0x77);
+        this.toggleWasDown = MovementInput.IsDown(this.Settings.ToggleKey);
     }
 
     public override void OnDisable()
@@ -109,7 +111,18 @@ public sealed class FollowerCore : PCore<FollowerSettings>
     {
         // Changing settings never leaves a previous movement command held.
         if (this.running) this.Halt("settings_open");
-        ImGui.TextWrapped(this.PluginText.T("hint", "Select WASD movement in PoE2. F8 starts/stops; Escape stops. Foreground game only. Start in preview mode and inspect the route."));
+        ImGui.TextWrapped(this.PluginText.F("hint", "Select WASD movement in PoE2. {0} starts/stops; Escape stops. Foreground game only. Start in preview mode and inspect the route.", this.ToggleKeyName));
+        if (ImGui.BeginCombo(this.PluginText.Label("toggle_key", "Start/stop hotkey", "ToggleKey"), this.ToggleKeyName))
+        {
+            foreach (var key in Enum.GetValues<VK>().Distinct())
+                if (FollowerSettings.IsToggleKeyAllowed((int)key) && ImGui.Selectable(key.ToString(), (int)key == this.Settings.ToggleKey))
+                {
+                    this.Settings.ToggleKey = (int)key;
+                    this.toggleWasDown = MovementInput.IsDown(this.Settings.ToggleKey);
+                    this.SaveSettings();
+                }
+            ImGui.EndCombo();
+        }
         var selected = string.IsNullOrEmpty(this.LeaderName) ? this.PluginText.T("choose_leader", "Select the leader from nearby players") : this.LeaderName;
         if (ImGui.BeginCombo(this.PluginText.Label("nearby", "Choose a nearby player", "Nearby"), selected))
         {
@@ -140,12 +153,12 @@ public sealed class FollowerCore : PCore<FollowerSettings>
         ImGui.Checkbox(this.PluginText.Label("show_status", "Show status", "Status"), ref this.Settings.ShowStatus);
         ImGui.Checkbox(this.PluginText.Label("show_route", "Show route", "Route"), ref this.Settings.ShowRoute);
         this.Settings.Normalize();
-        ImGui.TextWrapped(this.PluginText.T("limits", "Follows a named visible player in the same area. Closed doors need manual opening. No portals or background dual-client input. Losing the target, focus or area stops following; press F8 to resume."));
+        ImGui.TextWrapped(this.PluginText.F("limits", "Follows a named visible player in the same area. Closed doors need manual opening. No portals or background dual-client input. Losing the target, focus or area stops following; press {0} to resume.", this.ToggleKeyName));
         ImGui.TextWrapped(this.StatusText());
         if (!string.IsNullOrEmpty(this.error)) ImGui.TextWrapped(this.error);
     }
 
-    private string StatusText() => this.PluginText.T("status." + this.status, this.status);
+    private string StatusText() => this.PluginText.F("status." + this.status, this.status, this.ToggleKeyName);
 
     public override void DrawUI()
     {
@@ -154,7 +167,7 @@ public sealed class FollowerCore : PCore<FollowerSettings>
             var now = Environment.TickCount64;
             if (this.running && this.lastFrame != 0 && now - this.lastFrame > 300) this.Halt("frame_gap");
             this.lastFrame = now;
-            var toggleDown = MovementInput.IsDown(0x77); // F8
+            var toggleDown = MovementInput.IsDown(this.Settings.ToggleKey);
             if (toggleDown && !this.toggleWasDown && MovementInput.IsForeground(Core.Process.Pid) && !Core.IsSettingsMenuOpen)
             {
                 if (this.running) this.Halt("stopped");

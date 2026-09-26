@@ -6,7 +6,7 @@
 - **Sacred Wisp**：默认橙色；旧配置的默认白色会迁移为橙色。详见 [幽火说明](Plugins/ShowMeWisp/README.md)。
 - **ShowMeWisp**（原名 WhereTheWispsAt）：按幽火自身的 Small / Medium / Big 大小缩放方框，默认地图边长 3 / 5 / 8 像素；支持三档倍率调整，并继承旧设置和启用状态。
 - **[TODO / 后续 agent 接手上下文](TODO.md)**。
-- **Follower**：扫描附近玩家并下拉选择队长，前台 WASD 跟随与地形寻路，默认只预览；F8 启停、Esc 停止。适用于另一台电脑/虚拟机的小号前台窗口。尚未实测移动，详见 [使用与限制](Plugins/Follower/README.md)。
+- **Follower**：扫描附近玩家并下拉选择队长，前台 WASD 跟随与地形寻路，默认只预览；菜单可自定义启停快捷键（默认 F6），Esc 停止。适用于另一台电脑/虚拟机的小号前台窗口。已确认前台 W 单键能移动，完整跟随仍待实测，详见 [使用与限制](Plugins/Follower/README.md)。
 
 用户现已在 Windows 自行编译，后续按要求提交源码到 `main`，不再自动制作测试包。安装 .NET 10 SDK 后，在仓库根目录执行：
 
