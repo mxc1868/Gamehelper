@@ -33,7 +33,7 @@ var renameOk = names.Contains("ShowMeWisp", StringComparer.OrdinalIgnoreCase) &&
 failed |= !renameOk;
 Console.WriteLine($"{(renameOk ? "PASS" : "FAIL")} discovery uses ShowMeWisp without the legacy duplicate");
 
-foreach (var name in new[] { "ShowMeWisp", "UniqueLoot", "Radar" })
+foreach (var name in new[] { "ShowMeWisp", "UniqueLoot", "Radar", "Follower" })
 {
     AssemblyLoadContext? alc = null;
     try
@@ -80,5 +80,5 @@ foreach (var (typeName, methodName, parameterCount) in new[]
     Console.WriteLine($"{(found ? "PASS" : "FAIL")} core API: {typeName}.{methodName}");
 }
 
-Console.WriteLine(failed ? "Plugin load checks failed." : "All 10 plugin discovery/load/API checks passed. Game rendering is not tested.");
+Console.WriteLine(failed ? "Plugin load checks failed." : "All 11 plugin discovery/load/API checks passed. Game rendering is not tested.");
 return failed ? 1 : 0;

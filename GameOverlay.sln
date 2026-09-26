@@ -73,6 +73,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StashValueByZx0", "Plugins\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UniqueLoot", "Plugins\UniqueLoot\UniqueLoot.csproj", "{1A2C5703-B125-4457-92F4-E157C419AFC0}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Follower", "Plugins\Follower\Follower.csproj", "{47E44842-DF92-44E2-98C1-A6B9852032FD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -83,6 +85,18 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{47E44842-DF92-44E2-98C1-A6B9852032FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{47E44842-DF92-44E2-98C1-A6B9852032FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{47E44842-DF92-44E2-98C1-A6B9852032FD}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{47E44842-DF92-44E2-98C1-A6B9852032FD}.Debug|x64.Build.0 = Debug|Any CPU
+		{47E44842-DF92-44E2-98C1-A6B9852032FD}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{47E44842-DF92-44E2-98C1-A6B9852032FD}.Debug|x86.Build.0 = Debug|Any CPU
+		{47E44842-DF92-44E2-98C1-A6B9852032FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{47E44842-DF92-44E2-98C1-A6B9852032FD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{47E44842-DF92-44E2-98C1-A6B9852032FD}.Release|x64.ActiveCfg = Release|Any CPU
+		{47E44842-DF92-44E2-98C1-A6B9852032FD}.Release|x64.Build.0 = Release|Any CPU
+		{47E44842-DF92-44E2-98C1-A6B9852032FD}.Release|x86.ActiveCfg = Release|Any CPU
+		{47E44842-DF92-44E2-98C1-A6B9852032FD}.Release|x86.Build.0 = Release|Any CPU
 		{1A2C5703-B125-4457-92F4-E157C419AFC0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1A2C5703-B125-4457-92F4-E157C419AFC0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1A2C5703-B125-4457-92F4-E157C419AFC0}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -388,6 +402,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{47E44842-DF92-44E2-98C1-A6B9852032FD} = {9FA3D6BD-1EC1-3BA5-80CB-CE02773A58D5}
 		{1A2C5703-B125-4457-92F4-E157C419AFC0} = {9FA3D6BD-1EC1-3BA5-80CB-CE02773A58D5}
 		{B9571263-4C8A-4CB3-9689-39490CBF72EB} = {9FA3D6BD-1EC1-3BA5-80CB-CE02773A58D5}
 		{D3AAC005-A2A9-4003-97C6-5563BB873600} = {9FA3D6BD-1EC1-3BA5-80CB-CE02773A58D5}

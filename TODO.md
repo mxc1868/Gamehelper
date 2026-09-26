@@ -1,6 +1,19 @@
 # GameHelper 插件：TODO 与接手上下文
 
-更新日期：2026-09-23。后续 agent 请先读本文，再读 [插件说明](Plugins/ShowMeWisp/README.md) 和 [Windows 调试说明](Plugins/ShowMeWisp/WINDOWS-DEBUG.zh-CN.md)。
+更新日期：2026-09-25。后续 agent 请先读本文，再读 [插件说明](Plugins/ShowMeWisp/README.md) 和 [Windows 调试说明](Plugins/ShowMeWisp/WINDOWS-DEBUG.zh-CN.md)。
+
+## Follower 前台 WASD 跟随（2026-09-25）
+
+用户要求参考 Radar 新增 Follower，已明确小号运行在另一台电脑或虚拟机，窗口保持前台；队长必须从扫描名单选择，不要手打名字。仍按既有要求仅交付源码，不更新 Test、不制作 ZIP/Release。
+
+- [x] 检查本地与 MordWraith 上游插件目录、公开搜索，未确认可直接使用的 GameHelper Follower。Radar 的队长标识来自配置名字，不是可靠的组队队长字段；它的门覆盖把所有门附近强制视为可通行，不能直接当作移动依据。
+- [x] 新增 `Plugins/Follower` 并加入整套解决方案构建。扫描附近有效 Player，排除小号自己、按名字去重排序后下拉选择，选中立即保存；不提供手动输入框，也不自动选择最近玩家。名单是附近可见玩家，尚不能保证都是队友。
+- [x] 复用现有公开 AwakeEntities/Player/Render/Life/TriggerableBlockage/地形/投影接口；独立实现有界可取消 A*、严格边界与墙角检查、离墙间距、已知开门覆盖/关门阻挡、路线更新和屏幕方向到 WASD 转换。无 GameHelper 核心、GameOffsets 或 Radar 改动，无新增框架 API，无 Radar DLL 依赖。
+- [x] 默认仅预览、F8 启停、Esc 停止、停止/恢复距离滞回、卡住超时；失焦、目标丢失/身份变化、切图、死亡、聊天/大面板/设置、异常时停止。独立按键租期定时器处理 F9/绘制卡顿与焦点变化；正常禁用/退出释放按键。关闭预览才发送前台 SendInput；不支持后台双开、自动开门、传送门或跨区。
+- [x] Windows Release 插件及整套解决方案构建成功；Follower 62 项纯逻辑测试通过；真实 PManager 插件发现/加载/API 检查扩展到 Follower，共 11 项通过。首次插件构建有 3 条既存核心警告；整套构建另有 4 条既存 WorldDrawing 警告，NuGet 漏洞元数据网络不可达产生 NU1900 警告。无新插件编译警告，无游戏输入实测。
+- [ ] 实机验证：附近名字选择与保存；预览方向；WASD 直行/斜行；拐角/窄道/坡道/开关门；距离启停；手动接管；目标走远、死亡、切区；Alt-Tab、聊天、F9 和禁用后的释放。操作系统强制结束进程不执行清理；同时按住插件已按下的同一个移动键不能可靠识别，使用 Esc/F8 接管。
+
+说明：[Follower README](Plugins/Follower/README.md)。验证命令：`dotnet run --project tests/Follower.Tests/Follower.Tests.csproj -c Release`；`dotnet run --project tests/PluginLoad.Tests/PluginLoad.Tests.csproj -c Release -- GameHelper/bin/Release/net10.0-windows/win-x64`。当前加载检查要求构建目录包含 Follower，旧 Test 未部署该插件。
 
 ## UniqueLoot 默认只显示高亮名称（2026-09-23 UTC）
 

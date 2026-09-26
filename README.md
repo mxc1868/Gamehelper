@@ -1,4 +1,4 @@
-# GameHelper — ShowMeWisp / UniqueLoot
+# GameHelper — ShowMeWisp / UniqueLoot / Follower
 
 当前仓库：**[mxc1868/Gamehelper](https://github.com/mxc1868/Gamehelper)**，分支 `main`。基于上游 `v1.5.11` 标签的 `0d11fe7`，保留幽火与 UniqueLoot 补丁；核心和启动器版本统一为 1.5.11。Windows 编译和插件加载已验证，当前 PoE2 游戏读取与绘制仍待实测。
 
@@ -6,6 +6,7 @@
 - **Sacred Wisp**：默认橙色；旧配置的默认白色会迁移为橙色。详见 [幽火说明](Plugins/ShowMeWisp/README.md)。
 - **ShowMeWisp**（原名 WhereTheWispsAt）：按幽火自身的 Small / Medium / Big 大小缩放方框，默认地图边长 3 / 5 / 8 像素；支持三档倍率调整，并继承旧设置和启用状态。
 - **[TODO / 后续 agent 接手上下文](TODO.md)**。
+- **Follower**：扫描附近玩家并下拉选择队长，前台 WASD 跟随与地形寻路，默认只预览；F8 启停、Esc 停止。适用于另一台电脑/虚拟机的小号前台窗口。尚未实测移动，详见 [使用与限制](Plugins/Follower/README.md)。
 
 用户现已在 Windows 自行编译，后续按要求提交源码到 `main`，不再自动制作测试包。安装 .NET 10 SDK 后，在仓库根目录执行：
 
@@ -24,7 +25,7 @@ Windows 验证：整套 Release 编译成功，UniqueLoot 40 项、ShowMeWisp 98
 dotnet run --project tests/PluginLoad.Tests/PluginLoad.Tests.csproj -c Release -- GameHelper/bin/Release/net10.0-windows/win-x64
 ```
 
-10 项发现/加载/接口检查通过；不启动 overlay、不启用插件、不读取游戏或改写设置。此前的 [初版测试 Release](https://github.com/mxc1868/Gamehelper/releases/tag/unique-debug-2026-09-23) 保留，但不包含改名和尺寸功能，请从 `main` 编译当前版本。
+11 项发现/加载/接口检查通过（含 Follower）；不启动 overlay、不启用插件、不读取游戏或改写设置。此前的 [初版测试 Release](https://github.com/mxc1868/Gamehelper/releases/tag/unique-debug-2026-09-23) 保留，但不包含改名、尺寸和 Follower 功能，请从 `main` 编译当前版本。
 
 原项目与作者信息保留如下；其中上游下载与自动更新说明不适用于本 fork 的配套构建。
 
