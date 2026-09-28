@@ -34,6 +34,19 @@ internal sealed class KeyLease(Func<MoveKeys, bool, bool> send)
 
     public void Stop() { lock (this.sync) { this.expires = 0; this.Release(this.held); } }
 
+    // Changing the physical mapping must release using the OLD mapping, under the
+    // same lock as watchdog releases. Failed key-ups keep both ownership and mapping.
+    public bool TryReset(Action change)
+    {
+        lock (this.sync)
+        {
+            this.expires = 0;
+            if (!this.Release(this.held)) return false;
+            change();
+            return true;
+        }
+    }
+
     private bool Release(MoveKeys keys)
     {
         var success = true;
@@ -46,5 +59,5 @@ internal sealed class KeyLease(Func<MoveKeys, bool, bool> send)
         return success;
     }
 
-    internal static readonly MoveKeys[] Keys = [MoveKeys.W, MoveKeys.A, MoveKeys.S, MoveKeys.D];
+    internal static readonly MoveKeys[] Keys = [MoveKeys.Up, MoveKeys.Left, MoveKeys.Down, MoveKeys.Right];
 }

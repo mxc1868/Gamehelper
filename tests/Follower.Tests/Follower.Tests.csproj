@@ -9,6 +9,9 @@
   <ItemGroup>
     <Compile Include="../../Plugins/Follower/Navigation.cs" Link="Navigation.cs" />
     <Compile Include="../../Plugins/Follower/KeyLease.cs" Link="KeyLease.cs" />
+    <Compile Include="../../Plugins/Follower/MovementBindings.cs" Link="MovementBindings.cs" />
+    <Compile Include="../../Plugins/Follower/ParticipantSelection.cs" Link="ParticipantSelection.cs" />
+    <Compile Include="../../Plugins/Follower/CoopCoordinator.cs" Link="CoopCoordinator.cs" />
     <Compile Include="../../Plugins/Follower/FollowSession.cs" Link="FollowSession.cs" />
     <Compile Include="../../Plugins/Follower/FollowerSettings.cs" Link="FollowerSettings.cs" />
     <Compile Include="../../GameHelper/Plugin/IPSettings.cs" Link="IPSettings.cs" />

@@ -163,7 +163,7 @@ internal sealed class NavigationGrid(byte[] data, int stride, int clearance,
 }
 
 [Flags]
-internal enum MoveKeys { None = 0, W = 1, A = 2, S = 4, D = 8 }
+internal enum MoveKeys { None = 0, Up = 1, Left = 2, Down = 4, Right = 8 }
 
 internal static class Steering
 {
@@ -187,8 +187,8 @@ internal static class Steering
             var alignment = Vector2.Dot(grid, direction);
             if (alignment <= best || !canStep(grid * MathF.Min(2, targetDelta.Length()))) continue;
             best = alignment;
-            result = (x < 0 ? MoveKeys.A : x > 0 ? MoveKeys.D : MoveKeys.None) |
-                     (y < 0 ? MoveKeys.W : y > 0 ? MoveKeys.S : MoveKeys.None);
+            result = (x < 0 ? MoveKeys.Left : x > 0 ? MoveKeys.Right : MoveKeys.None) |
+                     (y < 0 ? MoveKeys.Up : y > 0 ? MoveKeys.Down : MoveKeys.None);
         }
         return result;
     }

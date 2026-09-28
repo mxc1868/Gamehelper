@@ -67,7 +67,7 @@ var narrowPath = narrowGrid.FindPath(new(2, 10), new(17, 10), default);
 Check(narrowPath != null && narrowPath.All(p => p.Y == 10), "one-cell corridor remains connected with clearance two");
 Check(narrowPath != null && narrowGrid.Steer(narrowPath, new(2, 10)) is Vector2 narrowAim &&
     Steering.Choose(narrowAim - new Vector2(2, 10), Vector2.UnitX, Vector2.UnitY,
-        step => narrowGrid.Clear(new(2, 10), new Vector2(2, 10) + step)) == MoveKeys.D,
+        step => narrowGrid.Clear(new(2, 10), new Vector2(2, 10) + step)) == MoveKeys.Right,
     "narrow corridor produces a valid movement key");
 var alongWall = nearWallGrid.FindPath(new(9, 2), new(9, 17), default);
 Check(alongWall != null && alongWall.Any(p => p.X <= 8), "clearance prefers an interior route over a long wall-hugging line");
@@ -117,42 +117,42 @@ using (var cancel = new CancellationTokenSource())
 }
 foreach (var (direction, keys) in new[]
 {
-    (new Vector2(0,-5), MoveKeys.W), (new Vector2(5,0), MoveKeys.D),
-    (new Vector2(0,5), MoveKeys.S), (new Vector2(-5,0), MoveKeys.A),
-    (new Vector2(5,-5), MoveKeys.W | MoveKeys.D), (new Vector2(-5,5), MoveKeys.S | MoveKeys.A),
+    (new Vector2(0,-5), MoveKeys.Up), (new Vector2(5,0), MoveKeys.Right),
+    (new Vector2(0,5), MoveKeys.Down), (new Vector2(-5,0), MoveKeys.Left),
+    (new Vector2(5,-5), MoveKeys.Up | MoveKeys.Right), (new Vector2(-5,5), MoveKeys.Down | MoveKeys.Left),
 }) Check(Steering.Choose(direction, Vector2.UnitX, Vector2.UnitY, _ => true) == keys, "WASD " + keys);
-Check(Steering.Choose(new(5, 0), new(1, 0.5f), new(-1, 0.5f), _ => true) == (MoveKeys.S | MoveKeys.D), "isometric world-to-screen basis");
+Check(Steering.Choose(new(5, 0), new(1, 0.5f), new(-1, 0.5f), _ => true) == (MoveKeys.Down | MoveKeys.Right), "isometric world-to-screen basis");
 Check(Steering.Choose(new(5, 0), Vector2.UnitX, Vector2.UnitY, _ => false) == MoveKeys.None, "blocked keyboard directions produce no key");
 Check(Steering.Choose(new(5, 0), Vector2.Zero, Vector2.Zero, _ => true) == MoveKeys.None, "invalid projection produces no key");
 
 var events = new List<(MoveKeys, bool)>();
 var lease = new KeyLease((key, down) => { events.Add((key, down)); return true; });
-Check(lease.Renew(MoveKeys.W | MoveKeys.D, 100), "diagonal key-down");
-lease.Renew(MoveKeys.W | MoveKeys.D, 120);
+Check(lease.Renew(MoveKeys.Up | MoveKeys.Right, 100), "diagonal key-down");
+lease.Renew(MoveKeys.Up | MoveKeys.Right, 120);
 Check(events.Count == 2, "renewal does not repeat key-down");
-lease.Renew(MoveKeys.S, 130);
-Check(events.Skip(2).SequenceEqual(new[] { (MoveKeys.W, false), (MoveKeys.D, false), (MoveKeys.S, true) }), "direction change releases old keys first");
+lease.Renew(MoveKeys.Down, 130);
+Check(events.Skip(2).SequenceEqual(new[] { (MoveKeys.Up, false), (MoveKeys.Right, false), (MoveKeys.Down, true) }), "direction change releases old keys first");
 lease.Expire(329, true);
-Check(lease.Held == MoveKeys.S, "lease alive before expiry");
+Check(lease.Held == MoveKeys.Down, "lease alive before expiry");
 lease.Expire(330, true);
 Check(lease.Held == MoveKeys.None, "F9/missing frame timeout releases keys");
-lease.Renew(MoveKeys.A, 400);
+lease.Renew(MoveKeys.Left, 400);
 lease.Expire(401, false);
 Check(lease.Held == MoveKeys.None, "focus loss releases immediately");
-lease.Renew(MoveKeys.D, 500);
+lease.Renew(MoveKeys.Right, 500);
 lease.Stop();
 Check(lease.Held == MoveKeys.None, "disable/area/error cleanup releases owned keys");
 var failRelease = true;
 var retry = new KeyLease((_, down) => down || !failRelease);
-retry.Renew(MoveKeys.W, 0);
+retry.Renew(MoveKeys.Up, 0);
 retry.Stop();
-Check(retry.Held == MoveKeys.W, "failed key-up retains ownership");
-Check(!retry.Renew(MoveKeys.S, 1) && retry.Held == MoveKeys.W, "failed release prevents opposite key-down");
+Check(retry.Held == MoveKeys.Up, "failed key-up retains ownership");
+Check(!retry.Renew(MoveKeys.Down, 1) && retry.Held == MoveKeys.Up, "failed release prevents opposite key-down");
 failRelease = false;
 retry.Expire(500, false);
 Check(retry.Held == MoveKeys.None, "watchdog retries failed release");
-var partial = new KeyLease((key, down) => !down || key != MoveKeys.D);
-Check(!partial.Renew(MoveKeys.W | MoveKeys.D, 0) && partial.Held == MoveKeys.None, "partial diagonal send failure cleans up");
+var partial = new KeyLease((key, down) => !down || key != MoveKeys.Right);
+Check(!partial.Renew(MoveKeys.Up | MoveKeys.Right, 0) && partial.Held == MoveKeys.None, "partial diagonal send failure cleans up");
 
 var session = new FollowSession();
 Check(!session.NeedsMovement(20, true, 18, 25), "idle inside hysteresis band");
@@ -174,4 +174,130 @@ var settings = new FollowerSettings { StopDistance = float.NaN, ResumeDistance =
 settings.Normalize();
 Check(settings.StopDistance == 18 && settings.ResumeDistance > 18 && settings.Clearance == 0 && settings.RepathMilliseconds == 150, "invalid settings normalize");
 Check(new FollowerSettings().PreviewOnly, "new install defaults to preview without input");
+
+// Role selection must not assume that Area.Player always denotes P1 or P2.
+var p1 = new PlayerIdentity(101, 0x1000, "Primary");
+var p2 = new PlayerIdentity(102, 0x2000, "Secondary");
+var leader = new PlayerIdentity(104, 0x4000, "Leader");
+var stranger = new PlayerIdentity(103, 0x3000, "Other");
+PlayerIdentity[] nearby = [stranger, p2, p1, p1, leader];
+foreach (var local in new[] { p1, p2 })
+{
+    var roles = ParticipantSelection.Resolve(nearby, local, true, "Leader", "Primary", "Secondary", out var reason);
+    Check(roles == new FollowParticipants(p1, leader, p2) && reason == string.Empty,
+        $"explicit co-op roles survive extra players, duplicate local entry, and local ID {local.Id}");
+}
+Check(ParticipantSelection.Resolve(nearby, p2, false, "Leader", "", "", out _) == new FollowParticipants(p2, leader),
+    "legacy mode still controls the local character and follows the selected leader");
+Check(ParticipantSelection.Resolve(nearby, p1, false, "Primary", "", "", out _) == null,
+    "legacy mode cannot follow itself");
+Check(ParticipantSelection.Resolve(nearby, p1, true, "Leader", "Primary", "", out var selectionReason) == null && selectionReason == "follower_name",
+    "co-op requires explicit P2 selection instead of choosing the first other player");
+Check(ParticipantSelection.Resolve(nearby, p1, true, "Leader", "Primary", "primary", out selectionReason) == null && selectionReason == "same_player",
+    "same P1/P2 name is rejected case-insensitively");
+Check(ParticipantSelection.Resolve([p1, stranger, leader], p1, true, "Leader", "Primary", "Secondary", out selectionReason) == null && selectionReason == "secondary_invalid",
+    "missing P2 does not fall back to the local character or a stranger");
+Check(ParticipantSelection.Resolve([p2, stranger, leader], p2, true, "Leader", "Primary", "Secondary", out selectionReason) == null && selectionReason == "player_invalid",
+    "missing P1 does not fall back to another player");
+Check(ParticipantSelection.Resolve([p1, p2, new(105, 0x5000, "Secondary"), leader], p1, true, "Leader", "Primary", "Secondary", out _) == null,
+    "ambiguous P2 name is rejected");
+Check(ParticipantSelection.Resolve([p1, p2, new(105, 0x5000, "Primary"), leader], p1, true, "Leader", "Primary", "Secondary", out _) == null,
+    "ambiguous P1 name is rejected");
+Check(ParticipantSelection.Resolve(nearby, p1, true, "leader", "PRIMARY", "SECONDARY", out _) == new FollowParticipants(p1, leader, p2),
+    "saved names match case-insensitively");
+Check(ParticipantSelection.Resolve([p1, p2], p1, true, "Primary", "Primary", "Secondary", out _) == new FollowParticipants(p1, p1, p2),
+    "P1 can also be the leader for two-character use");
+Check(ParticipantSelection.Resolve([p1, p2], p1, true, "Leader", "Primary", "Secondary", out _) == null,
+    "missing group leader does not silently become P1");
+
+var coordinator = new CoopCoordinator();
+var fixedP1 = new Vector2(100, 100);
+Check(!coordinator.Update(fixedP1, new(100, 70), true, 35, 12), "shared WASD continues before the P1/P2 gap threshold");
+Check(coordinator.Update(fixedP1, new(100, 65), true, 35, 12), "gap of 35 starts P2 correction at the threshold");
+Check(coordinator.Update(fixedP1, new(100, 80), true, 35, 12), "correction persists in gap hysteresis band");
+Check(coordinator.Update(fixedP1, new(100, 90), false, 35, 12), "wall between nearby players prevents premature reunion");
+Check(!coordinator.Update(fixedP1, new(100, 88), true, 35, 12),
+    "P2 rejoining within 12 ends correction independently of how far the leader is");
+Check(!coordinator.Update(fixedP1, new(100, 75), true, 35, 12), "reunited players do not oscillate in the hysteresis band");
+Check(coordinator.Update(fixedP1, new(100, 140), true, 35, 12), "large P1/P2 separation corrects even when P2 is ahead");
+coordinator.Reset();
+Check(!coordinator.CorrectingP2 && !coordinator.Update(fixedP1, new(100, 75), true, 35, 12),
+    "area/stop reset clears correction phase");
+session.Reset();
+Check(session.NeedsMovement(40, true, 18, 25), "normal leader following begins before correction");
+session.IsStuck(new(2, 2), true, 0, 2500);
+session.ResetProgress();
+Check(session.NeedsMovement(20, true, 18, 25) && !session.IsStuck(new(2, 2), true, 9000, 2500),
+    "phase change preserves leader-distance hysteresis but resets actor progress tracking");
+
+foreach (var (direction, vk, scan) in new[]
+{
+    (MoveKeys.Up, 0x26, 0x48), (MoveKeys.Left, 0x25, 0x4B),
+    (MoveKeys.Down, 0x28, 0x50), (MoveKeys.Right, 0x27, 0x4D),
+})
+{
+    var binding = MovementBindings.Get(direction, true);
+    Check(binding.VirtualKey == vk && binding.Scan == scan && binding.Flags(true) == 0x09 && binding.Flags(false) == 0x0B,
+        $"{direction} emits extended arrow scan code on both down and up, not a numpad key");
+    var wasd = MovementBindings.Get(direction, false);
+    Check(!wasd.Extended && wasd.Flags(true) == 0x08 && wasd.Flags(false) == 0x0A && wasd.Scan != binding.Scan,
+        $"legacy {direction} retains non-extended WASD mapping");
+}
+Check(MovementBindings.Describe(MoveKeys.Up | MoveKeys.Right, true) == "↑ + →",
+    "co-op preview displays arrow combination rather than WASD");
+Check(MovementBindings.HasManualMovement(MoveKeys.None, true, key => key is 0x57 or 0x41 or 0x53 or 0x44, bothLayouts: true),
+    "manual WASD during P2 correction stops conflicting input");
+Check(MovementBindings.HasManualMovement(MoveKeys.Up, false, key => key == 0x26, bothLayouts: true),
+    "manual arrow during shared WASD stops conflicting input");
+Check(!MovementBindings.HasManualMovement(MoveKeys.Up, false, key => key == 0x57, bothLayouts: true),
+    "owned shared WASD does not trigger manual takeover");
+Check(MovementBindings.HasManualMovement(MoveKeys.Up, true, key => key is 0x26 or 0x25),
+    "additional manual arrow stops P2 while its owned arrow is ignored");
+Check(!MovementBindings.HasManualMovement(MoveKeys.Up, true, key => key == 0x26),
+    "owned P2 arrow does not self-trigger manual takeover");
+Check(MovementBindings.HasManualMovement(MoveKeys.None, false, key => key == 0x57),
+    "legacy mode still stops on manual WASD");
+
+var arrowMode = false;
+var keyEvents = new List<(ushort Scan, uint Flags)>();
+var releaseBlocked = false;
+var mappedLease = new KeyLease((direction, down) =>
+{
+    var binding = MovementBindings.Get(direction, arrowMode);
+    keyEvents.Add((binding.Scan, binding.Flags(down)));
+    return down || !releaseBlocked;
+});
+mappedLease.Renew(MoveKeys.Up, 0);
+Check(mappedLease.TryReset(() => arrowMode = true) && keyEvents[^1] == ((ushort)0x11, 0x0Au),
+    "changing to arrows releases the old W using its original scan code");
+keyEvents.Clear();
+mappedLease.Renew(MoveKeys.Up | MoveKeys.Right, 1);
+mappedLease.Expire(201, true);
+Check(keyEvents.SequenceEqual(new[] { ((ushort)0x48, 0x09u), ((ushort)0x4D, 0x09u), ((ushort)0x48, 0x0Bu), ((ushort)0x4D, 0x0Bu) }),
+    "P2 diagonal lease expiry releases both extended arrows and never sends WASD");
+mappedLease.Renew(MoveKeys.Down, 300);
+releaseBlocked = true;
+Check(!mappedLease.TryReset(() => arrowMode = false) && arrowMode && mappedLease.Held == MoveKeys.Down,
+    "failed arrow release prevents mapping switch and retains ownership");
+releaseBlocked = false;
+mappedLease.Expire(301, false);
+Check(mappedLease.Held == MoveKeys.None && keyEvents[^1] == ((ushort)0x50, 0x0Bu),
+    "watchdog retries failed release with the original arrow mapping");
+Check(mappedLease.TryReset(() => arrowMode = false) && !arrowMode,
+    "mapping can change after release succeeds");
+
+var legacySettings = new FollowerSettings { LeaderName = " Leader " };
+legacySettings.Normalize();
+Check(!legacySettings.LocalCoopFollow && legacySettings.LeaderName == "Leader" && legacySettings.P1Name == "" && legacySettings.P2Name == "",
+    "missing new configuration fields preserve legacy mode and leader");
+var coopSettings = new FollowerSettings { LocalCoopFollow = true, P1Name = " Leader ", P2Name = " Follower ", ToggleKey = 0x26 };
+coopSettings.Normalize();
+Check(coopSettings.P1Name == "Leader" && coopSettings.P2Name == "Follower" && coopSettings.ToggleKey == FollowerSettings.DefaultToggleKey,
+    "co-op names normalize and arrow hotkeys migrate to F6");
+Check(new[] { 0x25, 0x26, 0x27, 0x28, 0x41, 0x44, 0x53, 0x57 }.All(key => !FollowerSettings.IsToggleKeyAllowed(key)),
+    "all movement keys are excluded from start-stop hotkey selection");
+coopSettings.P2LagDistance = 6;
+coopSettings.P2RejoinDistance = float.PositiveInfinity;
+coopSettings.Normalize();
+Check(coopSettings.P2RejoinDistance == 3 && coopSettings.P2LagDistance == 6, "correction thresholds retain a non-overlapping gap after normalization");
 Console.WriteLine($"All {passed} Follower checks passed. No Windows input or live gameplay tested.");

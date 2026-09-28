@@ -16,6 +16,7 @@ using Newtonsoft.Json;
 public sealed class FollowerCore : PCore<FollowerSettings>
 {
     private readonly FollowSession session = new();
+    private readonly CoopCoordinator coop = new();
     private MovementInput? input;
     private ActiveCoroutine? areaChanged;
     private ActiveCoroutine? gameClosed;
@@ -29,6 +30,11 @@ public sealed class FollowerCore : PCore<FollowerSettings>
     private string areaHash = string.Empty;
     private IntPtr targetAddress;
     private uint targetId;
+    private IntPtr followerAddress;
+    private uint followerId;
+    private IntPtr secondaryAddress;
+    private uint secondaryId;
+    private float followerHeight;
     private long nextSearch;
     private long routeAt;
     private long searchAt;
@@ -37,6 +43,8 @@ public sealed class FollowerCore : PCore<FollowerSettings>
     private Vector2 searchGoal;
     private Vector2 routeGoal;
     private float distance;
+    private float playerGap;
+    private bool correctingP2;
     private MoveKeys planned;
     private string status = "stopped";
     private string error = string.Empty;
@@ -78,17 +86,27 @@ public sealed class FollowerCore : PCore<FollowerSettings>
 
     private void ClearNavigation()
     {
+        this.ClearRoute();
+        this.grid = null;
+        this.targetAddress = this.followerAddress = this.secondaryAddress = IntPtr.Zero;
+        this.areaAddress = IntPtr.Zero;
+        this.nextDoorRead = 0;
+        this.coop.Reset();
+        this.session.Reset();
+        this.correctingP2 = false;
+        this.distance = this.playerGap = 0;
+    }
+
+    private void ClearRoute()
+    {
         this.input?.Stop();
         this.searchCancellation?.Cancel();
         this.searchCancellation?.Dispose();
         this.searchCancellation = null;
         this.search = null;
         this.route = null;
-        this.grid = null;
-        this.targetAddress = IntPtr.Zero;
-        this.areaAddress = IntPtr.Zero;
-        this.nextSearch = this.nextDoorRead = 0;
-        this.session.Reset();
+        this.nextSearch = 0;
+        this.session.ResetProgress();
         this.planned = MoveKeys.None;
     }
 
@@ -111,7 +129,15 @@ public sealed class FollowerCore : PCore<FollowerSettings>
     {
         // Changing settings never leaves a previous movement command held.
         if (this.running) this.Halt("settings_open");
-        ImGui.TextWrapped(this.PluginText.F("hint", "Select WASD movement in PoE2. {0} starts/stops; Escape stops. Foreground game only. Start in preview mode and inspect the route.", this.ToggleKeyName));
+        if (ImGui.Checkbox(this.PluginText.Label("local_coop", "Local co-op: shared WASD with P2 arrow correction", "LocalCoop"), ref this.Settings.LocalCoopFollow))
+        {
+            this.input?.Stop();
+            this.Settings.PreviewOnly = true;
+            this.SaveSettings();
+        }
+        ImGui.TextWrapped(this.Settings.LocalCoopFollow
+            ? this.PluginText.F("coop_hint", "Select the leader, P1 and P2. WASD moves both players toward the leader; arrow keys must control only P2 through your mapping. {0} starts/stops; Escape stops. Check both phases in preview first.", this.ToggleKeyName)
+            : this.PluginText.F("hint", "Select WASD movement in PoE2. {0} starts/stops; Escape stops. Foreground game only. Start in preview mode and inspect the route.", this.ToggleKeyName));
         if (ImGui.BeginCombo(this.PluginText.Label("toggle_key", "Start/stop hotkey", "ToggleKey"), this.ToggleKeyName))
         {
             foreach (var key in Enum.GetValues<VK>().Distinct())
@@ -123,26 +149,14 @@ public sealed class FollowerCore : PCore<FollowerSettings>
                 }
             ImGui.EndCombo();
         }
-        var selected = string.IsNullOrEmpty(this.LeaderName) ? this.PluginText.T("choose_leader", "Select the leader from nearby players") : this.LeaderName;
-        if (ImGui.BeginCombo(this.PluginText.Label("nearby", "Choose a nearby player", "Nearby"), selected))
+        this.DrawPlayerChoice("nearby", "Leader to follow", ref this.Settings.LeaderName, includeLocal: this.Settings.LocalCoopFollow);
+        if (this.Settings.LocalCoopFollow)
         {
-            var names = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
-            if (Core.States.GameCurrentState == GameStateTypes.InGameState)
-            {
-                var area = Core.States.InGameStateObject.CurrentAreaInstance;
-                foreach (var entity in area.AwakeEntities.Values)
-                    if (entity.IsValid && entity.Address != area.Player.Address && entity.EntityType == EntityTypes.Player &&
-                        entity.TryGetComponent<Player>(out var player) && !string.IsNullOrWhiteSpace(player.Name))
-                        names.Add(player.Name);
-            }
-            foreach (var name in names)
-                if (ImGui.Selectable(name, string.Equals(name, this.LeaderName, StringComparison.OrdinalIgnoreCase)))
-                {
-                    this.Settings.LeaderName = name;
-                    this.SaveSettings();
-                }
-            if (names.Count == 0) ImGui.TextDisabled(this.PluginText.T("no_players", "No nearby players detected. Move into the same area as the leader."));
-            ImGui.EndCombo();
+            this.DrawPlayerChoice("p1", "P1: shared WASD navigation", ref this.Settings.P1Name, includeLocal: true);
+            this.DrawPlayerChoice("p2", "P2: controlled by arrows", ref this.Settings.P2Name, includeLocal: true);
+            ImGui.SliderFloat(this.PluginText.Label("p2_lag", "P1/P2 gap to start correction", "P2Lag"), ref this.Settings.P2LagDistance, 6, 150);
+            ImGui.SliderFloat(this.PluginText.Label("p2_rejoin", "P1/P2 gap to resume WASD", "P2Rejoin"), ref this.Settings.P2RejoinDistance, 3, this.Settings.P2LagDistance - 3);
+            ImGui.TextWrapped(this.PluginText.T("coop_limits", "Correction releases WASD, pauses P1, and routes P2 to P1. Once reunited, arrows are released and shared WASD resumes toward the leader. Distances are in grid cells. Stop before opening controller chat; its state is unavailable."));
         }
         ImGui.Checkbox(this.PluginText.Label("preview", "Preview only (no keyboard input)", "Preview"), ref this.Settings.PreviewOnly);
         ImGui.SliderFloat(this.PluginText.Label("stop", "Stop distance (grid cells)", "Stop"), ref this.Settings.StopDistance, 3, 100);
@@ -160,6 +174,43 @@ public sealed class FollowerCore : PCore<FollowerSettings>
     }
 
     private string StatusText() => this.PluginText.F("status." + this.status, this.status, this.ToggleKeyName);
+
+    private void DrawPlayerChoice(string key, string label, ref string selected, bool includeLocal)
+    {
+        if (!ImGui.BeginCombo(this.PluginText.Label(key, label, key), string.IsNullOrEmpty(selected)
+                ? this.PluginText.T("choose_player", "Select a character") : selected)) return;
+        var names = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
+        if (Core.States.GameCurrentState == GameStateTypes.InGameState)
+        {
+            var area = Core.States.InGameStateObject.CurrentAreaInstance;
+            foreach (var player in ReadPlayers(area).Keys)
+                if (includeLocal || (player.Address != area.Player.Address && player.Id != area.Player.Id)) names.Add(player.Name);
+        }
+        foreach (var name in names)
+            if (ImGui.Selectable(name, string.Equals(name, selected, StringComparison.OrdinalIgnoreCase)))
+            {
+                selected = name;
+                this.SaveSettings();
+            }
+        if (names.Count == 0) ImGui.TextDisabled(this.PluginText.T("no_players", "No nearby players detected. Move into the same area as the leader."));
+        ImGui.EndCombo();
+    }
+
+    private static Dictionary<PlayerIdentity, Entity> ReadPlayers(AreaInstance area)
+    {
+        var result = new Dictionary<PlayerIdentity, Entity>();
+        foreach (var entity in area.AwakeEntities.Values.Prepend(area.Player).DistinctBy(e => e.Address))
+            if (entity.IsValid && entity.EntityType == EntityTypes.Player &&
+                entity.TryGetComponent<Player>(out var player) && !string.IsNullOrWhiteSpace(player.Name))
+                result.TryAdd(new(entity.Id, entity.Address, player.Name.Trim()), entity);
+        return result;
+    }
+
+    private bool IsUiBlocked(ImportantUiElements ui) => Core.IsSettingsMenuOpen || ui.Address == IntPtr.Zero ||
+        // Controller UI deliberately has no ChatParent in the current core. Only
+        // explicit co-op mode permits this; the keyboard UI still requires it.
+        (ui.ChatParent.Address == IntPtr.Zero && !(this.Settings.LocalCoopFollow && Core.GHSettings.EnableControllerMode)) ||
+        ui.ChatParent.IsChatActive || ui.IsAnyLargePanelOpen || MovementInput.IsDown(0x0D);
 
     public override void DrawUI()
     {
@@ -185,47 +236,86 @@ public sealed class FollowerCore : PCore<FollowerSettings>
     private void Tick(long now)
     {
         if (!MovementInput.IsForeground(Core.Process.Pid)) { this.Halt("unfocused"); return; }
-        if (Core.States.GameCurrentState != GameStateTypes.InGameState || Core.GHSettings.EnableControllerMode) { this.Halt("game_state"); return; }
+        if (Core.States.GameCurrentState != GameStateTypes.InGameState ||
+            (Core.GHSettings.EnableControllerMode && !this.Settings.LocalCoopFollow)) { this.Halt("game_state"); return; }
         var game = Core.States.InGameStateObject;
         var area = game.CurrentAreaInstance;
         var ui = game.GameUi;
-        if (Core.IsSettingsMenuOpen || ui.Address == IntPtr.Zero || ui.ChatParent.Address == IntPtr.Zero ||
-            ui.ChatParent.IsChatActive || ui.IsAnyLargePanelOpen || MovementInput.IsDown(0x0D))
-        { this.Halt("panel"); return; }
-        if (area.Address == IntPtr.Zero || !area.Player.IsValid ||
-            !area.Player.TryGetComponent<Life>(out var life) || !life.IsAlive ||
-            !area.Player.TryGetComponent<Render>(out var playerRender))
-        { this.Halt("player_invalid"); return; }
+        if (this.IsUiBlocked(ui)) { this.Halt("panel"); return; }
+        if (area.Address == IntPtr.Zero) { this.Halt("player_invalid"); return; }
         if (this.areaAddress != IntPtr.Zero && (this.areaAddress != area.Address || this.areaHash != area.AreaHash))
         { this.Halt("area_changed"); return; }
         this.areaAddress = area.Address;
         this.areaHash = area.AreaHash;
-        if (string.IsNullOrEmpty(this.LeaderName)) { this.Halt("leader_name"); return; }
-        var targets = area.AwakeEntities.Values.Where(e => e.IsValid && e.Address != area.Player.Address &&
-            e.EntityType == EntityTypes.Player && e.TryGetComponent<Player>(out var p) &&
-            string.Equals(p.Name, this.LeaderName, StringComparison.OrdinalIgnoreCase)).Take(2).ToArray();
-        if (targets.Length != 1 || !targets[0].TryGetComponent<Render>(out var targetRender) ||
-            !targets[0].TryGetComponent<Life>(out var targetLife) || !targetLife.IsAlive)
+        var players = ReadPlayers(area);
+        var local = players.Keys.Where(p => p.Address == area.Player.Address && p.Id == area.Player.Id)
+            .Select(p => (PlayerIdentity?)p).FirstOrDefault();
+        var pair = ParticipantSelection.Resolve(players.Keys, local, this.Settings.LocalCoopFollow,
+            this.LeaderName, this.Settings.P1Name, this.Settings.P2Name, out var failure);
+        if (pair == null) { this.Halt(failure); return; }
+        var primary = players[pair.Value.Primary];
+        var secondary = pair.Value.Secondary is PlayerIdentity secondaryIdentity ? players[secondaryIdentity] : null;
+        var target = players[pair.Value.Leader];
+        if (!primary.TryGetComponent<Life>(out var life) || !life.IsAlive ||
+            !primary.TryGetComponent<Render>(out var primaryRender))
+        { this.Halt("player_invalid"); return; }
+        Render? secondaryRender = null;
+        Life? secondaryLife = null;
+        if (secondary != null && (!secondary.TryGetComponent<Render>(out secondaryRender) ||
+            !secondary.TryGetComponent<Life>(out secondaryLife) || !secondaryLife.IsAlive))
+        { this.Halt("secondary_invalid"); return; }
+        if (!target.TryGetComponent<Render>(out var targetRender) ||
+            !target.TryGetComponent<Life>(out var targetLife) || !targetLife.IsAlive)
         { this.Halt("target_missing"); return; }
-        var target = targets[0];
+        if (this.followerAddress != IntPtr.Zero && (this.followerAddress != primary.Address || this.followerId != primary.Id))
+        { this.Halt("follower_changed"); return; }
+        if (secondary != null && this.secondaryAddress != IntPtr.Zero &&
+            (this.secondaryAddress != secondary.Address || this.secondaryId != secondary.Id))
+        { this.Halt("follower_changed"); return; }
+        this.followerAddress = primary.Address;
+        this.followerId = primary.Id;
+        this.secondaryAddress = secondary?.Address ?? IntPtr.Zero;
+        this.secondaryId = secondary?.Id ?? 0;
         if (this.targetAddress != IntPtr.Zero && (this.targetAddress != target.Address || this.targetId != target.Id))
         { this.Halt("target_changed"); return; }
         this.targetAddress = target.Address;
         this.targetId = target.Id;
-        var p = playerRender.GridPosition;
-        var t = targetRender.GridPosition;
-        var player = new Vector2(p.X, p.Y);
-        var goal = new Vector2(t.X, t.Y);
-        this.distance = Vector2.Distance(player, goal);
-        if (!float.IsFinite(this.distance) || this.distance > 600 || area.GridWalkableData.Length == 0)
+        var primaryPos = new Vector2(primaryRender.GridPosition.X, primaryRender.GridPosition.Y);
+        var leaderPos = new Vector2(targetRender.GridPosition.X, targetRender.GridPosition.Y);
+        var secondaryPos = secondaryRender == null ? primaryPos : new Vector2(secondaryRender.GridPosition.X, secondaryRender.GridPosition.Y);
+        var leaderDistance = Vector2.Distance(primaryPos, leaderPos);
+        this.playerGap = Vector2.Distance(primaryPos, secondaryPos);
+        if (!float.IsFinite(leaderDistance + this.playerGap) || leaderDistance > 600 || this.playerGap > 600 || area.GridWalkableData.Length == 0)
         { this.Halt("terrain_missing"); return; }
         if (this.grid == null || now >= this.nextDoorRead)
         {
             this.grid = BuildGrid(area, this.Settings.Clearance);
             this.nextDoorRead = now + 150;
         }
-        if (!this.grid.Contains(player) || !this.grid.Contains(goal)) { this.Halt("terrain_missing"); return; }
-        if (!this.session.NeedsMovement(this.distance, this.grid.Clear(player, goal), this.Settings.StopDistance, this.Settings.ResumeDistance))
+        if (!this.grid.Contains(primaryPos) || !this.grid.Contains(leaderPos) || !this.grid.Contains(secondaryPos))
+        { this.Halt("terrain_missing"); return; }
+        var correction = secondary != null && this.coop.Update(primaryPos, secondaryPos,
+            this.grid.Clear(primaryPos, secondaryPos), this.Settings.P2LagDistance, this.Settings.P2RejoinDistance);
+        if (correction != this.correctingP2)
+        {
+            // Cancel the old actor's search and release its keys before switching
+            // actor, route destination, projection height, and physical mapping.
+            this.ClearRoute();
+            this.correctingP2 = correction;
+        }
+        if (this.input?.SetArrowMode(this.correctingP2) != true) { this.Halt("input_failed"); return; }
+        var player = this.correctingP2 ? secondaryPos : primaryPos;
+        var goal = this.correctingP2 ? primaryPos : leaderPos;
+        var playerRender = this.correctingP2 ? secondaryRender! : primaryRender;
+        this.followerHeight = playerRender.TerrainHeight;
+        this.distance = Vector2.Distance(player, goal);
+        // During correction the coordinator alone decides when P2 has rejoined;
+        // the ordinary leader stop distance must not end this phase early.
+        var needsMovement = this.correctingP2 || this.session.NeedsMovement(this.distance,
+            this.grid.Clear(player, goal), this.Settings.StopDistance, this.Settings.ResumeDistance);
+        if (!this.Settings.PreviewOnly && (this.input?.HasManualMovement(this.Settings.LocalCoopFollow) == true || MovementInput.HasModifier()))
+        { this.Halt("manual"); return; }
+        if (!needsMovement)
         {
             this.input?.Stop();
             this.planned = MoveKeys.None;
@@ -269,13 +359,15 @@ public sealed class FollowerCore : PCore<FollowerSettings>
         var screenY = world.WorldToScreen((player + Vector2.UnitY) * ratio, playerRender.TerrainHeight) - origin;
         this.planned = Steering.Choose(steer.Value - player, screenX, screenY, step => this.grid.Clear(player, player + step));
         if (this.Settings.PreviewOnly) { this.input?.Stop(); this.status = "preview"; return; }
-        if (this.input?.HasManualMovement() == true || MovementInput.HasModifier()) { this.Halt("manual"); return; }
         if (this.session.IsStuck(player, this.planned != MoveKeys.None, now, this.Settings.StuckMilliseconds))
         { this.Halt("stuck"); return; }
         if (this.planned == MoveKeys.None) { this.input?.Stop(); this.status = "no_direction"; return; }
         if (area.Address != this.areaAddress || area.AreaHash != this.areaHash || !target.IsValid ||
             target.Address != this.targetAddress || target.Id != this.targetId ||
-            Core.States.GameCurrentState != GameStateTypes.InGameState || ui.ChatParent.IsChatActive)
+            !primary.IsValid || primary.Address != this.followerAddress || primary.Id != this.followerId ||
+            (secondary != null && (!secondary.IsValid || secondary.Address != this.secondaryAddress ||
+                secondary.Id != this.secondaryId || secondaryLife?.IsAlive != true)) ||
+            !life.IsAlive || !targetLife.IsAlive || Core.States.GameCurrentState != GameStateTypes.InGameState || this.IsUiBlocked(ui))
         { this.Halt("target_changed"); return; }
         if (this.input?.Apply(this.planned, Core.Process.Pid) != true) { this.Halt("input_failed"); return; }
         this.status = "following";
@@ -311,15 +403,21 @@ public sealed class FollowerCore : PCore<FollowerSettings>
             ImGui.SetNextWindowPos(new Vector2(30, 180), ImGuiCond.FirstUseEver);
             ImGui.Begin("Follower##FollowerStatus", ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoInputs | ImGuiWindowFlags.NoFocusOnAppearing);
             ImGui.TextUnformatted(this.StatusText());
-            ImGui.TextUnformatted($"{this.LeaderName} | {this.distance:0.0} | {this.planned}");
+            var roles = this.Settings.LocalCoopFollow
+                ? (this.correctingP2 ? $"P2: {this.Settings.P2Name} → P1: {this.Settings.P1Name}" : $"P1: {this.Settings.P1Name} → {this.LeaderName}")
+                : this.LeaderName;
+            if (this.Settings.LocalCoopFollow)
+                ImGui.TextUnformatted(this.PluginText.T(this.correctingP2 ? "phase.correction" : "phase.shared",
+                    this.correctingP2 ? "P2 correction: P1 paused" : "Shared WASD follow") +
+                    this.PluginText.F("gap", " | P1/P2 gap: {0:0.0}", this.playerGap));
+            ImGui.TextUnformatted($"{roles} | {this.distance:0.0} | {MovementBindings.Describe(this.planned, this.correctingP2)}");
             ImGui.End();
         }
         if (!this.running || !this.Settings.ShowRoute || this.route == null || Core.States.GameCurrentState != GameStateTypes.InGameState) return;
         var game = Core.States.InGameStateObject;
         var area = game.CurrentAreaInstance;
-        if (!area.Player.TryGetComponent<Render>(out var render)) return;
         var origin = new Vector2(Core.Process.WindowArea.X, Core.Process.WindowArea.Y);
-        var points = this.route.Take(1000).Select(p => origin + game.CurrentWorldInstance.WorldToScreen(p * area.WorldToGridConvertor, render.TerrainHeight)).ToArray();
+        var points = this.route.Take(1000).Select(p => origin + game.CurrentWorldInstance.WorldToScreen(p * area.WorldToGridConvertor, this.followerHeight)).ToArray();
         var draw = ImGui.GetBackgroundDrawList();
         for (var i = 1; i < points.Length; i++)
             if (float.IsFinite(points[i - 1].X + points[i - 1].Y + points[i].X + points[i].Y))

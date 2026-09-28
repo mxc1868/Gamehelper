@@ -30,4 +30,5 @@ internal sealed class FollowSession
     }
 
     public void Reset() { this.catchingUp = false; this.measuring = false; }
+    public void ResetProgress() => this.measuring = false;
 }

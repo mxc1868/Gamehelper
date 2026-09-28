@@ -8,6 +8,7 @@ internal sealed class MovementInput : IDisposable
     private readonly Timer watchdog;
     private uint pid;
     private volatile bool disposed;
+    private bool arrows;
 
     public MovementInput()
     {
@@ -33,7 +34,8 @@ internal sealed class MovementInput : IDisposable
         return this.lease.Renew(keys, Environment.TickCount64);
     }
 
-    public bool HasManualMovement() => KeyLease.Keys.Any(key => (this.Held & key) == 0 && IsDown(VirtualKey(key)));
+    public bool SetArrowMode(bool value) => this.arrows == value || this.lease.TryReset(() => this.arrows = value);
+    public bool HasManualMovement(bool bothLayouts = false) => MovementBindings.HasManualMovement(this.Held, this.arrows, IsDown, bothLayouts);
     public static bool HasModifier() => IsDown(0x11) || IsDown(0x12) || IsDown(0x5B) || IsDown(0x5C);
     public void Stop() => this.lease.Stop();
     private bool Allowed() => !this.disposed && IsForeground(Volatile.Read(ref this.pid)) &&
@@ -43,12 +45,11 @@ internal sealed class MovementInput : IDisposable
     {
         // Recheck the real OS foreground immediately before every key-down.
         if (down && !this.Allowed()) return false;
-        var scan = key switch { MoveKeys.W => 0x11, MoveKeys.A => 0x1E, MoveKeys.S => 0x1F, MoveKeys.D => 0x20, _ => 0 };
-        var input = new Input { Type = 1, Scan = (ushort)scan, Flags = 0x0008u | (down ? 0u : 0x0002u) };
+        var binding = MovementBindings.Get(key, this.arrows);
+        var input = new Input { Type = 1, Scan = binding.Scan, Flags = binding.Flags(down) };
         return SendInput(1, [input], Marshal.SizeOf<Input>()) == 1;
     }
 
-    private static int VirtualKey(MoveKeys key) => key switch { MoveKeys.W => 0x57, MoveKeys.A => 0x41, MoveKeys.S => 0x53, MoveKeys.D => 0x44, _ => 0 };
     private void OnExit(object? sender, EventArgs args) => this.Stop();
     public void Dispose()
     {
