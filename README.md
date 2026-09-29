@@ -19,6 +19,8 @@ dotnet build GameOverlay.sln -c Release
 
 **本 fork 的启动器已跳过在线二进制更新**，后续使用源码更新与编译。上游原版 1.5.11 缺少本 fork 新增的 `MapProjection`、实体扫描接口和 `WorldItem.TryReadItem`；覆盖核心会导致幽火在加载阶段消失、UniqueLoot 扫描接口不可用。已有 `Test` 目录可用 `rebuild-test.ps1` 重建，需一起更新启动器、核心与插件，保留自己的配置。
 
+重建 Test 前须关闭该目录运行的 GameHelper。脚本会识别启动器随机生成的进程名，并在删除前检查文件锁；检测到占用时退出。配置工作备份保存在 `test-runtime-backup`，更新备份前会把旧配置存入 `artifacts/config-recovery/build-backups/<时间戳-GUID>`，失败重试也不会删除这些历史归档。若需要恢复，先关闭程序并备份当前配置，再从所需归档复制 `configs`、各插件 `config` 和 `imgui.ini`；个人备份不提交到 Git，也不自动清理。隔离验证命令：`powershell -NoProfile -ExecutionPolicy Bypass -File tests/DeployConfig.Tests.ps1`。
+
 Windows 验证：整套 Release 编译成功，UniqueLoot 40 项、ShowMeWisp 98 项离线检查通过。[插件加载检查](tests/PluginLoad.Tests/Program.cs) 调用实际 `PManager` 加载器，检查新旧插件去重与核心接口：
 
 ```powershell

@@ -2,6 +2,16 @@
 
 更新日期：2026-09-28。后续 agent 请先读本文，再读 [插件说明](Plugins/ShowMeWisp/README.md) 和 [Windows 调试说明](Plugins/ShowMeWisp/WINDOWS-DEBUG.zh-CN.md)。
 
+## 编译失败后的配置恢复与备份保护（2026-09-28）
+
+- [x] 用户明确请求恢复整个 GameHelper 配置，并说明未关闭运行中的 GameHelper 就编译，失败后 Test/configs 丢失。本轮授权仅恢复配置和修复导致再次丢失的构建保护；没有重新部署二进制、启动程序或发送游戏输入。
+- [x] 找到 `test-runtime-backup` 中的较新插件设置，以及 `artifacts/wisps/before-showmewisp-unique-20260922-234638/Test/configs` 的完整旧主设置/启用列表。当前核心设置与旧备份有效内容相同，仅手柄模式是后来开启，旧 metadata 数组有重复；保留当前核心文件。Follower 的名字、快捷键、双人及预览等原有字段与较新备份一致，新加 Combat 仍关闭，保留当前文件。
+- [x] 先确认 Test 中没有运行进程，将全部 35 个配置/布局文件、备份来源与恢复结果保存到本机 `artifacts/config-recovery/20260928-183413`。按 9 月 22 日旧表恢复已有插件启用选择，保留后来使用的 Follower：启用 AutoPot、Follower、LootValue、Radar、ShowMeWisp、UniqueLoot；另外恢复 LootTracker/RunecraftHelper 被本次误开启后改变的设置。实际改动 3 个配置文件，其余 32 个哈希保持不变；全部 JSON 解析成功，恢复来源和 SHA-256 记录在该目录 `recovery.json`。9 月 22 日之后已丢失且无备份的插件开关变化不能凭空推断；不要声称有丢失前一刻的完整快照。个人配置未提交。
+- [x] 核对启动器会随机重命名 EXE，而旧构建占用检查只认 GameHelper/GameHelper.App，且先删除旧备份再检查占用。现在构建前和备份前检查目标目录内的所有进程，包括随机名、子目录及匹配名称但无权读取模块的进程；删除前逐文件检查锁，锁定时尚未删除任何文件。仍有检查后并发启动的竞态，不能声称完全事务化部署。
+- [x] 构建不再删除 `test-runtime-backup`，更新前把已有配置另存至 `artifacts/config-recovery/build-backups/<时间戳-GUID>`；工作备份合并保存，不把失败部署目录中已缺少的路径从备份删除。历史归档不自动清理，个人数据目录已加入 gitignore。没有运行构建/镜像/发布脚本的主流程。
+- [x] 新增 `tests/DeployConfig.Tests.ps1`，只提取构建辅助函数，在隔离临时目录模拟随机进程、模块访问失败、目录边界、真实文件锁、缺失核心配置、重复备份和恢复；13 项通过，临时目录已清理。测试发现并修正单进程结果的数组包装，PowerShell 语法及 `git diff --check` 通过。
+- [x] 恢复后用户于本地 18:36 重新启动，启用列表仍为上述六项；Follower 设置和 imgui.ini 随后有新写入，保留这些后续更改，不再用恢复快照覆盖。只读检查已能识别该目录中新启动的随机名进程。
+
 ## Follower 基础战斗与独立 Combat 模块（2026-09-28）
 
 用户要求参考自己的 PoE1 [Bloodybot](https://github.com/mxc1868/Bloodybot)，先给 Follower 加附近精英/Unique 与人物状态触发技能的能力；战斗独立，后续 Bloodybot2 将 Follower 作为一种导航方式，并可能增加 Simulacrum 策略。本轮只完成基础战斗接入，未实现自动刷图/波次或整个 Bloodybot2。

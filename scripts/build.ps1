@@ -164,27 +164,31 @@ function Get-BlockingGameHelperProcesses {
     }
 
     $deployRoot = [System.IO.Path]::GetFullPath($DeployDir).TrimEnd('\')
-    $processNames = @('GameHelper', 'GameHelper.App')
+    # The launcher runs a randomly renamed executable, not necessarily GameHelper.exe.
+    $processNames = @('GameHelper', 'GameHelper.App') + @(
+        Get-ChildItem -LiteralPath $deployRoot -File -Filter '*.exe' | ForEach-Object { $_.BaseName }
+    )
     $blocking = @()
 
     foreach ($proc in Get-Process -ErrorAction SilentlyContinue) {
-        if ($processNames -notcontains $proc.ProcessName) {
-            continue
-        }
-
         try {
             $exePath = $proc.MainModule.FileName
         }
         catch {
+            # An elevated/randomized instance may deny module access. A matching
+            # executable name must block deployment until the user closes it.
+            if ($processNames -contains $proc.ProcessName) { $blocking += $proc }
             continue
         }
 
         if ([string]::IsNullOrWhiteSpace($exePath)) {
+            if ($processNames -contains $proc.ProcessName) { $blocking += $proc }
             continue
         }
 
         $exeDir = [System.IO.Path]::GetFullPath((Split-Path $exePath -Parent)).TrimEnd('\')
-        if ($exeDir.Equals($deployRoot, [StringComparison]::OrdinalIgnoreCase)) {
+        if ($exeDir.Equals($deployRoot, [StringComparison]::OrdinalIgnoreCase) -or
+            $exeDir.StartsWith($deployRoot + '\', [StringComparison]::OrdinalIgnoreCase)) {
             $blocking += $proc
         }
     }
@@ -192,10 +196,10 @@ function Get-BlockingGameHelperProcesses {
     return $blocking
 }
 
-function Remove-DeployDirectory {
+function Assert-DeployNotRunning {
     param([string]$TargetDir)
 
-    $blockers = Get-BlockingGameHelperProcesses -DeployDir $TargetDir
+    $blockers = @(Get-BlockingGameHelperProcesses -DeployDir $TargetDir)
     if ($blockers.Count -gt 0) {
         $details = ($blockers | ForEach-Object { "$($_.ProcessName).exe (PID $($_.Id))" }) -join ', '
         throw @"
@@ -203,13 +207,50 @@ Deploy nach '$TargetDir' blockiert: GameHelper laeuft noch aus diesem Ordner ($d
 Bitte GameHelper schliessen und rebuild-test erneut ausfuehren.
 "@
     }
+}
+
+function Backup-DeployUserData {
+    param([string]$SourceDir, [string]$BackupDir, [string]$ArchiveRoot)
+
+    Assert-DeployNotRunning -TargetDir $SourceDir
+    if (Test-Path -LiteralPath $BackupDir) {
+        # Preserve the previous recovery point before updating the working backup.
+        # Never erase it when retrying a deployment whose directory is incomplete.
+        $archive = Join-Path $ArchiveRoot ((Get-Date -Format 'yyyyMMdd-HHmmssfff') + '-' + [guid]::NewGuid().ToString('N'))
+        Save-DeployUserData -SourceDir $BackupDir -BackupDir $archive
+        Write-Host "  Vorherige Einstellungen gesichert: $archive" -ForegroundColor DarkGray
+    }
+
+    # /E merges files without deleting missing paths: a failed cleanup must not
+    # discard configs that are already absent from the damaged source directory.
+    Save-DeployUserData -SourceDir $SourceDir -BackupDir $BackupDir
+}
+
+function Remove-DeployDirectory {
+    param([string]$TargetDir)
+
+    Assert-DeployNotRunning -TargetDir $TargetDir
 
     if (-not (Test-Path $TargetDir)) {
         return
     }
 
+    # Preflight every file before deleting any directory. This also catches locks
+    # held by renamed processes that could not be identified via process metadata.
+    foreach ($file in Get-ChildItem -LiteralPath $TargetDir -Recurse -File) {
+        $stream = $null
+        try {
+            $stream = [System.IO.File]::Open($file.FullName, [System.IO.FileMode]::Open,
+                [System.IO.FileAccess]::Read, [System.IO.FileShare]::None)
+        }
+        catch {
+            throw "Deploy blockiert: Datei gesperrt oder nicht lesbar: '$($file.FullName)'. Keine Dateien geloescht. GameHelper schliessen und erneut versuchen."
+        }
+        finally { if ($null -ne $stream) { $stream.Dispose() } }
+    }
+
     try {
-        Remove-Item $TargetDir -Recurse -Force -ErrorAction Stop
+        Remove-Item -LiteralPath $TargetDir -Recurse -Force -ErrorAction Stop
     }
     catch {
         throw @"
@@ -337,6 +378,8 @@ function Repair-PluginsJson {
     Write-Host "  plugins.json migriert ($JsonPath)" -ForegroundColor DarkYellow
 }
 
+Assert-DeployNotRunning -TargetDir $PublishDir
+
 if (-not (Test-Path $Solution)) {
     Write-Host "Solution nicht gefunden. Fuehre zuerst setup-project.ps1 aus." -ForegroundColor Red
     & (Join-Path $Root "setup-project.ps1")
@@ -362,11 +405,8 @@ try {
     $testUserBackup = Join-Path $Root "test-runtime-backup"
     if ($PublishDir -ne $defaultPublish -and (Test-Path $PublishDir)) {
         Write-Host "Sichere Test-Einstellungen vor dem Neu-Deploy ..." -ForegroundColor DarkGray
-        if (Test-Path $testUserBackup) {
-            Remove-Item $testUserBackup -Recurse -Force
-        }
-
-        Save-DeployUserData -SourceDir $PublishDir -BackupDir $testUserBackup
+        Backup-DeployUserData -SourceDir $PublishDir -BackupDir $testUserBackup `
+            -ArchiveRoot (Join-Path $Root 'artifacts\config-recovery\build-backups')
     }
 
     Remove-DeployDirectory -TargetDir $PublishDir
