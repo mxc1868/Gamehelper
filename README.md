@@ -1,8 +1,9 @@
-# GameHelper — ShowMeWisp / UniqueLoot / Follower
+# GameHelper — Bloodybot2 / ShowMeWisp / UniqueLoot / Follower
 
 当前仓库：**[mxc1868/Gamehelper](https://github.com/mxc1868/Gamehelper)**，分支 `main`。基于上游 `v1.5.11` 标签的 `0d11fe7`，保留幽火与 UniqueLoot 补丁；核心和启动器版本统一为 1.5.11。Windows 编译和插件加载已验证，当前 PoE2 游戏读取与绘制仍待实测。
 
 - **UniqueLoot**：按完整 asset 路径识别未鉴定暗金，默认猎首金色高亮、魔血紫红色高亮；可编辑 `Plugins/UniqueLoot/highlights.default.json`。详见 [插件说明](Plugins/UniqueLoot/README.md)。
+- **Bloodybot2**：独立战斗插件，用 Chrome 本地 Web 页面编排技能、人物/敌人条件、实时监测与配置备份。默认预览，F6 启停、Esc 停止；当前手动移动/瞄准，不含 Simulacrum 或 Follower 导航。详见 [使用与架构](Plugins/Bloodybot2/README.md)。
 - **Sacred Wisp**：默认橙色；旧配置的默认白色会迁移为橙色。详见 [幽火说明](Plugins/ShowMeWisp/README.md)。
 - **ShowMeWisp**（原名 WhereTheWispsAt）：按幽火自身的 Small / Medium / Big 大小缩放方框，默认地图边长 3 / 5 / 8 像素；支持三档倍率调整，并继承旧设置和启用状态。
 - **[TODO / 后续 agent 接手上下文](TODO.md)**。
@@ -27,7 +28,7 @@ Windows 验证：整套 Release 编译成功，UniqueLoot 40 项、ShowMeWisp 98
 dotnet run --project tests/PluginLoad.Tests/PluginLoad.Tests.csproj -c Release -- GameHelper/bin/Release/net10.0-windows/win-x64
 ```
 
-12 项发现/加载/接口检查通过（含 Follower 及独立 Combat 依赖）；不启动 overlay、不启用插件、不读取游戏或改写设置。此前的 [初版测试 Release](https://github.com/mxc1868/Gamehelper/releases/tag/unique-debug-2026-09-23) 保留，但不包含改名、尺寸和 Follower 功能，请从 `main` 编译当前版本。
+14 项发现/加载/接口检查通过（含 Follower、Bloodybot2 及独立 Combat 依赖）；不启动 overlay、不启用插件、不读取游戏或改写设置。Bloodybot2 另有 64 项配置/运行/HTTP 与 19 项 Chrome 页面检查，游戏内施法尚待实测。此前的 [初版测试 Release](https://github.com/mxc1868/Gamehelper/releases/tag/unique-debug-2026-09-23) 保留，但不包含改名、尺寸、Follower 或 Bloodybot2 功能，请从 `main` 编译当前版本。
 
 原项目与作者信息保留如下；其中上游下载与自动更新说明不适用于本 fork 的配套构建。
 

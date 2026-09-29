@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bloodybot2 · 战斗控制台</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <aside class="sidebar">
+      <a class="brand" href="/" aria-label="Bloodybot2 首页"
+        ><span class="brand-icon">B<span>2</span></span
+        ><span
+          >bloodybot<span class="brand-sub">POE 2 / CONTROL ROOM</span></span
+        ></a
+      >
+      <div class="nav-label">工作空间</div>
+      <nav aria-label="主要导航">
+        <button class="nav-item active" data-tab="combat">
+          <span>▤</span> 战斗编排 <small>01</small>
+        </button>
+        <button class="nav-item" data-tab="monitor">
+          <span>◉</span> 实时监测 <small>02</small>
+        </button>
+        <button class="nav-item" data-tab="config">
+          <span>⚙</span> 配置文件 <small>03</small>
+        </button>
+      </nav>
+      <div class="sidebar-bottom">
+        <span class="dot" id="connection-dot"></span
+        ><span id="connection">连接中</span>
+        <p>本机服务 · Chrome<br />Bloodybot2 / v0.1</p>
+        <div class="key-help"><kbd>F6</kbd> 启停 <kbd>Esc</kbd> 停止</div>
+      </div>
+    </aside>
+    <main>
+      <header class="topbar">
+        <div>
+          <div class="eyebrow">
+            BLOODYBOT2 <span>/</span> <span id="page-crumb">COMBAT</span>
+          </div>
+          <h1 id="page-title">战斗编排</h1>
+        </div>
+        <div class="toolbar">
+          <span id="dirty" class="muted">已保存</span
+          ><button id="save" class="button primary" disabled>保存并应用</button
+          ><button id="run" class="button start" disabled>启动预览</button
+          ><button id="stop" class="button">停止</button>
+        </div>
+      </header>
+      <div id="message" class="notice" role="alert" hidden></div>
+      <div id="warning" class="notice warning" hidden></div>
+      <div class="run-strip">
+        <div>
+          <span class="dot" id="run-dot"></span
+          ><strong id="run-label">已停止</strong
+          ><span id="reason">等待连接 GameHelper</span>
+        </div>
+        <span class="mode-chip" id="mode-chip">预览模式</span>
+      </div>
+      <div id="workspace">
+        <section id="tab-combat" class="tab-panel">
+          <div class="section-heading">
+            <div>
+              <h2>技能队列 <span id="rule-count">0 / 32</span></h2>
+              <p>从上往下匹配，优先执行第一条满足全部条件的技能。</p>
+            </div>
+            <button class="button" id="add">＋ 添加技能</button>
+          </div>
+          <div class="combat-layout">
+            <section class="queue panel">
+              <div class="panel-caption">PRIORITY <span>KEY</span></div>
+              <div id="rules"></div>
+              <div class="queue-footer">
+                <span>快速添加</span
+                ><button data-template="elite">精英 / Unique</button
+                ><button data-template="life">低生命</button
+                ><button data-template="buff">补充 Buff</button>
+              </div>
+            </section>
+            <section id="editor" class="panel editor"></section>
+          </div>
+          <p class="footnote">
+            距离单位为游戏格，最多扫描附近 150 格。按键使用当前鼠标 /
+            手柄瞄准，人物由你手动移动。
+          </p>
+        </section>
+        <section id="tab-monitor" class="tab-panel" hidden>
+          <div class="section-heading">
+            <div>
+              <h2>现场状态</h2>
+              <p id="observed-player">等待角色数据</p>
+            </div>
+            <span class="mode-chip" id="snapshot-age">尚无快照</span>
+          </div>
+          <div class="vitals">
+            <article class="panel">
+              <div>生命 <b id="life-value">—</b></div>
+              <progress id="life" max="100" value="0"></progress>
+            </article>
+            <article class="panel">
+              <div>能量护盾 <b id="shield-value">—</b></div>
+              <progress id="shield" max="100" value="0"></progress>
+            </article>
+            <article class="panel">
+              <div>魔力 <b id="mana-value">—</b></div>
+              <progress id="mana" max="100" value="0"></progress>
+            </article>
+          </div>
+          <div class="enemy-grid panel">
+            <div>
+              附近有效敌人
+              <small>150 格内 · 已过滤死亡 / 友方 / 已知免伤</small>
+            </div>
+            <div>普通 <b id="normal-count">0</b></div>
+            <div class="magic">魔法 <b id="magic-count">0</b></div>
+            <div class="rare">稀有 <b id="rare-count">0</b></div>
+            <div class="unique">Unique <b id="unique-count">0</b></div>
+          </div>
+          <div class="monitor-grid">
+            <article class="panel monitor-card">
+              <h3>技能扫描 <span id="skill-count"></span></h3>
+              <p>内部名称可用于规则的“技能就绪”条件。绿色为当前可用。</p>
+              <div class="scan-list" id="skills"></div>
+            </article>
+            <article class="panel monitor-card">
+              <h3>当前 Buff</h3>
+              <p>点击名称复制，填入规则中的存在 / 缺少 Buff。</p>
+              <div class="scan-list" id="buffs"></div>
+            </article>
+          </div>
+          <article class="panel monitor-card">
+            <h3>运行记录 <span id="accepted">0 次输入</span></h3>
+            <p id="candidate">尚无匹配的技能</p>
+            <div class="events" id="events"></div>
+          </article>
+        </section>
+        <section id="tab-config" class="tab-panel" hidden>
+          <div class="section-heading">
+            <div>
+              <h2>配置文件</h2>
+              <p>修改保留在浏览器草稿中，保存后写入本机并停止当前运行。</p>
+            </div>
+          </div>
+          <div class="config-grid">
+            <article class="panel config-card">
+              <h3>运行设置</h3>
+              <label class="field"
+                >配置名称<input
+                  id="config-name"
+                  maxlength="80"
+                  autocomplete="off"
+              /></label>
+              <label class="switch-row"
+                ><span
+                  ><strong>预览模式</strong
+                  ><small>展示将触发的技能，不发送按键。</small></span
+                ><input id="preview" type="checkbox"
+              /></label>
+              <label class="switch-row"
+                ><span
+                  ><strong>启用战斗</strong
+                  ><small>关闭时无法启动技能队列。</small></span
+                ><input id="combat-enabled" type="checkbox"
+              /></label>
+              <label class="field"
+                >监测角色<input
+                  id="monitor-character"
+                  list="player-options"
+                  maxlength="128"
+                  placeholder="留空 = 本地角色"
+                  autocomplete="off"
+                /><small
+                  >填写精确角色名。监测 P2 不会自动把按键发送给
+                  P2，需使用已有按键映射。</small
+                ></label
+              >
+              <label class="switch-row"
+                ><span
+                  ><strong>允许手柄模式下聊天状态不可读</strong
+                  ><small
+                    >仅在使用手柄时有效。打开手柄聊天前，请先用 Esc
+                    停止。</small
+                  ></span
+                ><input id="controller" type="checkbox"
+              /></label>
+            </article>
+            <article class="panel config-card">
+              <h3>导入与备份</h3>
+              <p>
+                导入只替换当前草稿，核对后点击“保存并应用”。只支持 Bloodybot2
+                配置。
+              </p>
+              <div class="file-actions">
+                <button id="export" class="button">导出当前草稿</button
+                ><button id="import" class="button">导入 JSON</button
+                ><input
+                  id="import-file"
+                  type="file"
+                  accept=".json,application/json"
+                  hidden
+                />
+              </div>
+              <div class="info-box">
+                <strong>本地自动备份</strong>
+                <p>Plugins/Bloodybot2/config/config.json</p>
+                <p>
+                  每次成功保存保留上一版
+                  config.json.bak。原配置损坏时优先读取备份，损坏文件仍会保留。
+                </p>
+              </div>
+              <button id="reload" class="button">重新加载已保存配置</button>
+              <p class="muted">重新加载会丢弃浏览器中尚未保存的修改。</p>
+              <div class="info-box">
+                <strong>当前导航：手动移动</strong>
+                <p>
+                  由你控制人物移动和瞄准。技能沿用当前鼠标或手柄方向，不会自动选择瞄准点。
+                </p>
+              </div>
+            </article>
+          </div>
+        </section>
+      </div>
+      <footer>
+        LOCAL CONTROL
+        <span>配置只保存在本机 · 每次重新启用插件后需手动启动</span>
+      </footer>
+    </main>
+    <datalist id="player-options"></datalist
+    ><datalist id="skill-options"></datalist
+    ><datalist id="buff-options"></datalist>
+  </body>
+</html>

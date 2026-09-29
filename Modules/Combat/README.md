@@ -25,6 +25,6 @@ flowchart LR
 - `SkillKeyPulse` 通过注入的发送函数执行 30–200 ms 短按，宿主定时调用 `Expire`。停止/失焦立刻尝试松键；key-up 失败保留键归属以便重试，不允许重叠技能按键。禁止 WASD、箭头、修饰键、聊天、Esc、鼠标和功能键，宿主再过滤自己的启停键与用户已按住的技能键。
 - 配置最多 32 条规则，稳定 ID 支持重排、改名后的冷却关联；重复 ID 会归一化。规则与输入均不含导航目标或策略状态。
 
-当前 GameHelper 适配器和 Follower 接入分别是 `Plugins/Follower/CombatSnapshotReader.cs`、`FollowerCore.Combat.cs`；输入后端复用 `MovementInput`。后续 Bloodybot2 可以直接引用本项目，提供自己的状态适配器和输入仲裁，将 Follower 改为导航提供者，并由 Simulacrum 等策略决定导航目标及何时允许战斗。本次尚未实现这些策略或完整导航插件接口。
+Follower 适配器和接入分别是 `Plugins/Follower/CombatSnapshotReader.cs`、`FollowerCore.Combat.cs`；输入后端复用 `MovementInput`。独立 [Bloodybot2](../../Plugins/Bloodybot2/README.md) 现已引用本模块，提供自己的状态适配器、输入仲裁和 Chrome 本地 Web 配置页；`INavigationMode` 当前为手动移动。后续可将 Follower 接为导航提供者；用户已明确本版不做 Simulacrum，PoE1 的策略不得直接移植。
 
 验证：`dotnet run --project tests/Combat.Tests/Combat.Tests.csproj -c Release`。全部为合成状态和假输入测试；Windows 游戏读取、施法实际成功、施法时长、虚拟手柄映射和瞄准仍需实机确认。

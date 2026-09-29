@@ -2,6 +2,22 @@
 
 更新日期：2026-09-28。后续 agent 请先读本文，再读 [插件说明](Plugins/ShowMeWisp/README.md) 和 [Windows 调试说明](Plugins/ShowMeWisp/WINDOWS-DEBUG.zh-CN.md)。
 
+## 独立 Bloodybot2 与 Chrome 本地 Web 配置（2026-09-28）
+
+用户改为直接实现 Bloodybot2，暂时不继续 Follower，要求像 Bloodybot1 一样通过本地 Web UI 配置；明确**不做 Simulacrum**，PoE2 与 PoE1 的该策略不同。浏览器必须用 **Chrome，不用 Edge**。本轮仍仅交付源码，不更新 Test 或个人配置。
+
+- [x] 阅读用户 Bloodybot1 `cf4dc688ee6ad1b9ea16904c080df4fe8d8410f0` 的 WebConfigServer、配置与 UI 结构。新增 `Plugins/Bloodybot2`，复用独立 `Modules/Combat`，不依赖/修改 Follower 源码，不改核心与 offsets；新增插件公开 API 仅为本插件自己的 Runtime/Navigation/Input 接口，不是 GameHelper 框架新增能力。
+- [x] Chrome 本地页面：技能队列排序/复制/删除、敌人稀有度/数量/范围、生命/护盾/魔力、Buff 存在/缺少、技能就绪、按键/间隔/时长/停顿；现场角色/敌人/技能/Buff 扫描、运行记录；导入/导出/重新加载、草稿和跨页面版本冲突提示。桌面与 390px 窄屏布局验证。原生 UI 只显示状态和 Chrome/复制网址入口。
+- [x] `BotRuntime` 拆开配置、导航、战斗和输入；`INavigationMode` 当前只有手动移动。F6 启停、Esc 停止，默认空规则/预览，重启不自动开战斗；网页停止不依赖 DrawUI。75 ms 状态读取，150 ms 快照门槛，25 ms 松键看门狗，400 ms 画面中断（F9）停止。保存/切区/禁用/游戏关闭停止；失焦/面板/聊天/修饰键等阻止施法，发送前复核。短按失败不消耗间隔，暂停不重置间隔，key-up 失败保留并重试。
+- [x] 本机 HTTP 端口从 38432 尝试到 38439；资源嵌入 DLL，Host/Origin/令牌校验、CSP、请求上限与超时。验证发现 Windows HttpListener.Start 失败后对象可能关闭，修复为每次失败重新创建 listener，并通过真实端口占用测试。HTTP 线程不读游戏内存；配置变更后旧扫描被版本检查拒绝。
+- [x] `config/config.json` 校验后临时文件 flush + 原子替换，保留 `.bak`；损坏主文件可回退备份但不自动覆盖，显式保存时归档损坏文件。失败不发布运行配置/版本号，宿主定时 SaveSettings 不会覆盖 Web 配置；个人配置未提交。
+- [x] 声明与 Follower 互斥且启动优先级较低，避免新 DLL 默认发现时抢占已有 Follower；用户主动启用后切换。监测指定 P1/P2 名称不改变输入路由，仍需用户映射；手柄聊天缺失默认阻止，网页可明确允许。
+- [x] Windows 整套 Release 构建成功，0 错误，完整构建出现 WorldDrawing 4 个既有 nullable 警告；前一次核心重新编译出现 3 个既有 nullable/XML 警告。Bloodybot2 定向最终构建为 0 警告/0 错误；没有借增量构建声称全库清洁重建零警告。64 项配置/运行/真实回环 HTTP 检查、19 项无头 Chrome 页面检查、80 项 Combat、222 项 Follower、14 项实际插件加载/独立依赖/API 检查通过。HTTP 测试在受限沙箱中遇到 HTTP.sys 无效句柄，使用获准的本机模拟服务执行完成；未连接游戏、未发送真实输入。
+- [x] Chrome 用独立测试 profile，仅连接假运行器；桌面/窄屏/监测截图在忽略目录 `artifacts/bloodybot2`。无 npm/CDN 依赖。实际加载器检查显式解析延迟加载的 Combat 依赖，不调用新插件 OnEnable（防止开启真实输入看门狗）。
+- [ ] 实机核对：怪物过滤/角色读数、Actor 技能就绪内部名语义、手柄聊天与映射、F6/Esc/F9/切区/失焦释放、实际施法成功、80 ms 短按及停顿是否合适。当前仅按键，不自动瞄准/追怪/走位；不把离线和 Chrome 模拟结果当作游戏验证。
+
+入口：[Bloodybot2 使用与架构](Plugins/Bloodybot2/README.md)。后续将 Follower 接为导航类型需单独授权，本版不要加入 Simulacrum。提交到用户 fork `main`，不创建 ZIP/Release，不部署 `Test`。
+
 ## 编译失败后的配置恢复与备份保护（2026-09-28）
 
 - [x] 用户明确请求恢复整个 GameHelper 配置，并说明未关闭运行中的 GameHelper 就编译，失败后 Test/configs 丢失。本轮授权仅恢复配置和修复导致再次丢失的构建保护；没有重新部署二进制、启动程序或发送游戏输入。

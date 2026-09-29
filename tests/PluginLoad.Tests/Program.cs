@@ -33,7 +33,7 @@ var renameOk = names.Contains("ShowMeWisp", StringComparer.OrdinalIgnoreCase) &&
 failed |= !renameOk;
 Console.WriteLine($"{(renameOk ? "PASS" : "FAIL")} discovery uses ShowMeWisp without the legacy duplicate");
 
-foreach (var name in new[] { "ShowMeWisp", "UniqueLoot", "Radar", "Follower" })
+foreach (var name in new[] { "ShowMeWisp", "UniqueLoot", "Radar", "Follower", "Bloodybot2" })
 {
     AssemblyLoadContext? alc = null;
     try
@@ -44,13 +44,16 @@ foreach (var name in new[] { "ShowMeWisp", "UniqueLoot", "Radar", "Follower" })
         var result = loadPlugin.Invoke(null, [assembly, alc, directory]);
         if (result == null) throw new InvalidOperationException("Host plugin loader rejected the plugin; see error above.");
         Console.WriteLine($"PASS {name}: loaded and instantiated by PManager");
-        if (name == "Follower")
+        if (name is "Follower" or "Bloodybot2")
         {
-            var module = alc.Assemblies.Single(a => a.GetName().Name == "BloodyBot.Combat");
+            // Bloodybot2 initializes its runtime in OnEnable. Resolve the lazy
+            // dependency explicitly without starting HTTP or an input watchdog.
+            var module = alc.Assemblies.SingleOrDefault(a => a.GetName().Name == "BloodyBot.Combat") ??
+                alc.LoadFromAssemblyName(new AssemblyName("BloodyBot.Combat"));
             if (!string.Equals(Path.GetDirectoryName(module.Location), directory, StringComparison.OrdinalIgnoreCase) ||
-                module.GetReferencedAssemblies().Any(a => a.Name is "Follower" or "GameHelper" or "GameOffsets"))
-                throw new InvalidOperationException("Combat must load beside Follower and remain independent of the host.");
-            Console.WriteLine("PASS Follower: independent Combat dependency loaded from plugin directory");
+                module.GetReferencedAssemblies().Any(a => a.Name is "Follower" or "Bloodybot2" or "GameHelper" or "GameOffsets"))
+                throw new InvalidOperationException("Combat must load beside its plugin and remain independent of the host.");
+            Console.WriteLine($"PASS {name}: independent Combat dependency loaded from plugin directory");
         }
     }
     catch (Exception ex)
@@ -88,5 +91,5 @@ foreach (var (typeName, methodName, parameterCount) in new[]
     Console.WriteLine($"{(found ? "PASS" : "FAIL")} core API: {typeName}.{methodName}");
 }
 
-Console.WriteLine(failed ? "Plugin load checks failed." : "All 12 plugin discovery/load/API checks passed. Game rendering is not tested.");
+Console.WriteLine(failed ? "Plugin load checks failed." : "All 14 plugin discovery/load/API checks passed. Game rendering is not tested.");
 return failed ? 1 : 0;
