@@ -300,4 +300,113 @@ coopSettings.P2LagDistance = 6;
 coopSettings.P2RejoinDistance = float.PositiveInfinity;
 coopSettings.Normalize();
 Check(coopSettings.P2RejoinDistance == 3 && coopSettings.P2LagDistance == 6, "correction thresholds retain a non-overlapping gap after normalization");
+
+foreach (var reason in new[] { "unfocused", "panel", "settings_open", "frame_gap", "manual", "area_changed",
+    "game_state", "player_invalid", "secondary_invalid", "leader_unavailable", "follower_changed", "target_changed", "terrain_missing", "input_failed", "error" })
+{
+    var run = new FollowRunState();
+    run.Start();
+    run.Fail(reason, 100);
+    Check(run.IsEnabled && run.Status == reason && !run.Ready(349) && run.Ready(350),
+        reason + " releases into a timed wait without requiring a new start command");
+    run.Fail(reason, 350);
+    Check(run.IsEnabled && !run.Ready(599) && run.Ready(600), reason + " can wait repeatedly and automatically retry");
+}
+foreach (var reason in new[] { "target_missing", "leader_name", "primary_name", "follower_name", "same_player", "ambiguous_player" })
+{
+    var run = new FollowRunState();
+    run.Start();
+    run.Fail(reason, 0);
+    Check(!run.IsEnabled && !run.Ready(long.MaxValue), reason + " still requires an explicit restart");
+}
+var stoppedRun = new FollowRunState();
+stoppedRun.Start();
+stoppedRun.Fail("unfocused", 0);
+stoppedRun.Stop("stopped");
+stoppedRun.Fail("area_changed", 2000);
+Check(!stoppedRun.IsEnabled && stoppedRun.Status == "stopped" && !stoppedRun.Ready(9000),
+    "manual stop while waiting is never undone by a later area event or timer");
+stoppedRun.Start();
+Check(stoppedRun.Ready(9000), "manual restart after a stop is allowed");
+Check(ParticipantSelection.Resolve([p2, leader], p2, true, "Leader", "Primary", "Secondary", out selectionReason) == null &&
+    selectionReason == "player_invalid" && !FollowRunState.IsTerminal(selectionReason), "missing P1 with a visible leader waits");
+Check(ParticipantSelection.Resolve([p2], p2, true, "Leader", "Primary", "Secondary", out selectionReason) == null &&
+    selectionReason == "target_missing", "missing leader is not hidden by a simultaneously missing P1");
+Check(ParticipantSelection.Resolve([p1, p2, leader, new(105, 0x5000, "Primary")], p1, true, "Leader", "Primary", "Secondary", out selectionReason) == null &&
+    selectionReason == "ambiguous_player" && FollowRunState.IsTerminal(selectionReason), "ambiguous role selection is a configuration stop");
+
+var noPathProgress = new FollowSession();
+Check(!noPathProgress.IsStuck(new(5, 5), true, 0, 2500) &&
+    !noPathProgress.IsStuck(new(5, 5), true, 2000, 2500) && noPathProgress.IsStuck(new(5, 5), true, 2500, 2500),
+    "no-path and no-direction movement demand reaches recovery timeout without key output");
+var recovery = new UnstuckRecovery();
+recovery.Begin(new(5, 5), MoveKeys.Up);
+var firstProbe = recovery.Advance(new(5, 5), 0, _ => true);
+Check(firstProbe.Action == RecoveryAction.Press && firstProbe.Keys == MoveKeys.Right && firstProbe.LeaseMilliseconds == 150,
+    "recovery starts with a bounded side-step instead of continuing the stuck direction");
+Check(recovery.Advance(new(5, 5), 100, _ => true).LeaseMilliseconds == 50,
+    "renewing a probe preserves its original deadline");
+Check(recovery.Advance(new(5, 5), 150, _ => true).Action == RecoveryAction.Wait &&
+    recovery.Advance(new(5, 5), 269, _ => true).Action == RecoveryAction.Wait,
+    "probe release is followed by a rest interval");
+Check(recovery.Advance(new(5, 5), 270, _ => true).Keys == MoveKeys.Left,
+    "stationary first probe advances to a different direction");
+Check(recovery.Advance(new(6, 5), 280, _ => true).Action == RecoveryAction.Repath && !recovery.Active,
+    "one grid of actual displacement ends recovery and requests a fresh route");
+recovery.Reset();
+recovery.Begin(new(5, 5), MoveKeys.Up);
+Check(recovery.Advance(new(5, 5), 0, key => key == MoveKeys.Down).Keys == MoveKeys.Down,
+    "terrain-blocked directions are skipped while an available reverse direction is tried");
+Check(recovery.Advance(new(5, 5), 20, _ => false).Action == RecoveryAction.Wait,
+    "a door closing during a pulse cancels that pulse immediately");
+recovery.Reset();
+recovery.Begin(new(5, 5), MoveKeys.Up);
+Check(recovery.Advance(new(5, 5), 0, _ => false).Action == RecoveryAction.Wait &&
+    recovery.Advance(new(5, 5), 999, _ => false).Action == RecoveryAction.Wait &&
+    recovery.Advance(new(5, 5), 1000, _ => false).Action == RecoveryAction.Repath,
+    "no valid probe directions produces a bounded rest then replanning, never blind movement");
+recovery.Reset();
+recovery.Begin(new(5, 5), MoveKeys.Up);
+var triedDirections = new List<MoveKeys>();
+for (var trial = 0; trial < 8; trial++)
+{
+    var at = trial * 270;
+    var probe = recovery.Advance(new(5, 5), at, _ => true);
+    triedDirections.Add(probe.Keys);
+    Check(probe.Action == RecoveryAction.Press && recovery.Advance(new(5, 5), at + 150, _ => true).Action == RecoveryAction.Wait,
+        "stationary recovery probe " + trial + " always releases");
+}
+Check(triedDirections.Distinct().Count() == 8 && !triedDirections.Contains(MoveKeys.None), "one recovery round tries each of eight directions once");
+Check(recovery.Advance(new(5, 5), 2160, _ => true).Action == RecoveryAction.Wait &&
+    recovery.Advance(new(5, 5), 3160, _ => true).Action == RecoveryAction.Repath && !recovery.Active,
+    "failed full round rests then returns to navigation without disabling follow");
+recovery.Begin(new(5, 5), MoveKeys.Up);
+recovery.Reset();
+Check(!recovery.Active && recovery.Advance(new(5, 5), 0, _ => true).Action == RecoveryAction.Repath,
+    "pause, actor switch and area reset cancel old recovery commands");
+Check(Steering.TryGetStep(MoveKeys.Up, Vector2.UnitX, Vector2.UnitY, out var probeStep) && probeStep == -Vector2.UnitY,
+    "probe checks use the same screen-to-grid directions as normal movement");
+Check(Steering.TryGetStep(MoveKeys.Right, new(1, 0.5f), new(-1, 0.5f), out probeStep) && probeStep.X > 0 && probeStep.Y < 0,
+    "recovery directions handle an isometric camera");
+Check(!Steering.TryGetStep(MoveKeys.Up, Vector2.Zero, Vector2.Zero, out _) &&
+    !Steering.TryGetStep(MoveKeys.None, Vector2.UnitX, Vector2.UnitY, out _), "invalid recovery projection never generates a probe");
+var shortLease = new KeyLease((_, _) => true);
+shortLease.Renew(MoveKeys.Up, 0, 150);
+shortLease.Renew(MoveKeys.Up, 100, 50);
+shortLease.Expire(149, true);
+Check(shortLease.Held == MoveKeys.Up, "short probe lease is alive before its deadline");
+shortLease.Expire(150, true);
+Check(shortLease.Held == MoveKeys.None, "watchdog releases a 150 ms probe even if no new draw frame arrives");
+foreach (var useArrows in new[] { false, true })
+{
+    var sent = new List<MovementBinding>();
+    var probeLease = new KeyLease((key, _) => { sent.Add(MovementBindings.Get(key, useArrows)); return true; });
+    recovery.Reset();
+    recovery.Begin(new(5, 5), MoveKeys.Up);
+    var probe = recovery.Advance(new(5, 5), 0, _ => true);
+    probeLease.Renew(probe.Keys, 0, probe.LeaseMilliseconds);
+    probeLease.Expire(150, true);
+    Check(sent.Count == 2 && sent.All(binding => binding.Extended == useArrows),
+        useArrows ? "P2 recovery presses and releases only extended arrow keys" : "shared recovery presses and releases only WASD");
+}
 Console.WriteLine($"All {passed} Follower checks passed. No Windows input or live gameplay tested.");

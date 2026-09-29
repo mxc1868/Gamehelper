@@ -9,15 +9,23 @@ internal sealed class MovementInput : IDisposable
     private uint pid;
     private volatile bool disposed;
     private bool arrows;
+    private int stopRequested;
 
     public MovementInput()
     {
         this.lease = new(this.Send);
-        this.watchdog = new(_ => this.lease.Expire(Environment.TickCount64, this.Allowed()), null, 25, 25);
+        this.watchdog = new(_ =>
+        {
+            // Remember Escape even while DrawUI is suppressed by F9. Otherwise
+            // automatic resume could undo an explicit stop during that interval.
+            if (IsDown(0x1B) && IsForeground(Volatile.Read(ref this.pid))) Interlocked.Exchange(ref this.stopRequested, 1);
+            this.lease.Expire(Environment.TickCount64, this.Allowed());
+        }, null, 25, 25);
         AppDomain.CurrentDomain.ProcessExit += this.OnExit;
     }
 
     public MoveKeys Held => this.lease.Held;
+    public bool ConsumeStopRequest() => Interlocked.Exchange(ref this.stopRequested, 0) != 0;
     public static bool IsDown(int key) => (GetAsyncKeyState(key) & 0x8000) != 0;
     public static bool IsForeground(uint processId)
     {
@@ -26,12 +34,17 @@ internal sealed class MovementInput : IDisposable
         return active == processId;
     }
 
-    public bool Apply(MoveKeys keys, uint processId)
+    public void ObserveProcess(uint processId)
     {
         if (Volatile.Read(ref this.pid) != processId) this.Stop();
         Volatile.Write(ref this.pid, processId);
+    }
+
+    public bool Apply(MoveKeys keys, uint processId, int leaseMilliseconds = 200)
+    {
+        this.ObserveProcess(processId);
         if (this.disposed || !this.Allowed()) { this.Stop(); return false; }
-        return this.lease.Renew(keys, Environment.TickCount64);
+        return this.lease.Renew(keys, Environment.TickCount64, leaseMilliseconds);
     }
 
     public bool SetArrowMode(bool value) => this.arrows == value || this.lease.TryReset(() => this.arrows = value);

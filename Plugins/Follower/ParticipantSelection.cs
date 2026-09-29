@@ -21,6 +21,14 @@ internal static class ParticipantSelection
         if (localCoop && (string.Equals(primaryName, secondaryName, StringComparison.OrdinalIgnoreCase) ||
             string.Equals(leaderName, secondaryName, StringComparison.OrdinalIgnoreCase))) return null;
 
+        failure = "ambiguous_player";
+        if (Ambiguous(candidates, leaderName) || (localCoop &&
+            (Ambiguous(candidates, primaryName) || Ambiguous(candidates, secondaryName)))) return null;
+        // Check the leader independently of P1/P2 availability: a missing follower
+        // is a temporary wait, while a genuinely absent selected leader stops.
+        failure = "target_missing";
+        if (FindUnique(candidates, leaderName) == null) return null;
+
         var primary = localCoop ? FindUnique(candidates, primaryName) : local;
         failure = "player_invalid";
         if (primary == null || primary.Value.Address == 0) return null;
@@ -45,4 +53,7 @@ internal static class ParticipantSelection
         var matches = candidates.Where(p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase)).Take(2).ToArray();
         return matches.Length == 1 ? matches[0] : null;
     }
+
+    private static bool Ambiguous(IEnumerable<PlayerIdentity> candidates, string name) =>
+        candidates.Count(p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase)) > 1;
 }

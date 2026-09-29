@@ -10,7 +10,7 @@ internal sealed class KeyLease(Func<MoveKeys, bool, bool> send)
     private long expires;
     public MoveKeys Held { get { lock (this.sync) return this.held; } }
 
-    public bool Renew(MoveKeys wanted, long now)
+    public bool Renew(MoveKeys wanted, long now, int leaseMilliseconds = 200)
     {
         lock (this.sync)
         {
@@ -21,7 +21,7 @@ internal sealed class KeyLease(Func<MoveKeys, bool, bool> send)
                 if (!send(key, true)) { this.Release(this.held); return false; }
                 this.held |= key;
             }
-            this.expires = now + 200;
+            this.expires = now + Math.Clamp(leaseMilliseconds, 1, 200);
             return true;
         }
     }

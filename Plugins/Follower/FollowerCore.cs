@@ -17,6 +17,7 @@ public sealed class FollowerCore : PCore<FollowerSettings>
 {
     private readonly FollowSession session = new();
     private readonly CoopCoordinator coop = new();
+    private readonly UnstuckRecovery recovery = new();
     private MovementInput? input;
     private ActiveCoroutine? areaChanged;
     private ActiveCoroutine? gameClosed;
@@ -24,7 +25,7 @@ public sealed class FollowerCore : PCore<FollowerSettings>
     private Task<List<Vector2>?>? search;
     private List<Vector2>? route;
     private NavigationGrid? grid;
-    private bool running;
+    private readonly FollowRunState run = new();
     private bool toggleWasDown;
     private IntPtr areaAddress;
     private string areaHash = string.Empty;
@@ -46,7 +47,6 @@ public sealed class FollowerCore : PCore<FollowerSettings>
     private float playerGap;
     private bool correctingP2;
     private MoveKeys planned;
-    private string status = "stopped";
     private string error = string.Empty;
     private string SettingsPath => Path.Join(this.DllDirectory, "config", "settings.txt");
     private string LeaderName => this.Settings.LeaderName.Trim();
@@ -63,8 +63,8 @@ public sealed class FollowerCore : PCore<FollowerSettings>
         catch (Exception ex) { this.Settings = new(); this.error = ex.Message; }
         this.Settings.Normalize();
         this.input = new();
-        this.areaChanged = CoroutineHandler.Start(this.StopOn(RemoteEvents.AreaChanged));
-        this.gameClosed = CoroutineHandler.Start(this.StopOn(GameHelperEvents.OnClose));
+        this.areaChanged = CoroutineHandler.Start(this.WaitOn(RemoteEvents.AreaChanged));
+        this.gameClosed = CoroutineHandler.Start(this.WaitOn(GameHelperEvents.OnClose));
         this.lastFrame = 0;
         this.toggleWasDown = MovementInput.IsDown(this.Settings.ToggleKey);
     }
@@ -79,25 +79,35 @@ public sealed class FollowerCore : PCore<FollowerSettings>
         this.input = null;
     }
 
-    private IEnumerator<Wait> StopOn(Event signal)
+    private IEnumerator<Wait> WaitOn(Event signal)
     {
-        while (true) { yield return new Wait(signal); this.Halt("area_changed"); }
+        while (true) { yield return new Wait(signal); this.Suspend("area_changed"); }
     }
 
-    private void ClearNavigation()
+    private void ClearNavigation(bool preserveFollowState = false)
     {
         this.ClearRoute();
         this.grid = null;
         this.targetAddress = this.followerAddress = this.secondaryAddress = IntPtr.Zero;
         this.areaAddress = IntPtr.Zero;
         this.nextDoorRead = 0;
-        this.coop.Reset();
-        this.session.Reset();
-        this.correctingP2 = false;
+        if (!preserveFollowState)
+        {
+            this.coop.Reset();
+            this.session.Reset();
+            this.correctingP2 = false;
+        }
         this.distance = this.playerGap = 0;
     }
 
     private void ClearRoute()
+    {
+        this.DiscardRoute();
+        this.session.ResetProgress();
+        this.recovery.Reset();
+    }
+
+    private void DiscardRoute()
     {
         this.input?.Stop();
         this.searchCancellation?.Cancel();
@@ -106,15 +116,20 @@ public sealed class FollowerCore : PCore<FollowerSettings>
         this.search = null;
         this.route = null;
         this.nextSearch = 0;
-        this.session.ResetProgress();
         this.planned = MoveKeys.None;
     }
 
     private void Halt(string reason)
     {
-        this.running = false;
+        this.run.Stop(reason);
         this.ClearNavigation();
-        this.status = reason;
+    }
+
+    private void Suspend(string reason, int retryMilliseconds = 250)
+    {
+        this.run.Fail(reason, Environment.TickCount64, retryMilliseconds);
+        this.ClearNavigation(this.run.IsEnabled && reason is not
+            ("area_changed" or "game_state" or "follower_changed" or "target_changed"));
     }
 
     public override void SaveSettings()
@@ -128,10 +143,10 @@ public sealed class FollowerCore : PCore<FollowerSettings>
     public override void DrawSettings()
     {
         // Changing settings never leaves a previous movement command held.
-        if (this.running) this.Halt("settings_open");
+        if (this.run.IsEnabled) this.Suspend("settings_open");
         if (ImGui.Checkbox(this.PluginText.Label("local_coop", "Local co-op: shared WASD with P2 arrow correction", "LocalCoop"), ref this.Settings.LocalCoopFollow))
         {
-            this.input?.Stop();
+            this.ClearNavigation();
             this.Settings.PreviewOnly = true;
             this.SaveSettings();
         }
@@ -164,16 +179,16 @@ public sealed class FollowerCore : PCore<FollowerSettings>
         ImGui.SliderInt(this.PluginText.Label("clearance", "Preferred wall clearance (grid cells)", "Clearance"), ref this.Settings.Clearance, 0, 2);
         ImGui.TextWrapped(this.PluginText.T("clearance_hint", "Prefer routes away from walls, but allow closer movement when starting beside a wall or passing through a narrow corridor."));
         ImGui.SliderInt(this.PluginText.Label("repath", "Recalculate route (ms)", "Repath"), ref this.Settings.RepathMilliseconds, 150, 1000);
-        ImGui.SliderInt(this.PluginText.Label("stuck", "Stop if stuck for (ms)", "Stuck"), ref this.Settings.StuckMilliseconds, 1000, 10000);
+        ImGui.SliderInt(this.PluginText.Label("stuck", "Start recovery after no progress (ms)", "Stuck"), ref this.Settings.StuckMilliseconds, 1000, 10000);
         ImGui.Checkbox(this.PluginText.Label("show_status", "Show status", "Status"), ref this.Settings.ShowStatus);
         ImGui.Checkbox(this.PluginText.Label("show_route", "Show route", "Route"), ref this.Settings.ShowRoute);
         this.Settings.Normalize();
-        ImGui.TextWrapped(this.PluginText.F("limits", "Follows a named visible player in the same area. Closed doors need manual opening. No portals or background dual-client input. Losing the target, focus or area stops following; press {0} to resume.", this.ToggleKeyName));
+        ImGui.TextWrapped(this.PluginText.F("limits", "Temporary interruptions release movement and resume automatically. Stalls trigger short recovery probes. A missing leader or invalid selection stops following; {0} or Escape stops manually. Closed doors still require manual opening; no portal or background input.", this.ToggleKeyName));
         ImGui.TextWrapped(this.StatusText());
         if (!string.IsNullOrEmpty(this.error)) ImGui.TextWrapped(this.error);
     }
 
-    private string StatusText() => this.PluginText.F("status." + this.status, this.status, this.ToggleKeyName);
+    private string StatusText() => this.PluginText.F("status." + this.run.Status, this.run.Status, this.ToggleKeyName);
 
     private void DrawPlayerChoice(string key, string label, ref string selected, bool includeLocal)
     {
@@ -190,6 +205,7 @@ public sealed class FollowerCore : PCore<FollowerSettings>
             if (ImGui.Selectable(name, string.Equals(name, selected, StringComparison.OrdinalIgnoreCase)))
             {
                 selected = name;
+                this.ClearNavigation();
                 this.SaveSettings();
             }
         if (names.Count == 0) ImGui.TextDisabled(this.PluginText.T("no_players", "No nearby players detected. Move into the same area as the leader."));
@@ -216,35 +232,36 @@ public sealed class FollowerCore : PCore<FollowerSettings>
     {
         try
         {
+            this.input?.ObserveProcess(Core.Process.Pid);
             var now = Environment.TickCount64;
-            if (this.running && this.lastFrame != 0 && now - this.lastFrame > 300) this.Halt("frame_gap");
+            if (this.run.IsEnabled && this.lastFrame != 0 && now - this.lastFrame > 300) this.Suspend("frame_gap");
             this.lastFrame = now;
             var toggleDown = MovementInput.IsDown(this.Settings.ToggleKey);
             if (toggleDown && !this.toggleWasDown && MovementInput.IsForeground(Core.Process.Pid) && !Core.IsSettingsMenuOpen)
             {
-                if (this.running) this.Halt("stopped");
-                else { this.ClearNavigation(); this.running = true; this.error = string.Empty; }
+                if (this.run.IsEnabled) this.Halt("stopped");
+                else { this.ClearNavigation(); this.run.Start(); this.error = string.Empty; }
             }
             this.toggleWasDown = toggleDown;
-            if (MovementInput.IsDown(0x1B)) this.Halt("stopped");
-            if (this.running) this.Tick(now);
+            if (MovementInput.IsDown(0x1B) || this.input?.ConsumeStopRequest() == true) this.Halt("stopped");
+            if (this.run.Ready(now)) this.Tick(now);
             this.DrawOverlay();
         }
-        catch (Exception ex) { this.Halt("error"); this.error = ex.Message; }
+        catch (Exception ex) { this.Suspend("error", 1000); this.error = ex.Message; }
     }
 
     private void Tick(long now)
     {
-        if (!MovementInput.IsForeground(Core.Process.Pid)) { this.Halt("unfocused"); return; }
+        if (!MovementInput.IsForeground(Core.Process.Pid)) { this.Suspend("unfocused"); return; }
         if (Core.States.GameCurrentState != GameStateTypes.InGameState ||
-            (Core.GHSettings.EnableControllerMode && !this.Settings.LocalCoopFollow)) { this.Halt("game_state"); return; }
+            (Core.GHSettings.EnableControllerMode && !this.Settings.LocalCoopFollow)) { this.Suspend("game_state"); return; }
         var game = Core.States.InGameStateObject;
         var area = game.CurrentAreaInstance;
         var ui = game.GameUi;
-        if (this.IsUiBlocked(ui)) { this.Halt("panel"); return; }
-        if (area.Address == IntPtr.Zero) { this.Halt("player_invalid"); return; }
+        if (this.IsUiBlocked(ui)) { this.Suspend("panel"); return; }
+        if (area.Address == IntPtr.Zero) { this.Suspend("player_invalid"); return; }
         if (this.areaAddress != IntPtr.Zero && (this.areaAddress != area.Address || this.areaHash != area.AreaHash))
-        { this.Halt("area_changed"); return; }
+        { this.Suspend("area_changed"); return; }
         this.areaAddress = area.Address;
         this.areaHash = area.AreaHash;
         var players = ReadPlayers(area);
@@ -252,32 +269,32 @@ public sealed class FollowerCore : PCore<FollowerSettings>
             .Select(p => (PlayerIdentity?)p).FirstOrDefault();
         var pair = ParticipantSelection.Resolve(players.Keys, local, this.Settings.LocalCoopFollow,
             this.LeaderName, this.Settings.P1Name, this.Settings.P2Name, out var failure);
-        if (pair == null) { this.Halt(failure); return; }
+        if (pair == null) { this.Suspend(failure); return; }
         var primary = players[pair.Value.Primary];
         var secondary = pair.Value.Secondary is PlayerIdentity secondaryIdentity ? players[secondaryIdentity] : null;
         var target = players[pair.Value.Leader];
         if (!primary.TryGetComponent<Life>(out var life) || !life.IsAlive ||
             !primary.TryGetComponent<Render>(out var primaryRender))
-        { this.Halt("player_invalid"); return; }
+        { this.Suspend("player_invalid"); return; }
         Render? secondaryRender = null;
         Life? secondaryLife = null;
         if (secondary != null && (!secondary.TryGetComponent<Render>(out secondaryRender) ||
             !secondary.TryGetComponent<Life>(out secondaryLife) || !secondaryLife.IsAlive))
-        { this.Halt("secondary_invalid"); return; }
+        { this.Suspend("secondary_invalid"); return; }
         if (!target.TryGetComponent<Render>(out var targetRender) ||
             !target.TryGetComponent<Life>(out var targetLife) || !targetLife.IsAlive)
-        { this.Halt("target_missing"); return; }
+        { this.Suspend("leader_unavailable"); return; }
         if (this.followerAddress != IntPtr.Zero && (this.followerAddress != primary.Address || this.followerId != primary.Id))
-        { this.Halt("follower_changed"); return; }
+        { this.Suspend("follower_changed"); return; }
         if (secondary != null && this.secondaryAddress != IntPtr.Zero &&
             (this.secondaryAddress != secondary.Address || this.secondaryId != secondary.Id))
-        { this.Halt("follower_changed"); return; }
+        { this.Suspend("follower_changed"); return; }
         this.followerAddress = primary.Address;
         this.followerId = primary.Id;
         this.secondaryAddress = secondary?.Address ?? IntPtr.Zero;
         this.secondaryId = secondary?.Id ?? 0;
         if (this.targetAddress != IntPtr.Zero && (this.targetAddress != target.Address || this.targetId != target.Id))
-        { this.Halt("target_changed"); return; }
+        { this.Suspend("target_changed"); return; }
         this.targetAddress = target.Address;
         this.targetId = target.Id;
         var primaryPos = new Vector2(primaryRender.GridPosition.X, primaryRender.GridPosition.Y);
@@ -286,14 +303,14 @@ public sealed class FollowerCore : PCore<FollowerSettings>
         var leaderDistance = Vector2.Distance(primaryPos, leaderPos);
         this.playerGap = Vector2.Distance(primaryPos, secondaryPos);
         if (!float.IsFinite(leaderDistance + this.playerGap) || leaderDistance > 600 || this.playerGap > 600 || area.GridWalkableData.Length == 0)
-        { this.Halt("terrain_missing"); return; }
+        { this.Suspend("terrain_missing"); return; }
         if (this.grid == null || now >= this.nextDoorRead)
         {
             this.grid = BuildGrid(area, this.Settings.Clearance);
             this.nextDoorRead = now + 150;
         }
         if (!this.grid.Contains(primaryPos) || !this.grid.Contains(leaderPos) || !this.grid.Contains(secondaryPos))
-        { this.Halt("terrain_missing"); return; }
+        { this.Suspend("terrain_missing"); return; }
         var correction = secondary != null && this.coop.Update(primaryPos, secondaryPos,
             this.grid.Clear(primaryPos, secondaryPos), this.Settings.P2LagDistance, this.Settings.P2RejoinDistance);
         if (correction != this.correctingP2)
@@ -303,7 +320,7 @@ public sealed class FollowerCore : PCore<FollowerSettings>
             this.ClearRoute();
             this.correctingP2 = correction;
         }
-        if (this.input?.SetArrowMode(this.correctingP2) != true) { this.Halt("input_failed"); return; }
+        if (this.input?.SetArrowMode(this.correctingP2) != true) { this.Suspend("input_failed", 500); return; }
         var player = this.correctingP2 ? secondaryPos : primaryPos;
         var goal = this.correctingP2 ? primaryPos : leaderPos;
         var playerRender = this.correctingP2 ? secondaryRender! : primaryRender;
@@ -314,13 +331,14 @@ public sealed class FollowerCore : PCore<FollowerSettings>
         var needsMovement = this.correctingP2 || this.session.NeedsMovement(this.distance,
             this.grid.Clear(player, goal), this.Settings.StopDistance, this.Settings.ResumeDistance);
         if (!this.Settings.PreviewOnly && (this.input?.HasManualMovement(this.Settings.LocalCoopFollow) == true || MovementInput.HasModifier()))
-        { this.Halt("manual"); return; }
+        { this.Suspend("manual"); return; }
         if (!needsMovement)
         {
             this.input?.Stop();
             this.planned = MoveKeys.None;
             this.session.IsStuck(player, false, now, this.Settings.StuckMilliseconds);
-            this.status = "in_range";
+            this.recovery.Reset();
+            this.run.Status = "in_range";
             return;
         }
         if (this.search?.IsCompleted == true)
@@ -332,7 +350,7 @@ public sealed class FollowerCore : PCore<FollowerSettings>
             this.searchCancellation?.Dispose();
             this.searchCancellation = null;
         }
-        if (this.search == null && now >= this.nextSearch)
+        if (!this.recovery.Active && this.search == null && now >= this.nextSearch)
         {
             this.searchGoal = goal;
             this.searchAt = now;
@@ -344,33 +362,66 @@ public sealed class FollowerCore : PCore<FollowerSettings>
         }
         var steer = this.route != null && now - this.routeAt < 1500 && Vector2.Distance(this.routeGoal, goal) < 30
             ? this.grid.Steer(this.route, player) : null;
-        if (steer == null)
-        {
-            this.input?.Stop();
-            this.planned = MoveKeys.None;
-            this.session.IsStuck(player, false, now, this.Settings.StuckMilliseconds);
-            this.status = this.search == null ? "no_path" : "searching";
-            return;
-        }
         var world = game.CurrentWorldInstance;
         var ratio = area.WorldToGridConvertor;
         var origin = world.WorldToScreen(player * ratio, playerRender.TerrainHeight);
         var screenX = world.WorldToScreen((player + Vector2.UnitX) * ratio, playerRender.TerrainHeight) - origin;
         var screenY = world.WorldToScreen((player + Vector2.UnitY) * ratio, playerRender.TerrainHeight) - origin;
-        this.planned = Steering.Choose(steer.Value - player, screenX, screenY, step => this.grid.Clear(player, player + step));
-        if (this.Settings.PreviewOnly) { this.input?.Stop(); this.status = "preview"; return; }
-        if (this.session.IsStuck(player, this.planned != MoveKeys.None, now, this.Settings.StuckMilliseconds))
-        { this.Halt("stuck"); return; }
-        if (this.planned == MoveKeys.None) { this.input?.Stop(); this.status = "no_direction"; return; }
-        if (area.Address != this.areaAddress || area.AreaHash != this.areaHash || !target.IsValid ||
-            target.Address != this.targetAddress || target.Id != this.targetId ||
-            !primary.IsValid || primary.Address != this.followerAddress || primary.Id != this.followerId ||
-            (secondary != null && (!secondary.IsValid || secondary.Address != this.secondaryAddress ||
-                secondary.Id != this.secondaryId || secondaryLife?.IsAlive != true)) ||
-            !life.IsAlive || !targetLife.IsAlive || Core.States.GameCurrentState != GameStateTypes.InGameState || this.IsUiBlocked(ui))
-        { this.Halt("target_changed"); return; }
-        if (this.input?.Apply(this.planned, Core.Process.Pid) != true) { this.Halt("input_failed"); return; }
-        this.status = "following";
+        this.planned = steer == null ? MoveKeys.None : Steering.Choose(steer.Value - player, screenX, screenY,
+            step => this.grid.Clear(player, player + step));
+        if (this.Settings.PreviewOnly) { this.input?.Stop(); this.run.Status = "preview"; return; }
+
+        bool ApplyCurrentMovement(int leaseMilliseconds = 200)
+        {
+            if (area.Address != this.areaAddress || area.AreaHash != this.areaHash || !target.IsValid ||
+                target.Address != this.targetAddress || target.Id != this.targetId ||
+                !primary.IsValid || primary.Address != this.followerAddress || primary.Id != this.followerId ||
+                (secondary != null && (!secondary.IsValid || secondary.Address != this.secondaryAddress ||
+                    secondary.Id != this.secondaryId || secondaryLife?.IsAlive != true)) ||
+                !life.IsAlive || !targetLife.IsAlive || Core.States.GameCurrentState != GameStateTypes.InGameState || this.IsUiBlocked(ui))
+            { this.Suspend("target_changed"); return false; }
+            if (this.input?.Apply(this.planned, Core.Process.Pid, leaseMilliseconds) != true)
+            { this.Suspend("input_failed", 500); return false; }
+            return true;
+        }
+
+        // Count the entire interval without displacement, including no-path,
+        // searching and no-direction frames. Replanning must not reset this timer.
+        if (!this.recovery.Active && this.session.IsStuck(player, true, now, this.Settings.StuckMilliseconds))
+        {
+            this.recovery.Begin(player, this.planned);
+            this.DiscardRoute();
+        }
+        if (this.recovery.Active)
+        {
+            var attempt = this.recovery.Advance(player, now, key =>
+                Steering.TryGetStep(key, screenX, screenY, out var step) && this.grid.Clear(player, player + step * 2));
+            this.planned = attempt.Keys;
+            if (attempt.Action == RecoveryAction.Press)
+            {
+                if (ApplyCurrentMovement(attempt.LeaseMilliseconds)) this.run.Status = "recovering";
+            }
+            else
+            {
+                this.input?.Stop();
+                this.run.Status = "recovery_wait";
+                if (attempt.Action == RecoveryAction.Repath)
+                {
+                    this.DiscardRoute();
+                    this.session.ResetProgress();
+                    this.run.Status = "searching";
+                }
+            }
+            return;
+        }
+        if (this.planned == MoveKeys.None)
+        {
+            this.input?.Stop();
+            this.run.Status = steer == null ? (this.search == null ? "no_path" : "searching") : "no_direction";
+            return;
+        }
+        if (!ApplyCurrentMovement()) return;
+        this.run.Status = "following";
     }
 
     private static NavigationGrid BuildGrid(AreaInstance area, int clearance)
@@ -413,7 +464,7 @@ public sealed class FollowerCore : PCore<FollowerSettings>
             ImGui.TextUnformatted($"{roles} | {this.distance:0.0} | {MovementBindings.Describe(this.planned, this.correctingP2)}");
             ImGui.End();
         }
-        if (!this.running || !this.Settings.ShowRoute || this.route == null || Core.States.GameCurrentState != GameStateTypes.InGameState) return;
+        if (!this.run.IsEnabled || !this.Settings.ShowRoute || this.route == null || Core.States.GameCurrentState != GameStateTypes.InGameState) return;
         var game = Core.States.InGameStateObject;
         var area = game.CurrentAreaInstance;
         var origin = new Vector2(Core.Process.WindowArea.X, Core.Process.WindowArea.Y);
