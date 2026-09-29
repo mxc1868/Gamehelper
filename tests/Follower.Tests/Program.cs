@@ -340,56 +340,69 @@ Check(!noPathProgress.IsStuck(new(5, 5), true, 0, 2500) &&
     !noPathProgress.IsStuck(new(5, 5), true, 2000, 2500) && noPathProgress.IsStuck(new(5, 5), true, 2500, 2500),
     "no-path and no-direction movement demand reaches recovery timeout without key output");
 var recovery = new UnstuckRecovery();
-recovery.Begin(new(5, 5), MoveKeys.Up);
-var firstProbe = recovery.Advance(new(5, 5), 0, _ => true);
-Check(firstProbe.Action == RecoveryAction.Press && firstProbe.Keys == MoveKeys.Right && firstProbe.LeaseMilliseconds == 150,
-    "recovery starts with a bounded side-step instead of continuing the stuck direction");
-Check(recovery.Advance(new(5, 5), 100, _ => true).LeaseMilliseconds == 50,
+recovery.Begin(new(5, 5));
+var firstProbe = recovery.Advance(new(5, 5), 0, MoveKeys.Up);
+Check(firstProbe.Action == RecoveryAction.Press && firstProbe.Keys == MoveKeys.Up && firstProbe.LeaseMilliseconds == 150,
+    "recovery presses directly toward the target instead of choosing a side-step");
+Check(recovery.Advance(new(5, 5), 100, MoveKeys.Up).LeaseMilliseconds == 50,
     "renewing a probe preserves its original deadline");
-Check(recovery.Advance(new(5, 5), 150, _ => true).Action == RecoveryAction.Wait &&
-    recovery.Advance(new(5, 5), 269, _ => true).Action == RecoveryAction.Wait,
+Check(recovery.Advance(new(5, 5), 150, MoveKeys.Up).Action == RecoveryAction.Wait &&
+    recovery.Advance(new(5, 5), 269, MoveKeys.Up).Action == RecoveryAction.Wait,
     "probe release is followed by a rest interval");
-Check(recovery.Advance(new(5, 5), 270, _ => true).Keys == MoveKeys.Left,
-    "stationary first probe advances to a different direction");
-Check(recovery.Advance(new(6, 5), 280, _ => true).Action == RecoveryAction.Repath && !recovery.Active,
+Check(recovery.Advance(new(5, 5), 270, MoveKeys.Up).Keys == MoveKeys.Up,
+    "stationary recovery retries toward the target rather than cycling away");
+Check(recovery.Advance(new(6, 5), 280, MoveKeys.Up).Action == RecoveryAction.Repath && !recovery.Active,
     "one grid of actual displacement ends recovery and requests a fresh route");
 recovery.Reset();
-recovery.Begin(new(5, 5), MoveKeys.Up);
-Check(recovery.Advance(new(5, 5), 0, key => key == MoveKeys.Down).Keys == MoveKeys.Down,
-    "terrain-blocked directions are skipped while an available reverse direction is tried");
-Check(recovery.Advance(new(5, 5), 20, _ => false).Action == RecoveryAction.Wait,
-    "a door closing during a pulse cancels that pulse immediately");
+var inaccurateTerrain = Grid(Map(20, 20, (_, _) => false));
+var stuckPosition = new Vector2(5, 5);
+var visibleTarget = new Vector2(15, 5);
+Check(inaccurateTerrain.FindPath(stuckPosition, visibleTarget, default) == null &&
+    Steering.Choose(visibleTarget - stuckPosition, Vector2.UnitX, Vector2.UnitY,
+        step => inaccurateTerrain.Clear(stuckPosition, stuckPosition + step)) == MoveKeys.None,
+    "regression setup: blocked start makes both ordinary routing and steering refuse movement");
+var forcedDirection = Steering.Choose(visibleTarget - stuckPosition, Vector2.UnitX, Vector2.UnitY, _ => true);
+recovery.Begin(stuckPosition);
+var forcedProbe = recovery.Advance(stuckPosition, 0, forcedDirection);
+Check(forcedProbe.Action == RecoveryAction.Press && forcedProbe.Keys == MoveKeys.Right,
+    "all terrain directions blocked still produces a forced press toward the visible target");
+Check(recovery.Advance(stuckPosition, 20, MoveKeys.Left).Action == RecoveryAction.Wait,
+    "target changing sides releases the old direction before a new press");
+Check(recovery.Advance(stuckPosition, 140, MoveKeys.Left).Keys == MoveKeys.Left,
+    "next press follows the target's updated direction");
 recovery.Reset();
-recovery.Begin(new(5, 5), MoveKeys.Up);
-Check(recovery.Advance(new(5, 5), 0, _ => false).Action == RecoveryAction.Wait &&
-    recovery.Advance(new(5, 5), 999, _ => false).Action == RecoveryAction.Wait &&
-    recovery.Advance(new(5, 5), 1000, _ => false).Action == RecoveryAction.Repath,
-    "no valid probe directions produces a bounded rest then replanning, never blind movement");
+recovery.Begin(stuckPosition);
+Check(recovery.Advance(new(float.NaN, 5), 0, MoveKeys.Right).Action == RecoveryAction.Wait,
+    "unreadable position still prevents forced movement");
+Check(recovery.Advance(stuckPosition, 0, MoveKeys.None).Action == RecoveryAction.Wait &&
+    recovery.Advance(stuckPosition, 1000, MoveKeys.Right).Action == RecoveryAction.Press,
+    "missing direction waits without spending attempts and resumes when direction recovers");
 recovery.Reset();
-recovery.Begin(new(5, 5), MoveKeys.Up);
+recovery.Begin(new(5, 5));
 var triedDirections = new List<MoveKeys>();
 for (var trial = 0; trial < 8; trial++)
 {
     var at = trial * 270;
-    var probe = recovery.Advance(new(5, 5), at, _ => true);
+    var probe = recovery.Advance(new(5, 5), at, MoveKeys.Up);
     triedDirections.Add(probe.Keys);
-    Check(probe.Action == RecoveryAction.Press && recovery.Advance(new(5, 5), at + 150, _ => true).Action == RecoveryAction.Wait,
+    Check(probe.Action == RecoveryAction.Press && recovery.Advance(new(5, 5), at + 150, MoveKeys.Up).Action == RecoveryAction.Wait,
         "stationary recovery probe " + trial + " always releases");
 }
-Check(triedDirections.Distinct().Count() == 8 && !triedDirections.Contains(MoveKeys.None), "one recovery round tries each of eight directions once");
-Check(recovery.Advance(new(5, 5), 2160, _ => true).Action == RecoveryAction.Wait &&
-    recovery.Advance(new(5, 5), 3160, _ => true).Action == RecoveryAction.Repath && !recovery.Active,
+Check(triedDirections.Count == 8 && triedDirections.All(key => key == MoveKeys.Up), "one recovery round keeps all eight bounded attempts toward the target");
+Check(recovery.Advance(new(5, 5), 2160, MoveKeys.Up).Action == RecoveryAction.Wait &&
+    recovery.Advance(new(5, 5), 3160, MoveKeys.Up).Action == RecoveryAction.Repath && !recovery.Active,
     "failed full round rests then returns to navigation without disabling follow");
-recovery.Begin(new(5, 5), MoveKeys.Up);
+recovery.Begin(new(5, 5));
 recovery.Reset();
-Check(!recovery.Active && recovery.Advance(new(5, 5), 0, _ => true).Action == RecoveryAction.Repath,
+Check(!recovery.Active && recovery.Advance(new(5, 5), 0, MoveKeys.Up).Action == RecoveryAction.Repath,
     "pause, actor switch and area reset cancel old recovery commands");
-Check(Steering.TryGetStep(MoveKeys.Up, Vector2.UnitX, Vector2.UnitY, out var probeStep) && probeStep == -Vector2.UnitY,
-    "probe checks use the same screen-to-grid directions as normal movement");
-Check(Steering.TryGetStep(MoveKeys.Right, new(1, 0.5f), new(-1, 0.5f), out probeStep) && probeStep.X > 0 && probeStep.Y < 0,
-    "recovery directions handle an isometric camera");
-Check(!Steering.TryGetStep(MoveKeys.Up, Vector2.Zero, Vector2.Zero, out _) &&
-    !Steering.TryGetStep(MoveKeys.None, Vector2.UnitX, Vector2.UnitY, out _), "invalid recovery projection never generates a probe");
+recovery.Begin(stuckPosition);
+var isometricDirection = Steering.Choose(new(1, -1), new(1, 0.5f), new(-1, 0.5f), _ => true);
+Check(recovery.Advance(stuckPosition, 0, isometricDirection).Keys == MoveKeys.Right,
+    "forced target direction still uses the actual isometric screen projection");
+var invalidDirection = Steering.Choose(Vector2.UnitX, Vector2.Zero, Vector2.Zero, _ => true);
+Check(recovery.Advance(stuckPosition, 10, invalidDirection).Action == RecoveryAction.Wait,
+    "invalid projection releases the old press rather than guessing a target direction");
 var shortLease = new KeyLease((_, _) => true);
 shortLease.Renew(MoveKeys.Up, 0, 150);
 shortLease.Renew(MoveKeys.Up, 100, 50);
@@ -402,8 +415,8 @@ foreach (var useArrows in new[] { false, true })
     var sent = new List<MovementBinding>();
     var probeLease = new KeyLease((key, _) => { sent.Add(MovementBindings.Get(key, useArrows)); return true; });
     recovery.Reset();
-    recovery.Begin(new(5, 5), MoveKeys.Up);
-    var probe = recovery.Advance(new(5, 5), 0, _ => true);
+    recovery.Begin(new(5, 5));
+    var probe = recovery.Advance(new(5, 5), 0, MoveKeys.Up);
     probeLease.Renew(probe.Keys, 0, probe.LeaseMilliseconds);
     probeLease.Expire(150, true);
     Check(sent.Count == 2 && sent.All(binding => binding.Extended == useArrows),

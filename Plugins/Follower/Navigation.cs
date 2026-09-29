@@ -167,21 +167,6 @@ internal enum MoveKeys { None = 0, Up = 1, Left = 2, Down = 4, Right = 8 }
 
 internal static class Steering
 {
-    public static bool TryGetStep(MoveKeys keys, Vector2 screenX, Vector2 screenY, out Vector2 step)
-    {
-        step = Vector2.Zero;
-        if (!float.IsFinite(screenX.X + screenX.Y + screenY.X + screenY.Y)) return false;
-        var det = screenX.X * screenY.Y - screenY.X * screenX.Y;
-        if (MathF.Abs(det) < 0.0001f) return false;
-        var x = ((keys & MoveKeys.Right) != 0 ? 1 : 0) - ((keys & MoveKeys.Left) != 0 ? 1 : 0);
-        var y = ((keys & MoveKeys.Down) != 0 ? 1 : 0) - ((keys & MoveKeys.Up) != 0 ? 1 : 0);
-        if (x == 0 && y == 0) return false;
-        var grid = new Vector2((screenY.Y * x - screenY.X * y) / det, (-screenX.Y * x + screenX.X * y) / det);
-        if (!float.IsFinite(grid.X + grid.Y) || grid.LengthSquared() < 0.000001f) return false;
-        step = Vector2.Normalize(grid);
-        return true;
-    }
-
     // Basis vectors are projected at the player's own height; height differences
     // to the leader must not be interpreted as a horizontal movement direction.
     public static MoveKeys Choose(Vector2 targetDelta, Vector2 screenX, Vector2 screenY,

@@ -183,7 +183,7 @@ public sealed class FollowerCore : PCore<FollowerSettings>
         ImGui.Checkbox(this.PluginText.Label("show_status", "Show status", "Status"), ref this.Settings.ShowStatus);
         ImGui.Checkbox(this.PluginText.Label("show_route", "Show route", "Route"), ref this.Settings.ShowRoute);
         this.Settings.Normalize();
-        ImGui.TextWrapped(this.PluginText.F("limits", "Temporary interruptions release movement and resume automatically. Stalls trigger short recovery probes. A missing leader or invalid selection stops following; {0} or Escape stops manually. Closed doors still require manual opening; no portal or background input.", this.ToggleKeyName));
+        ImGui.TextWrapped(this.PluginText.F("limits", "Temporary interruptions release movement and resume automatically. Stalls force short presses toward the current target without terrain filtering. A missing leader or invalid selection stops following; {0} or Escape stops manually. Closed doors still require manual opening; no portal or background input.", this.ToggleKeyName));
         ImGui.TextWrapped(this.StatusText());
         if (!string.IsNullOrEmpty(this.error)) ImGui.TextWrapped(this.error);
     }
@@ -389,13 +389,16 @@ public sealed class FollowerCore : PCore<FollowerSettings>
         // searching and no-direction frames. Replanning must not reset this timer.
         if (!this.recovery.Active && this.session.IsStuck(player, true, now, this.Settings.StuckMilliseconds))
         {
-            this.recovery.Begin(player, this.planned);
+            this.recovery.Begin(player);
             this.DiscardRoute();
         }
         if (this.recovery.Active)
         {
-            var attempt = this.recovery.Advance(player, now, key =>
-                Steering.TryGetStep(key, screenX, screenY, out var step) && this.grid.Clear(player, player + step * 2));
+            // A false terrain block must not veto recovery too. Use the live
+            // actor-to-target direction without route or walkability filtering:
+            // shared WASD: P1 -> leader; correction arrows: P2 -> P1.
+            var towardTarget = Steering.Choose(goal - player, screenX, screenY, _ => true);
+            var attempt = this.recovery.Advance(player, now, towardTarget);
             this.planned = attempt.Keys;
             if (attempt.Action == RecoveryAction.Press)
             {
@@ -404,7 +407,7 @@ public sealed class FollowerCore : PCore<FollowerSettings>
             else
             {
                 this.input?.Stop();
-                this.run.Status = "recovery_wait";
+                this.run.Status = towardTarget == MoveKeys.None ? "recovery_no_direction" : "recovery_wait";
                 if (attempt.Action == RecoveryAction.Repath)
                 {
                     this.DiscardRoute();
