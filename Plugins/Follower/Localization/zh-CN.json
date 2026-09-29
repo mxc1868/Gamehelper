@@ -49,7 +49,7 @@
   "status.no_path": "找不到可走路线：检查门和地形障碍",
   "status.searching": "正在计算路线",
   "status.preview": "只预览：未发送按键",
-  "status.manual": "手动操作中：松开移动键和修饰键后自动继续",
+  "status.manual": "检测到手动按键（{0}）：松开这些键后自动继续",
   "status.recovering": "正在朝当前目标强制短按脱困",
   "status.recovery_no_direction": "强制脱困暂缺目标方向：等待坐标/投影恢复",
   "status.recovery_wait": "脱困间歇：松键观察，随后自动重试/寻路",

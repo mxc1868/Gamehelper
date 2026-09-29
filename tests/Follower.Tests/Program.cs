@@ -245,18 +245,75 @@ foreach (var (direction, vk, scan) in new[]
 }
 Check(MovementBindings.Describe(MoveKeys.Up | MoveKeys.Right, true) == "↑ + →",
     "co-op preview displays arrow combination rather than WASD");
-Check(MovementBindings.HasManualMovement(MoveKeys.None, true, key => key is 0x57 or 0x41 or 0x53 or 0x44, bothLayouts: true),
+var manualMovement = new ManualMovementTracker();
+Check(manualMovement.Read(MoveKeys.None, true, true, 0, key => key is 0x57 or 0x41 or 0x53 or 0x44) == "W + A + S + D",
     "manual WASD during P2 correction stops conflicting input");
-Check(MovementBindings.HasManualMovement(MoveKeys.Up, false, key => key == 0x26, bothLayouts: true),
+Check(manualMovement.Read(MoveKeys.Up, false, true, 0, key => key == 0x26) == "↑",
     "manual arrow during shared WASD stops conflicting input");
-Check(!MovementBindings.HasManualMovement(MoveKeys.Up, false, key => key == 0x57, bothLayouts: true),
+Check(manualMovement.Read(MoveKeys.Up, false, true, 0, key => key == 0x57) == "",
     "owned shared WASD does not trigger manual takeover");
-Check(MovementBindings.HasManualMovement(MoveKeys.Up, true, key => key is 0x26 or 0x25),
+Check(manualMovement.Read(MoveKeys.Up, true, false, 0, key => key is 0x26 or 0x25) == "←",
     "additional manual arrow stops P2 while its owned arrow is ignored");
-Check(!MovementBindings.HasManualMovement(MoveKeys.Up, true, key => key == 0x26),
+Check(manualMovement.Read(MoveKeys.Up, true, false, 0, key => key == 0x26) == "",
     "owned P2 arrow does not self-trigger manual takeover");
-Check(MovementBindings.HasManualMovement(MoveKeys.None, false, key => key == 0x57),
+Check(manualMovement.Read(MoveKeys.None, false, false, 0, key => key == 0x57) == "W",
     "legacy mode still stops on manual WASD");
+Check(manualMovement.Read(MoveKeys.None, false, false, 0, key => key == 0x26) == "",
+    "legacy mode does not treat unrelated arrow input as manual WASD");
+
+var startupKeys = new ManualMovementTracker();
+startupKeys.CaptureBaseline(0, key => key == 0x57);
+Check(startupKeys.Read(MoveKeys.None, false, true, 1, key => key == 0x57) == "",
+    "stale W already down at startup does not immediately pause the newly started session");
+Check(startupKeys.Read(MoveKeys.None, false, true, 3000, key => key == 0x57) == "",
+    "persistent baseline W cannot create an endless manual-input wait");
+Check(startupKeys.Read(MoveKeys.None, false, true, 3001, key => key is 0x57 or 0x41) == "A",
+    "ignoring stale W does not hide a newly pressed A and reports the exact trigger");
+startupKeys.Read(MoveKeys.None, false, true, 3002, _ => false);
+Check(startupKeys.Read(MoveKeys.None, false, true, 3003, key => key == 0x57) == "W",
+    "baseline W rearms after a real up observation so a new press still pauses");
+
+var injectedKeys = new ManualMovementTracker();
+injectedKeys.RecordSynthetic(0x57, 0);
+injectedKeys.Read(MoveKeys.None, false, true, 50, _ => false);
+Check(injectedKeys.Read(MoveKeys.None, false, true, 100, key => key == 0x57) == "",
+    "early up state cannot make a delayed injected W look like a manual press");
+injectedKeys.RecordSynthetic(0x57, 150); // Key-up accepted, but Windows still reports W down.
+Check(injectedKeys.Read(MoveKeys.None, true, true, 160, key => key == 0x57) == "",
+    "WASD-to-arrows switch keeps the old W release excluded from manual detection");
+Check(injectedKeys.Read(MoveKeys.None, true, true, 900, key => key == 0x57) == "",
+    "synthetic release remains excluded until Windows acknowledges up, even after the delay");
+Check(injectedKeys.Read(MoveKeys.None, true, true, 901, key => key is 0x57 or 0x28) == "↓",
+    "a real additional arrow remains detectable while a synthetic W release is pending");
+injectedKeys.Read(MoveKeys.None, true, true, 902, _ => false);
+Check(injectedKeys.Read(MoveKeys.None, true, true, 903, key => key == 0x57) == "W",
+    "physical W can take over again after the injected release is acknowledged");
+injectedKeys.RecordSynthetic(0x26, 1000);
+injectedKeys.CaptureBaseline(1050, _ => false);
+Check(injectedKeys.Read(MoveKeys.None, false, true, 1100, key => key == 0x26) == "",
+    "restarting follow does not forget a pending synthetic arrow release");
+
+var watchdogKeys = new ManualMovementTracker();
+var simulatedNow = 0L;
+var observedDown = new HashSet<int>();
+var watchdogLease = new KeyLease((direction, down) =>
+{
+    var vk = MovementBindings.Get(direction, false).VirtualKey;
+    watchdogKeys.RecordSynthetic(vk, simulatedNow);
+    if (down) observedDown.Add(vk); // Deliberately delay the OS's key-up state update.
+    return true;
+});
+watchdogLease.Renew(MoveKeys.Up, simulatedNow);
+simulatedNow = 200;
+watchdogLease.Expire(simulatedNow, true);
+Check(watchdogLease.Held == MoveKeys.None &&
+    watchdogKeys.Read(watchdogLease.Held, false, true, 201, observedDown.Contains) == "",
+    "watchdog expiry with a delayed OS key-up does not self-trigger manual input");
+observedDown.Clear();
+watchdogKeys.Read(watchdogLease.Held, false, true, 500, observedDown.Contains);
+observedDown.Add(0x57);
+Check(watchdogKeys.Read(watchdogLease.Held, false, true, 501, observedDown.Contains) == "W",
+    "manual W detection recovers after a watchdog release settles");
 
 var arrowMode = false;
 var keyEvents = new List<(ushort Scan, uint Flags)>();

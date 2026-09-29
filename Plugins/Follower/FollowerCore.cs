@@ -48,6 +48,7 @@ public sealed class FollowerCore : PCore<FollowerSettings>
     private bool correctingP2;
     private MoveKeys planned;
     private string error = string.Empty;
+    private string manualKeys = string.Empty;
     private string SettingsPath => Path.Join(this.DllDirectory, "config", "settings.txt");
     private string LeaderName => this.Settings.LeaderName.Trim();
     private string ToggleKeyName => ((VK)this.Settings.ToggleKey).ToString();
@@ -188,7 +189,9 @@ public sealed class FollowerCore : PCore<FollowerSettings>
         if (!string.IsNullOrEmpty(this.error)) ImGui.TextWrapped(this.error);
     }
 
-    private string StatusText() => this.PluginText.F("status." + this.run.Status, this.run.Status, this.ToggleKeyName);
+    private string StatusText() => this.run.Status == "manual"
+        ? this.PluginText.F("status.manual", "Manual input ({0}) — resumes when the keys are released", this.manualKeys)
+        : this.PluginText.F("status." + this.run.Status, this.run.Status, this.ToggleKeyName);
 
     private void DrawPlayerChoice(string key, string label, ref string selected, bool includeLocal)
     {
@@ -240,7 +243,13 @@ public sealed class FollowerCore : PCore<FollowerSettings>
             if (toggleDown && !this.toggleWasDown && MovementInput.IsForeground(Core.Process.Pid) && !Core.IsSettingsMenuOpen)
             {
                 if (this.run.IsEnabled) this.Halt("stopped");
-                else { this.ClearNavigation(); this.run.Start(); this.error = string.Empty; }
+                else
+                {
+                    this.ClearNavigation();
+                    this.input?.CaptureManualBaseline();
+                    this.run.Start();
+                    this.error = string.Empty;
+                }
             }
             this.toggleWasDown = toggleDown;
             if (MovementInput.IsDown(0x1B) || this.input?.ConsumeStopRequest() == true) this.Halt("stopped");
@@ -330,8 +339,11 @@ public sealed class FollowerCore : PCore<FollowerSettings>
         // the ordinary leader stop distance must not end this phase early.
         var needsMovement = this.correctingP2 || this.session.NeedsMovement(this.distance,
             this.grid.Clear(player, goal), this.Settings.StopDistance, this.Settings.ResumeDistance);
-        if (!this.Settings.PreviewOnly && (this.input?.HasManualMovement(this.Settings.LocalCoopFollow) == true || MovementInput.HasModifier()))
-        { this.Suspend("manual"); return; }
+        if (!this.Settings.PreviewOnly)
+        {
+            this.manualKeys = this.input?.ReadManualInput(this.Settings.LocalCoopFollow) ?? string.Empty;
+            if (this.manualKeys.Length != 0) { this.Suspend("manual"); return; }
+        }
         if (!needsMovement)
         {
             this.input?.Stop();

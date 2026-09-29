@@ -23,8 +23,4 @@ internal static class MovementBindings
 
     public static string Describe(MoveKeys keys, bool arrows) => keys == MoveKeys.None ? "—" :
         string.Join(" + ", KeyLease.Keys.Where(key => (keys & key) != 0).Select(key => Get(key, arrows).Label));
-
-    public static bool HasManualMovement(MoveKeys held, bool arrows, Func<int, bool> isDown, bool bothLayouts = false) =>
-        KeyLease.Keys.Any(key => ((held & key) == 0 && isDown(Get(key, arrows).VirtualKey)) ||
-            (bothLayouts && isDown(Get(key, !arrows).VirtualKey)));
 }

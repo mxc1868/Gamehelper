@@ -49,7 +49,7 @@
   "status.no_path": "No walkable route — check doors and terrain obstacles",
   "status.searching": "Calculating route",
   "status.preview": "Preview only — no keyboard input",
-  "status.manual": "Manual input — resumes when movement and modifier keys are released",
+  "status.manual": "Manual input ({0}) — resumes when these keys are released",
   "status.recovering": "Forcing a short press toward the current target",
   "status.recovery_no_direction": "Forced recovery needs a target direction — waiting for position/projection data",
   "status.recovery_wait": "Recovery pause — observing movement before retrying/replanning",

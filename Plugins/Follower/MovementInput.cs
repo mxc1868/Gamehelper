@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 internal sealed class MovementInput : IDisposable
 {
     private readonly KeyLease lease;
+    private readonly ManualMovementTracker manual = new();
     private readonly Timer watchdog;
     private uint pid;
     private volatile bool disposed;
@@ -48,7 +49,16 @@ internal sealed class MovementInput : IDisposable
     }
 
     public bool SetArrowMode(bool value) => this.arrows == value || this.lease.TryReset(() => this.arrows = value);
-    public bool HasManualMovement(bool bothLayouts = false) => MovementBindings.HasManualMovement(this.Held, this.arrows, IsDown, bothLayouts);
+    public void CaptureManualBaseline() => this.manual.CaptureBaseline(Environment.TickCount64, IsDown);
+    public string ReadManualInput(bool bothLayouts)
+    {
+        var keys = new List<string>();
+        var movement = this.manual.Read(this.Held, this.arrows, bothLayouts, Environment.TickCount64, IsDown);
+        if (movement.Length != 0) keys.Add(movement);
+        foreach (var (key, label) in new[] { (0x11, "Ctrl"), (0x12, "Alt"), (0x5B, "LWin"), (0x5C, "RWin") })
+            if (IsDown(key)) keys.Add(label);
+        return string.Join(" + ", keys);
+    }
     public static bool HasModifier() => IsDown(0x11) || IsDown(0x12) || IsDown(0x5B) || IsDown(0x5C);
     public void Stop() => this.lease.Stop();
     private bool Allowed() => !this.disposed && IsForeground(Volatile.Read(ref this.pid)) &&
@@ -60,6 +70,9 @@ internal sealed class MovementInput : IDisposable
         if (down && !this.Allowed()) return false;
         var binding = MovementBindings.Get(key, this.arrows);
         var input = new Input { Type = 1, Scan = binding.Scan, Flags = binding.Flags(down) };
+        // Record before sending: the watchdog and DrawUI can observe Windows key
+        // state before lease ownership has caught up. Include key-up events too.
+        this.manual.RecordSynthetic(binding.VirtualKey, Environment.TickCount64);
         return SendInput(1, [input], Marshal.SizeOf<Input>()) == 1;
     }
 
