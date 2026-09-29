@@ -31,4 +31,9 @@ internal sealed class FollowSession
 
     public void Reset() { this.catchingUp = false; this.measuring = false; }
     public void ResetProgress() => this.measuring = false;
+    // Preserve accumulated lack of progress, but exclude intentional cast stillness.
+    public void PauseProgress(int milliseconds)
+    {
+        if (this.measuring) this.progressAt += Math.Max(0, milliseconds);
+    }
 }

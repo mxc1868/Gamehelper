@@ -13,7 +13,7 @@ using GameHelper.RemoteObjects.States.InGameStateObjects;
 using ImGuiNET;
 using Newtonsoft.Json;
 
-public sealed class FollowerCore : PCore<FollowerSettings>
+public sealed partial class FollowerCore : PCore<FollowerSettings>
 {
     private readonly FollowSession session = new();
     private readonly CoopCoordinator coop = new();
@@ -63,6 +63,7 @@ public sealed class FollowerCore : PCore<FollowerSettings>
         }
         catch (Exception ex) { this.Settings = new(); this.error = ex.Message; }
         this.Settings.Normalize();
+        this.combat.Reset();
         this.input = new();
         this.areaChanged = CoroutineHandler.Start(this.WaitOn(RemoteEvents.AreaChanged));
         this.gameClosed = CoroutineHandler.Start(this.WaitOn(GameHelperEvents.OnClose));
@@ -87,6 +88,7 @@ public sealed class FollowerCore : PCore<FollowerSettings>
 
     private void ClearNavigation(bool preserveFollowState = false)
     {
+        this.ClearCombat();
         this.ClearRoute();
         this.grid = null;
         this.targetAddress = this.followerAddress = this.secondaryAddress = IntPtr.Zero;
@@ -183,6 +185,7 @@ public sealed class FollowerCore : PCore<FollowerSettings>
         ImGui.SliderInt(this.PluginText.Label("stuck", "Start recovery after no progress (ms)", "Stuck"), ref this.Settings.StuckMilliseconds, 1000, 10000);
         ImGui.Checkbox(this.PluginText.Label("show_status", "Show status", "Status"), ref this.Settings.ShowStatus);
         ImGui.Checkbox(this.PluginText.Label("show_route", "Show route", "Route"), ref this.Settings.ShowRoute);
+        this.DrawCombatSettings();
         this.Settings.Normalize();
         ImGui.TextWrapped(this.PluginText.F("limits", "Temporary interruptions release movement and resume automatically. Stalls force short presses toward the current target without terrain filtering. A missing leader or invalid selection stops following; {0} or Escape stops manually. Closed doors still require manual opening; no portal or background input.", this.ToggleKeyName));
         ImGui.TextWrapped(this.StatusText());
@@ -344,6 +347,7 @@ public sealed class FollowerCore : PCore<FollowerSettings>
             this.manualKeys = this.input?.ReadManualInput(this.Settings.LocalCoopFollow) ?? string.Empty;
             if (this.manualKeys.Length != 0) { this.Suspend("manual"); return; }
         }
+        if (this.TickCombat(now, area, primary, secondary)) return;
         if (!needsMovement)
         {
             this.input?.Stop();
@@ -477,6 +481,7 @@ public sealed class FollowerCore : PCore<FollowerSettings>
                     this.correctingP2 ? "P2 correction: P1 paused" : "Shared WASD follow") +
                     this.PluginText.F("gap", " | P1/P2 gap: {0:0.0}", this.playerGap));
             ImGui.TextUnformatted($"{roles} | {this.distance:0.0} | {MovementBindings.Describe(this.planned, this.correctingP2)}");
+            if (this.Settings.Combat.Enabled) ImGui.TextWrapped(this.CombatStatusText());
             ImGui.End();
         }
         if (!this.run.IsEnabled || !this.Settings.ShowRoute || this.route == null || Core.States.GameCurrentState != GameStateTypes.InGameState) return;

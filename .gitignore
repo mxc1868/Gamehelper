@@ -5,6 +5,7 @@ publish/
 publish-downloader/
 artifacts/wisps/
 artifacts/unique/
+artifacts/references/
 __pycache__/
 Test/
 test-runtime-backup/

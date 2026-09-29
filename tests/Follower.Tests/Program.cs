@@ -479,4 +479,20 @@ foreach (var useArrows in new[] { false, true })
     Check(sent.Count == 2 && sent.All(binding => binding.Extended == useArrows),
         useArrows ? "P2 recovery presses and releases only extended arrow keys" : "shared recovery presses and releases only WASD");
 }
+var combatProgress = new FollowSession();
+Check(!combatProgress.IsStuck(Vector2.Zero, true, 0, 2500), "combat progress starts measuring movement");
+combatProgress.PauseProgress(330);
+Check(!combatProgress.IsStuck(Vector2.Zero, true, 2829, 2500) && combatProgress.IsStuck(Vector2.Zero, true, 2830, 2500),
+    "intentional cast pause is excluded without forgetting earlier movement stalls");
+combatProgress.ResetProgress();
+combatProgress.IsStuck(Vector2.Zero, true, 0, 2500);
+combatProgress.PauseProgress(330);
+combatProgress.PauseProgress(330);
+Check(!combatProgress.IsStuck(Vector2.Zero, true, 3159, 2500) && combatProgress.IsStuck(Vector2.Zero, true, 3160, 2500),
+    "repeated casts cannot indefinitely suppress unstuck recovery");
+Check(!combatProgress.IsStuck(new(2, 0), true, 3160, 2500), "real displacement after a cast resets stall evidence");
+var combatDefaults = new FollowerSettings { Combat = null! };
+combatDefaults.Normalize();
+Check(!combatDefaults.Combat.Enabled && combatDefaults.Combat.Rules.Count == 0,
+    "old/null follower combat settings remain inactive after normalization");
 Console.WriteLine($"All {passed} Follower checks passed. No Windows input or live gameplay tested.");

@@ -1,6 +1,7 @@
 namespace Follower;
 
 using GameHelper.Plugin;
+using BloodyBot.Combat;
 
 public sealed class FollowerSettings : IPSettings
 {
@@ -20,9 +21,13 @@ public sealed class FollowerSettings : IPSettings
     public bool PreviewOnly = true;
     public bool ShowStatus = true;
     public bool ShowRoute = true;
+    public CombatSettings Combat = new();
+    public bool CombatUseP2;
 
     public void Normalize()
     {
+        this.Combat ??= new();
+        this.Combat.Normalize();
         if (!IsToggleKeyAllowed(this.ToggleKey)) this.ToggleKey = DefaultToggleKey;
         this.LeaderName = (this.LeaderName ?? string.Empty).Trim();
         this.P1Name = (this.P1Name ?? string.Empty).Trim();

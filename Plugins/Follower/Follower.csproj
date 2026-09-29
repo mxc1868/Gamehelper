@@ -7,9 +7,12 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../../GameHelper/GameHelper.csproj" Private="false" />
+    <ProjectReference Include="../../Modules/Combat/Combat.csproj" />
   </ItemGroup>
   <Target Name="CopyPlugin" AfterTargets="Build">
     <Copy SourceFiles="$(OutDir)$(TargetName).dll;$(OutDir)$(TargetName).pdb"
+          DestinationFolder="../../GameHelper/$(OutDir)Plugins/Follower" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(OutDir)$(TargetName).deps.json;$(OutDir)BloodyBot.Combat.dll;$(OutDir)BloodyBot.Combat.pdb"
           DestinationFolder="../../GameHelper/$(OutDir)Plugins/Follower" SkipUnchangedFiles="true" />
   </Target>
 </Project>

@@ -2,6 +2,21 @@
 
 更新日期：2026-09-28。后续 agent 请先读本文，再读 [插件说明](Plugins/ShowMeWisp/README.md) 和 [Windows 调试说明](Plugins/ShowMeWisp/WINDOWS-DEBUG.zh-CN.md)。
 
+## Follower 基础战斗与独立 Combat 模块（2026-09-28）
+
+用户要求参考自己的 PoE1 [Bloodybot](https://github.com/mxc1868/Bloodybot)，先给 Follower 加附近精英/Unique 与人物状态触发技能的能力；战斗独立，后续 Bloodybot2 将 Follower 作为一种导航方式，并可能增加 Simulacrum 策略。本轮只完成基础战斗接入，未实现自动刷图/波次或整个 Bloodybot2。
+
+- [x] 通过 Git 读取 Bloodybot `cf4dc688ee6ad1b9ea16904c080df4fe8d8410f0`，核对 CombatBehavior/TargetSelector/Conditions/Caster 分层。新增 `Modules/Combat`，输出独立 `BloodyBot.Combat.dll`：状态快照、按顺序取首个满足条件的规则、按键建议、接受输入后的限频记录，以及可注入后端的短按/超时松键。模块不引用 GameHelper、GameOffsets、Follower、ImGui 或 Win32；PoE1 offsets/技能栏解析未照搬。
+- [x] Follower 设置新增持久化战斗开关和最多 32 条可排序规则：附近敌人稀有度/范围/数量，生命/护盾/魔力低于阈值、最低魔力、Buff 存在/缺失、可选指定内部技能就绪。新增规则默认 Rare + Unique、50 格、至少 1 个、80 ms 短按、250 ms 停顿、2000 ms 重复间隔；默认战斗关闭、技能键未绑定，不改变旧配置已选择的导航/预览。支持扫描角色 Buff 和技能名称，双语设置与状态。
+- [x] `CombatSnapshotReader` 仅使用原有公开 AwakeEntities、Life、Render、Positioned、Targetable、ObjectMagicProperties、Stats、Buffs、Actor 与区域接口，并检查组件父地址。过滤死亡、友方、不可选中、已知免伤、隐藏和无效坐标；城镇/藏身处、入场保护或角色关键数据不可读不施法。未知条件数据不视为满足；无护盾不视为护盾 0%。未改 GameHelper 核心、GameOffsets 或 Radar，无新增框架 API。
+- [x] 跟随开关控制战斗，已靠近队长停止移动时仍可施法；预览只展示建议，不发送输入、不消耗间隔。双人模式可监测 P1/P2，位置/生命/Buff 均使用所选角色；P2 纠偏和脱困优先。**选择监测 P2 不代表输入自动控制 P2**，技能键仍依赖用户现有映射。仅按键，沿用当前鼠标/手柄瞄准，不自动瞄准或追怪；近距离不是视线可达判定。
+- [x] 发技能前释放移动键，按键和施法停顿期间让出导航，结束后重新寻路。同键共享限频，全局至少 300 ms，施法结束后另留至少 150 ms 恢复移动。计时只扣除施法静止时间，不清除先前无进展记录，避免频繁施法使脱困永远不触发。技能键有 25 ms 看门狗，最长请求按住 200 ms，失焦/主动停止/切区/面板/预览遵循原有保护；key-up 失败保留归属重试。手柄聊天不可读的原限制仍在。
+- [x] `GameOverlay.sln` 包含独立模块；插件复制 `Follower.deps.json` 和 `BloodyBot.Combat.dll/pdb` 到运行插件目录，实际加载器验证依赖从插件目录加载且无宿主反向引用。
+- [x] 最终 Windows 整套 Release 构建成功，0 错误、0 警告（使用已还原缓存、`--no-restore --disable-build-servers -p:UseSharedCompilation=false -m:1`；还原时 `NuGetAudit=false`，没有宣称完成在线漏洞审计）。80 项 Combat 合成检查、222 项 Follower 离线检查、12 项实际插件发现/加载/依赖/API 检查通过；101 个中英文资源键和占位符匹配，`git diff --check` 通过。无游戏连接/真实输入测试，未更新 Test、QKeyMapper 或运行设置，仍仅交付源码。
+- [ ] 实机确认：普通/稀有/Unique 计数、死亡/免伤过滤、P1/P2 状态读取、实际技能映射、80 ms 短按是否足够、250 ms 停顿是否足够、Buff/技能就绪数据、预览与重启保存、施法后继续导航、脱困/纠偏优先、失焦/F9/主动停止后释放。Windows 接受按键不等于游戏已施法；如需自动瞄准、长按引导或各角色独立技能组，另行扩展。
+
+入口：[Follower 使用说明](Plugins/Follower/README.md)、[Combat 模块与后续架构](Modules/Combat/README.md)。验证命令：`dotnet run --project tests/Combat.Tests/Combat.Tests.csproj -c Release`、`dotnet run --project tests/Follower.Tests/Follower.Tests.csproj -c Release`、`dotnet run --project tests/PluginLoad.Tests/PluginLoad.Tests.csproj -c Release -- GameHelper/bin/Release/net10.0-windows/win-x64`。
+
 ## Follower 启动即 manual input 误判修复（2026-09-28）
 
 - [x] 用户报告没有按键，但一启动就显示 `resume when movement ...`。只读采样两秒的 WASD/箭头/修饰键，Windows 持续报告 W 按下；采样时可见 QKeyMapper 进程，没有 GameHelper 进程。旧代码把 `GetAsyncKeyState` 中不属于当前按键租期的移动键直接认作手动输入；启动时租期为空，遗留 W 立即触发等待。尚未查明 W 状态产生来源，不能据此断言是 QKeyMapper 的问题；未发送按键或松键探针。
