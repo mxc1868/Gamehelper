@@ -81,7 +81,21 @@ try {
     Check (Restore-DeployUserData $restored $backup) 'backup restores to a fresh runtime directory'
     Check ((Get-Content -LiteralPath (Join-Path $restored 'configs\core_settings.json') -Raw) -eq '{"sentinel":"original"}') 'restore recovers config missing from the damaged source'
     Remove-DeployDirectory $source
-    Check (!(Test-Path $source) -and (Test-Path (Join-Path $backup 'configs\core_settings.json'))) 'unlocked cleanup leaves the backup intact'
+    Check ((Test-Path $source) -and @(Get-ChildItem -LiteralPath $source -Force).Count -eq 0 -and (Test-Path (Join-Path $backup 'configs\core_settings.json'))) 'unlocked cleanup keeps the empty root and leaves the backup intact'
+
+    $heldRoot = Join-Path $scratch 'held-root'
+    New-Item -ItemType Directory -Path $heldRoot | Out-Null
+    $priorWorkingDirectory = [Environment]::CurrentDirectory
+    try {
+        [Environment]::CurrentDirectory = $heldRoot
+        $rootBlocked = $false
+        try { [System.IO.Directory]::Delete($heldRoot) } catch { $rootBlocked = $true }
+        Check $rootBlocked 'a real working-directory handle blocks removal of an empty root'
+        Put (Join-Path $heldRoot 'stale.dll') 'stale output'
+        Remove-DeployDirectory $heldRoot
+        Check ((Test-Path $heldRoot) -and @(Get-ChildItem -LiteralPath $heldRoot -Force).Count -eq 0) 'cleanup succeeds while destination root is held as a working directory'
+    }
+    finally { [Environment]::CurrentDirectory = $priorWorkingDirectory }
     Write-Host "All $script:checks deployment checks passed. Real Test/configs were not touched."
 }
 finally {

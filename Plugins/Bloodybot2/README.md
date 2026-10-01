@@ -20,7 +20,7 @@ Follow 单人使用本地角色追队长；本地双人按 P1→队长共享 WAS
 ## 战斗能力与边界
 
 - 最多 32 条规则，支持添加、复制、删除和排序。自上而下执行首条符合条件的规则；高优先级规则冷却期间可执行后续规则。
-- 默认检测 50 格内的稀有 / Unique；可独立选择普通、魔法、稀有、Unique，范围 1–150 格，并设置最少数量。过滤死亡、友方、不可选中、已知免伤、隐藏及无效坐标。
+- 默认检测 50 格内的稀有 / Unique；可独立选择普通、魔法、稀有、Unique，范围 1–150 格，并设置最少数量。怪物识别沿用 Radar 的普通怪物图标分支：AwakeEntities 中的 Monster、EntityState.None，再从 ObjectMagicProperties 取稀有度。死亡、友方和隐藏 Boss 使用核心的分类结果，不额外要求怪物血量大于 0 或 Targetable=true。Radar 的隐藏怪物分支、已知免伤、隐藏 Buff、无效实体/坐标仍不参与战斗。
 - 生命 / 护盾 / 魔力低于阈值、最低魔力、存在 / 缺少 Buff、指定内部技能就绪，启用的条件取 AND。百分比使用未保留上限；数据未知时不视为满足，无护盾不当作护盾 0%。Buff 为不区分大小写的部分匹配，技能使用完整内部名。页面提供现场名称扫描，不推测 PoE1 技能栏映射。
 - 按键支持字母（除 WASD）、数字、空格；不支持鼠标键、功能键、修饰键或移动键。短按 30–200 ms，默认 80 ms；重复间隔至少 300 ms，默认 2000 ms；同键规则共享间隔。按住时长 + 施法停顿后另留至少 150 ms 再发下一个技能。
 - 只发送技能键，沿用当前鼠标 / 手柄瞄准。移动由 Follow 控制；不追怪、不移动鼠标、不自动战术走位，也不声称距离等同于视线可达。已发送按键仅表示 Windows 接受输入，不代表游戏施法成功。
@@ -65,6 +65,7 @@ flowchart LR
 ```powershell
 dotnet run --project tests/Bloodybot2.Tests -c Release
 dotnet run --project tests/Combat.Tests -c Release
+dotnet run --project tests/CombatReader.Tests -c Release
 dotnet run --project tests/Follower.Tests -c Release
 dotnet run --project tests/PluginLoad.Tests -c Release -- GameHelper/bin/Release/net10.0-windows/win-x64
 ```

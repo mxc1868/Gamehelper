@@ -26,22 +26,32 @@ internal static class CombatSnapshotReader
         var enemies = new List<CombatEnemy>();
         foreach (var entity in area.AwakeEntities.Values)
         {
+            // Match Radar's ordinary monster icon branch: Monster + None, with
+            // ObjectMagicProperties supplying rarity. The core already classifies
+            // dead/friendly/hidden bosses. Requiring enemy Life/Positioned/Targetable
+            // here rejects monsters that Radar correctly displays (e.g. zero Life
+            // with is_dead=0, or missing/false Targetable).
             if (!entity.IsValid || entity.EntityType != EntityTypes.Monster ||
-                entity.EntityState is EntityStates.Useless or EntityStates.MonsterFriendly or EntityStates.PinnacleBossHidden ||
+                entity.EntityState != EntityStates.None ||
                 !ReadComponent(entity, out Render enemyRender)) continue;
             var enemyPosition = new Vector2(enemyRender.GridPosition.X, enemyRender.GridPosition.Y);
             var distance = Vector2.Distance(position, enemyPosition);
             if (!float.IsFinite(distance) || distance > 150 ||
-                !ReadComponent(entity, out Life enemyLife) || !enemyLife.IsAlive ||
-                !ReadComponent(entity, out Positioned positioned) || positioned.IsFriendly ||
-                !ReadComponent(entity, out Targetable targetable) || !targetable.IsTargetable ||
                 !ReadComponent(entity, out ObjectMagicProperties magic)) continue;
             var rarity = magic.Rarity switch
             {
                 Rarity.Normal => EnemyRarity.Normal, Rarity.Magic => EnemyRarity.Magic,
                 Rarity.Rare => EnemyRarity.Rare, Rarity.Unique => EnemyRarity.Unique, _ => EnemyRarity.None,
             };
-            var immune = ReadComponent(entity, out Stats stats) &&
+            var hasStats = ReadComponent(entity, out Stats stats);
+            // Radar gives these a separate Hidden Monster icon, not a rarity icon.
+            if (hasStats)
+            {
+                lock (stats.StatsChangedByBuffAndActions)
+                    if (stats.StatsChangedByBuffAndActions.GetValueOrDefault(GameStats.is_hidden_monster) == 1) continue;
+            }
+            // Known immunity still blocks combat, independently of icon classification.
+            var immune = hasStats &&
                 (HasImmunity(stats.StatsChangedByBuffAndActions) || HasImmunity(stats.StatsChangedByItems));
             if (ReadComponent(entity, out Buffs enemyBuffs) && enemyBuffs.StatusEffects.ContainsKey("hidden_monster")) immune = true;
             enemies.Add(new(entity.Id, rarity, enemyPosition, true, true, true, immune));

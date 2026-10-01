@@ -1,6 +1,15 @@
 # GameHelper 插件：TODO 与接手上下文
 
-更新日期：2026-09-28。后续 agent 请先读本文，再读 [插件说明](Plugins/ShowMeWisp/README.md) 和 [Windows 调试说明](Plugins/ShowMeWisp/WINDOWS-DEBUG.zh-CN.md)。
+更新日期：2026-10-01。后续 agent 请先读本文，再读 [插件说明](Plugins/ShowMeWisp/README.md) 和 [Windows 调试说明](Plugins/ShowMeWisp/WINDOWS-DEBUG.zh-CN.md)。
+
+## Bloodybot2 怪物计数沿用 Radar；Test 根目录占用修复（2026-10-01）
+
+- [x] 用户报告白、蓝、黄、暗金全为 0，明确要求沿用 Radar 的精英图标识别。核对 `Plugins/Radar/Radar.cs` 的普通怪物分支：`AwakeEntities` → `EntityTypes.Monster` / `EntityStates.None` → `ObjectMagicProperties.Rarity`。Bloodybot2 原先额外强制读取怪物 Life/Positioned/Targetable，已移除这些重复门槛；死亡/友方/隐藏 Boss 采用核心状态，Radar 的 `is_hidden_monster=1` 单独排除。仍保留有效实体、组件父地址、150 格扫描范围、规则自己的范围、隐藏 Buff 与已知免伤限制；未修改 Radar、核心或 offsets，无新增框架 API。
+- [x] 新增 `tests/CombatReader.Tests`，以真实核心 Entity/组件类型的离线缓存样本调用实际适配器，再接 CombatEngine；旧版在“核心判活但 Life 为 0”用例失败，修复后 31 项通过。覆盖四种稀有度、缺少 Life/Positioned/Targetable、Targetable=false、核心状态、POI 怪物、隐藏/免伤、范围与玩家保护。未读取游戏内存或发送输入；先前本地 HTTP 只读状态在藏身处，不能据此确认实战根因。
+- [x] 额外运行 80 项 Combat、87 项 Bloodybot2 配置/运行/HTTP、221 项 Follow 导航、118 项幽火/迁移检查，均通过。本次未更改 Web UI，也未增加诊断页面；用户最新要求优先采用 Radar 逻辑。
+- [x] `rebuild-test.ps1` 首次成功编译，但清空文件后删除 Test 根目录失败（本会话工作目录被持有），部署尚未完成。先从本次独立备份恢复全部 37 个配置并核对哈希，再修改 `Remove-DeployDirectory`：检查进程/所有文件锁后，只删除经绝对路径边界核验的子项，保留目标根目录；未强杀进程、绕过 DLL 锁或清空配置来绕锁。15 项部署保护测试通过，新增真实当前目录句柄占用回归。修复后脚本完整成功；首次重试的增量构建 0 错误/0 警告，提交前最后一次整套构建 0 错误、7 条既存警告（核心 nullable/XML 3 条、WorldDrawing nullable 4 条）。
+- [x] 已更新 Test，13 项实际插件发现/加载/API 检查通过，Bloodybot2 DLL 哈希与构建输出一致。37 个既有配置哈希全部保持一致；脚本对 `plugins.json` 的既有大小写迁移仅改变格式，在确认 JSON 语义相同后恢复原始字节。独立备份、测试和构建日志：`artifacts/bloodybot2/radar-detection-20261001`；旧 Follower 配置仍保留。前轮已暂存的 Follow 整合另行提交，本次修复独立提交到用户 fork 的 main；不创建 ZIP/Release。
+- [ ] 用户重新启动 Test 后，在有怪物的地图中比较 Radar 与监测页四种计数及技能触发。附近有效敌人数为 150 格内，技能规则仍按各自范围（当前为 50 格）和 Buff 条件判断。离线/加载检查不等于游戏实测。
 
 ## Bloodybot2：General / Follow、录制按键及提交前更新 Test（2026-09-28）
 

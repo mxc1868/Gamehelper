@@ -250,7 +250,20 @@ function Remove-DeployDirectory {
     }
 
     try {
-        Remove-Item -LiteralPath $TargetDir -Recurse -Force -ErrorAction Stop
+        # Keep the destination directory itself: a terminal/editor may use it as
+        # its working directory even when every deployed file is unlocked.
+        # Removing the root can fail AFTER deleting its contents and settings.
+        $resolvedTarget = [System.IO.Path]::GetFullPath((Resolve-Path -LiteralPath $TargetDir).ProviderPath).TrimEnd('\')
+        $children = @(Get-ChildItem -LiteralPath $resolvedTarget -Force)
+        foreach ($child in $children) {
+            $resolvedChild = [System.IO.Path]::GetFullPath($child.FullName)
+            if (-not $resolvedChild.StartsWith($resolvedTarget + '\', [StringComparison]::OrdinalIgnoreCase)) {
+                throw "Cleanup target escapes deployment directory: $resolvedChild"
+            }
+        }
+        foreach ($child in $children) {
+            Remove-Item -LiteralPath $child.FullName -Recurse -Force -ErrorAction Stop
+        }
     }
     catch {
         throw @"
