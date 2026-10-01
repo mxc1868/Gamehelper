@@ -2,16 +2,21 @@ namespace Bloodybot2.Configuration;
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Nodes;
 using BloodyBot.Combat;
+using Bloodybot2.Navigation;
 
 public sealed class BotConfig
 {
-    public int SchemaVersion { get; set; } = 1;
+    public int SchemaVersion { get; set; } = 2;
+    public string Mode { get; set; } = "";
+    public int ToggleKey { get; set; } = 0x75;
     public string Name { get; set; } = "我的配置";
     public bool Preview { get; set; } = true;
     public string MonitorCharacter { get; set; } = "";
     public bool AllowControllerWithoutChat { get; set; }
     public CombatSettings Combat { get; set; } = new() { Enabled = true };
+    public FollowSettings Follow { get; set; } = new();
 
     public static readonly JsonSerializerOptions Json = new()
     {
@@ -26,7 +31,9 @@ public sealed class BotConfig
     public BotConfig Copy() => Parse(this.Serialize());
     public static BotConfig Parse(string json)
     {
-        var config = JsonSerializer.Deserialize<BotConfig>(json, Json) ?? throw new ArgumentException("配置不能为空。");
+        var node = JsonNode.Parse(json) as JsonObject ?? throw new ArgumentException("配置不能为空。");
+        if (node["schemaVersion"] is JsonValue schema && schema.TryGetValue<int>(out var version) && version == 1) node["schemaVersion"] = 2;
+        var config = node.Deserialize<BotConfig>(Json) ?? throw new ArgumentException("配置不能为空。");
         config.Validate();
         return config;
     }
@@ -43,7 +50,20 @@ public sealed class BotConfig
             if (!double.IsFinite(value) || value < min || value > max)
                 throw new ArgumentException($"{field}：范围为 {min}–{max}。");
         }
-        if (this.SchemaVersion != 1) throw new ArgumentException("不支持此配置版本；请使用 Bloodybot2 v1 配置。");
+        if (this.SchemaVersion != 2) throw new ArgumentException("不支持此配置版本；请使用 Bloodybot2 配置。");
+        if (this.Mode is not ("" or "Follow")) throw new ArgumentException("当前仅支持 Follow 模式。");
+        if (!IsToggleKeyAllowed(this.ToggleKey)) throw new ArgumentException("启停快捷键不可使用移动键、修饰键、Enter 或 Esc。");
+        if (this.Follow == null) throw new ArgumentException("缺少 Follow 配置。");
+        Text(this.Follow.LeaderName, 128, "队长名称");
+        Text(this.Follow.P1Name, 128, "P1 名称");
+        Text(this.Follow.P2Name, 128, "P2 名称");
+        Range(this.Follow.StopDistance, 3, 100, "停止距离");
+        Range(this.Follow.ResumeDistance, this.Follow.StopDistance + 3, 150, "重新跟随距离");
+        Range(this.Follow.P2LagDistance, 6, 150, "P2 纠偏距离");
+        Range(this.Follow.P2RejoinDistance, 3, this.Follow.P2LagDistance - 3, "P2 回归距离");
+        Range(this.Follow.Clearance, 0, 2, "离墙间距");
+        Range(this.Follow.RepathMilliseconds, 150, 1000, "重新寻路间隔");
+        Range(this.Follow.StuckMilliseconds, 1000, 10000, "脱困等待时间");
         Text(this.Name, 80, "配置名称", true);
         Text(this.MonitorCharacter, 128, "监测角色");
         if (this.Combat?.Rules == null || this.Combat.Rules.Count > 32) throw new ArgumentException("最多可配置 32 条技能规则。");
@@ -71,4 +91,24 @@ public sealed class BotConfig
             Text(r.ReadySkill, 160, "就绪技能");
         }
     }
+
+    public void ValidateMode()
+    {
+        if (this.Mode != "Follow") throw new ArgumentException("请先在 General 中选择 Follow 模式。");
+    }
+
+    public void ValidateStart()
+    {
+        this.ValidateMode();
+        if (string.IsNullOrWhiteSpace(this.Follow.LeaderName)) throw new ArgumentException("请先选择 Follow 的队长。");
+        if (this.Follow.LocalCoopFollow && (string.IsNullOrWhiteSpace(this.Follow.P1Name) || string.IsNullOrWhiteSpace(this.Follow.P2Name)))
+            throw new ArgumentException("双人 Follow 需要选择 P1 和 P2。");
+        if (this.Follow.LocalCoopFollow && (this.Follow.P1Name.Trim().Equals(this.Follow.P2Name.Trim(), StringComparison.OrdinalIgnoreCase) ||
+            this.Follow.P2Name.Trim().Equals(this.Follow.LeaderName.Trim(), StringComparison.OrdinalIgnoreCase)))
+            throw new ArgumentException("P2 必须与 P1 和队长是不同角色。");
+    }
+
+    public static bool IsToggleKeyAllowed(int key) => key is >= 0x08 and <= 0xFE &&
+        key is not (0x0D or 0x10 or 0x11 or 0x12 or 0x1B or 0x25 or 0x26 or 0x27 or 0x28 or 0x41 or 0x44 or 0x53 or 0x57 or
+                    0x5B or 0x5C or 0xA0 or 0xA1 or 0xA2 or 0xA3 or 0xA4 or 0xA5);
 }

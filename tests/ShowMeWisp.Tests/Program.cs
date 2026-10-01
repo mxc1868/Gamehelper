@@ -162,6 +162,16 @@ try
     oldMetadata.Enable = true;
     Check("rename copies metadata without sharing mutable state", !migratedMetadata.Enable && GameHelper.Plugin.PluginRenames.InitialMetadata("ShowMeWisp", savedMetadata).Enable);
     Check("unrelated plugins keep their normal default", GameHelper.Plugin.PluginRenames.InitialMetadata("Radar", savedMetadata).Enable);
+    var oldFollower = new DirectoryInfo(Path.Join(pluginRoot, "Follower"));
+    Directory.CreateDirectory(oldFollower.FullName);
+    Check("Follower remains discoverable before Bloodybot2 is installed", !GameHelper.Plugin.PluginRenames.IsSuperseded(oldFollower));
+    Directory.CreateDirectory(Path.Join(pluginRoot, "Bloodybot2"));
+    File.WriteAllText(Path.Join(pluginRoot, "Bloodybot2", "Bloodybot2.dll"), "discovery test placeholder");
+    Check("Bloodybot2 supersedes an old Follower directory", GameHelper.Plugin.PluginRenames.IsSuperseded(oldFollower));
+    savedMetadata["Follower"] = new() { Enable = false };
+    Check("Bloodybot2 inherits disabled Follower metadata", !GameHelper.Plugin.PluginRenames.InitialMetadata("Bloodybot2", savedMetadata).Enable);
+    savedMetadata["Follower"].Enable = true;
+    Check("Bloodybot2 inherits enabled Follower metadata", GameHelper.Plugin.PluginRenames.InitialMetadata("Bloodybot2", savedMetadata).Enable);
     using var capture = new WispDebugCapture(Path.Join(temp, "capture"), 1024, 3);
     Check("capture starts without Windows or a game", capture.Start(100));
     capture.Write("nonfinite", new { Position = new Vector2(float.NaN, float.PositiveInfinity) });

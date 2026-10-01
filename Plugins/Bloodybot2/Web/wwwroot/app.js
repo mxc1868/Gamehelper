@@ -15,10 +15,30 @@ let draft,
   selected = "",
   busy = false,
   connected = false,
-  running = false;
+  running = false,
+  recording = null,
+  captureTimer;
+const pendingOptions = new Map();
 const dirty = () => draft && JSON.stringify(draft) !== saved;
 const keyName = (key) =>
-  key === 32 ? "SP" : key ? String.fromCharCode(key) : "—";
+  key === 32
+    ? "Space"
+    : key >= 112 && key <= 135
+      ? `F${key - 111}`
+      : {
+          8: "Backspace",
+          9: "Tab",
+          19: "Pause",
+          20: "CapsLock",
+          33: "PageUp",
+          34: "PageDown",
+          35: "End",
+          36: "Home",
+          45: "Insert",
+          46: "Delete",
+          144: "NumLock",
+          145: "ScrollLock",
+        }[key] || (key ? String.fromCharCode(key) : "—");
 const keyOptions = [
   0,
   32,
@@ -48,11 +68,15 @@ async function api(path, method = "GET", body) {
 }
 function controls() {
   $("dirty").textContent = dirty() ? "有未保存的修改" : "已保存";
-  $("save").disabled = !dirty() || busy || !connected;
-  $("run").disabled = !draft || dirty() || busy || !connected || running;
-  $("run").textContent = draft?.preview !== false ? "启动预览" : "启动战斗";
+  $("dirty").hidden = !dirty();
+  $("profile-label").textContent = draft?.name || "—";
+  $("save").disabled = !dirty() || busy || !connected || !draft?.mode;
+  $("run").disabled = !draft?.mode || dirty() || busy || !connected || running;
+  $("run").textContent = draft?.preview !== false ? "启动预览" : "启动 Follow";
+  $("toggle-key-hint").textContent = keyName(draft?.toggleKey || 117);
   $("stop").disabled = !connected;
   $("workspace").inert = busy || !draft;
+  $("follow-nav").hidden = draft?.mode !== "Follow";
   $("mode-chip").textContent =
     (draft?.preview !== false ? "预览模式" : "实际按键") +
     (dirty() ? " · 草稿" : "");
@@ -76,6 +100,7 @@ async function load() {
     renderConfig();
     renderRules();
     renderEditor();
+    if (!draft.mode) selectTab("general");
     message();
   } catch (error) {
     message(error.message);
@@ -84,6 +109,16 @@ async function load() {
   }
 }
 function renderConfig() {
+  $("mode").value = draft.mode;
+  $("toggle-record").querySelector("kbd").textContent = keyName(
+    draft.toggleKey,
+  );
+  for (const element of document.querySelectorAll("[data-follow]")) {
+    const value = draft.follow[element.dataset.follow];
+    if (element.type === "checkbox") element.checked = value;
+    else element.value = value;
+  }
+  $("follow-coop-fields").hidden = !draft.follow.localCoopFollow;
   $("config-name").value = draft.name;
   $("preview").checked = draft.preview;
   $("combat-enabled").checked = draft.combat.enabled;
@@ -106,62 +141,228 @@ function ruleSummary(r) {
 function renderRules() {
   const rules = draft.combat.rules;
   $("rule-count").textContent = `${rules.length} / 32`;
+  $("nav-action-count").textContent = rules.length;
   $("add").disabled = rules.length >= 32;
   $("rules").innerHTML = rules.length
     ? rules
         .map(
-          (r, i) =>
-            `<button class="rule ${r.id === selected ? "selected" : ""} ${r.enabled ? "" : "disabled"}" data-rule="${esc(r.id)}" aria-pressed="${r.id === selected}"><span class="number">${String(i + 1).padStart(2, "0")}</span><span><strong>${esc(r.name)}</strong><small>${esc(ruleSummary(r))}</small></span><span class="key">${keyName(r.key)}</span></button>`,
+          (r, i) => `
+    <div class="action-item rule ${r.id === selected ? "selected" : ""} ${r.enabled ? "" : "action-disabled"}" data-rule="${esc(r.id)}" role="button" tabindex="0" aria-pressed="${r.id === selected}">
+      <span class="drag-handle rule-mark" aria-hidden="true">◆</span><span class="action-order">${String(i + 1).padStart(2, "0")}</span>
+      <div class="action-summary"><div class="action-title-line"><span class="category-badge ${r.requireEnemy ? "badge-damage" : "badge-buff"}">${r.requireEnemy ? "ENEMY" : "PLAYER"}</span><b><strong>${esc(r.name)}</strong></b></div><div class="action-detail"><kbd>${keyName(r.key)}</kbd><span>${esc(ruleSummary(r))}</span></div></div>
+      <div class="action-controls"><button class="icon-button" data-move="-1" aria-label="上移一位" ${i === 0 ? "disabled" : ""}>↑</button><button class="icon-button" data-move="1" aria-label="下移一位" ${i === rules.length - 1 ? "disabled" : ""}>↓</button></div>
+    </div>`,
         )
         .join("")
-    : '<div class="empty">还没有技能规则<br>添加技能，开始编排战斗。</div>';
+    : '<div class="queue-empty"><div><b>动作队列为空</b><p>点击“添加技能”，设置按键与触发条件。</p></div></div>';
 }
 function field(key, label, value, min, max, step = 1) {
-  return `<label class="field">${label}<input data-key="${key}" type="number" min="${min}" max="${max}" step="${step}" value="${value}"></label>`;
+  return `<label class="field"><span>${label}</span><input data-key="${key}" type="number" min="${min}" max="${max}" step="${step}" value="${value}"></label>`;
 }
 function textField(key, label, value, list = "", hint = "") {
-  return `<label class="field">${label}<input data-key="${key}" value="${esc(value)}" maxlength="160" autocomplete="off" ${list ? 'list="' + list + '"' : ""}>${hint ? "<small>" + hint + "</small>" : ""}</label>`;
+  return `<label class="field"><span>${label}</span><input data-key="${key}" value="${esc(value)}" maxlength="${key === "name" ? 80 : 160}" autocomplete="off" ${list ? 'list="' + list + '"' : ""}>${hint ? "<small>" + hint + "</small>" : ""}</label>`;
+}
+function switchControl(key, value, label) {
+  return `<label class="simple-switch"><input data-key="${key}" type="checkbox" aria-label="${label}" ${value ? "checked" : ""}><i aria-hidden="true"></i></label>`;
 }
 function renderEditor() {
+  cancelRecording();
   const r = draft.combat.rules.find((r) => r.id === selected);
   if (!r) {
     $("editor").innerHTML =
-      '<div class="empty"><div class="empty-icon">◇</div><h3>让技能在合适的时候触发</h3><p>设置按键，选择敌人或人物状态条件，再用预览确认触发结果。</p><button class="button primary" data-action="add">＋ 添加第一个技能</button></div>';
+      '<div class="editor-empty"><div><span aria-hidden="true">◇</span><b>选择一个动作开始编辑</b><p>这里会显示技能按键、施法节奏与全部触发条件。</p><button class="button button-primary" data-action="add">＋ 添加第一个技能</button></div></div>';
     return;
   }
   const index = draft.combat.rules.indexOf(r);
-  $("editor").innerHTML =
-    `<div class="editor-head"><div><div class="eyebrow">ACTION ${String(index + 1).padStart(2, "0")}</div><h2>技能规则</h2><p>当前瞄准 · 单次短按</p></div><div class="editor-actions"><button class="button" data-action="up" aria-label="上移" ${index === 0 ? "disabled" : ""}>↑</button><button class="button" data-action="down" aria-label="下移" ${index === draft.combat.rules.length - 1 ? "disabled" : ""}>↓</button><button class="button" data-action="copy" ${draft.combat.rules.length >= 32 ? "disabled" : ""}>复制</button><button class="button danger" data-action="delete">删除</button></div></div>
-    <div class="form-row">${textField("name", "技能名称", r.name)}<label class="field">游戏按键<select data-key="key">${keyOptions.map((k) => `<option value="${k}" ${k === r.key ? "selected" : ""}>${k === 0 ? "选择按键" : k === 32 ? "Space 空格" : keyName(k)}</option>`).join("")}</select></label></div>
-    <label class="switch-row"><span>启用此规则</span><input data-key="enabled" type="checkbox" ${r.enabled ? "checked" : ""}></label>
-    <div class="form-section"><label class="switch-row"><span><strong>需要附近敌人</strong><small>只计入可攻击的存活敌人。</small></span><input data-key="requireEnemy" type="checkbox" ${r.requireEnemy ? "checked" : ""}></label>
-    <div class="rarities">${[
-      [1, "普通", ""],
-      [2, "魔法", "magic"],
-      [4, "稀有", "rare"],
-      [8, "Unique", "unique"],
-    ]
-      .map(
-        ([v, n, c]) =>
-          `<label class="${c}"><input type="checkbox" data-rarity="${v}" ${r.rarities & v ? "checked" : ""}>${n}</label>`,
-      )
-      .join("")}</div>
-    <div class="form-row">${field("range", "检测范围 / 格", r.range, 1, 150, 0.5)}${field("minimumEnemies", "至少敌人数", r.minimumEnemies, 1, 100)}</div></div>
-    <div class="form-section"><h3>人物状态 <small>· 所有启用的条件同时满足</small></h3><div class="form-row three">
-    ${[
-      ["useLifeBelow", "lifeBelow", "生命"],
-      ["useEnergyShieldBelow", "energyShieldBelow", "护盾"],
-      ["useManaBelow", "manaBelow", "魔力"],
-    ]
-      .map(
-        ([use, key, name]) =>
-          `<div><label class="threshold"><input type="checkbox" data-key="${use}" ${r[use] ? "checked" : ""}>${name}低于</label>${field(key, "% 未保留上限", r[key], 1, 100)}</div>`,
-      )
-      .join("")}</div>
-    <div class="form-row">${field("minimumMana", "最低魔力 %（0 = 不限制）", r.minimumMana, 0, 100)}${textField("readySkill", "技能就绪（可选）", r.readySkill, "skill-options", "使用扫描出的完整内部名称；空白表示不检查。")}</div>
-    <div class="form-row">${textField("requiredBuff", "存在 Buff（可选）", r.requiredBuff, "buff-options")}${textField("missingBuff", "缺少 Buff（可选）", r.missingBuff, "buff-options")}</div><p class="footnote">Buff 名称不区分大小写，支持部分匹配。条件所需数据未知时不会触发。</p></div>
-    <div class="form-section"><h3>施法节奏</h3><div class="form-row three">${field("cooldownMilliseconds", "重复间隔 / ms", r.cooldownMilliseconds, 300, 600000)}${field("pressMilliseconds", "按住时长 / ms", r.pressMilliseconds, 30, 200)}${field("pauseMilliseconds", "施法停顿 / ms", r.pauseMilliseconds, 0, 2000)}</div><p class="footnote">同键规则共享间隔；两次输入至少间隔 300 ms。输入成功只代表系统接受按键。</p></div>`;
+  $("editor").innerHTML = `
+    <header class="editor-head"><div><span class="eyebrow">ACTION ${String(index + 1).padStart(2, "0")}</span><h3 id="editor-title">${esc(r.name)}</h3></div><div class="editor-actions"><button class="mini-button" data-action="up" aria-label="上移" ${index === 0 ? "disabled" : ""}>↑</button><button class="mini-button" data-action="down" aria-label="下移" ${index === draft.combat.rules.length - 1 ? "disabled" : ""}>↓</button><button class="mini-button" data-action="copy" ${draft.combat.rules.length >= 32 ? "disabled" : ""}>复制</button><button class="mini-button" data-action="delete">删除</button></div></header>
+    <div class="editor-form"><div class="form-grid">
+      <div class="field"><span>启用动作 Enabled</span><div class="enabled-box"><span>启用这个动作</span>${switchControl("enabled", r.enabled, "启用动作")}</div><small>关闭后保留配置，不参与优先级检查。</small></div>
+      ${textField("name", "动作名称 Name", r.name)}
+      <div class="field field-wide"><span class="capture-label">施法按键 Key<button class="clear-key" data-action="clear-key">清除绑定</button></span><button type="button" class="key-capture editor-key" id="key-record" data-action="record" aria-label="录制游戏按键"><kbd>${r.key === 32 ? "Space" : keyName(r.key)}</kbd><small>点击录制</small></button><small>点击后按一下技能键。Esc 取消，仅支持单个按键。</small></div>
+      <div class="editor-divider">目标与施法</div>
+      ${field("cooldownMilliseconds", "重复间隔 / ms", r.cooldownMilliseconds, 300, 600000)}
+      ${field("pressMilliseconds", "按住时长 / ms", r.pressMilliseconds, 30, 200)}
+      ${field("pauseMilliseconds", "施法停顿 / ms", r.pauseMilliseconds, 0, 2000)}
+      ${field("minimumMana", "最低魔力 %（0 = 不限制）", r.minimumMana, 0, 100)}
+      <div class="editor-divider">执行条件 · 全部满足才会执行</div>
+      <section class="condition-group"><div class="condition-toggle"><span><b>需要附近敌人</b><small>只计入可攻击的存活敌人。</small></span>${switchControl("requireEnemy", r.requireEnemy, "需要附近敌人")}</div>
+        <div class="rarities">${[
+          [1, "普通", ""],
+          [2, "魔法", "magic"],
+          [4, "稀有", "rare"],
+          [8, "Unique", "unique"],
+        ]
+          .map(
+            ([v, n, c]) =>
+              `<label class="${c}"><input type="checkbox" data-rarity="${v}" ${r.rarities & v ? "checked" : ""}>${n}</label>`,
+          )
+          .join("")}</div>
+        <div class="form-grid">${field("range", "检测范围 / 格", r.range, 1, 150, 0.5)}${field("minimumEnemies", "至少敌人数", r.minimumEnemies, 1, 100)}</div>
+      </section>
+      ${[
+        ["useLifeBelow", "lifeBelow", "生命"],
+        ["useEnergyShieldBelow", "energyShieldBelow", "护盾"],
+        ["useManaBelow", "manaBelow", "魔力"],
+      ]
+        .map(
+          ([use, key, name]) =>
+            `<div><label class="threshold"><input type="checkbox" data-key="${use}" ${r[use] ? "checked" : ""}>${name}低于</label>${field(key, "% 未保留上限", r[key], 1, 100)}</div>`,
+        )
+        .join("")}
+      ${textField("readySkill", "技能就绪（可选）", r.readySkill, "skill-options", "使用扫描出的完整内部名称，空白表示不检查。")}
+      ${textField("requiredBuff", "存在 Buff（可选）", r.requiredBuff, "buff-options")}
+      ${textField("missingBuff", "缺少 Buff（可选）", r.missingBuff, "buff-options")}
+    </div><p class="editor-footer-note">Buff 名称支持不区分大小写的部分匹配；所需数据未知时不触发。同键规则共享间隔，两次输入至少相隔 300 ms。</p></div>`;
 }
+
+function cancelRecording() {
+  recording = null;
+  clearTimeout(captureTimer);
+  $("capture-toast").hidden = true;
+  const button = $("key-record");
+  if (button) {
+    button.classList.remove("capturing");
+    const rule = draft?.combat.rules.find((r) => r.id === selected);
+    button.querySelector("kbd").textContent =
+      rule?.key === 32 ? "Space" : keyName(rule?.key);
+    button.querySelector("small").textContent = "点击录制";
+  }
+  const toggle = $("toggle-record");
+  if (toggle) {
+    toggle.classList.remove("capturing");
+    toggle.querySelector("kbd").textContent = keyName(draft?.toggleKey || 117);
+    toggle.querySelector("small").textContent = "点击录制";
+  }
+}
+function startRecording(kind = "skill") {
+  cancelRecording();
+  if (
+    busy ||
+    !draft ||
+    (kind === "skill" && !draft.combat.rules.some((r) => r.id === selected))
+  )
+    return;
+  recording = { kind, id: selected };
+  $("capture-title").textContent =
+    kind === "skill" ? "请按下技能键" : "请按下启停快捷键";
+  $("capture-hint").textContent =
+    kind === "skill"
+      ? "支持字母（除 WASD）、数字和空格。Esc 取消。"
+      : "支持功能键或单个非移动键，推荐 F6。Esc 取消。";
+  $("capture-toast").hidden = false;
+  const button = $(kind === "skill" ? "key-record" : "toggle-record");
+  button.classList.add("capturing");
+  button.querySelector("kbd").textContent = "…";
+  button.querySelector("small").textContent = "等待按键 · Esc 取消";
+  button.focus();
+  captureTimer = setTimeout(cancelRecording, 12000);
+}
+document.addEventListener(
+  "keydown",
+  (e) => {
+    if (!recording) return;
+    if (e.key === "Tab") {
+      cancelRecording();
+      return;
+    }
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    if (e.key === "Escape") {
+      cancelRecording();
+      return;
+    }
+    if (e.repeat) return;
+    const key = /^Key[A-Z]$/.test(e.code)
+      ? e.code.charCodeAt(3)
+      : /^Digit[0-9]$/.test(e.code)
+        ? e.code.charCodeAt(5)
+        : e.code === "Space"
+          ? 32
+          : /^F([1-9]|1[0-9]|2[0-4])$/.test(e.key)
+            ? 111 + Number(e.key.slice(1))
+            : {
+                Backspace: 8,
+                Pause: 19,
+                CapsLock: 20,
+                PageUp: 33,
+                PageDown: 34,
+                End: 35,
+                Home: 36,
+                Insert: 45,
+                Delete: 46,
+                NumLock: 144,
+                ScrollLock: 145,
+              }[e.key] || 0;
+    const allowed =
+      recording.kind === "skill"
+        ? keyOptions.includes(key) && key !== 0
+        : key >= 8 &&
+          key <= 254 &&
+          ![
+            13, 16, 17, 18, 27, 37, 38, 39, 40, 65, 68, 83, 87, 91, 92, 160,
+            161, 162, 163, 164, 165,
+          ].includes(key);
+    if (
+      e.isComposing ||
+      e.ctrlKey ||
+      e.altKey ||
+      e.metaKey ||
+      e.shiftKey ||
+      !allowed
+    ) {
+      $("capture-title").textContent = "此按键暂不支持，请重新按键";
+      return;
+    }
+    if (recording.kind === "toggle") draft.toggleKey = key;
+    else {
+      const rule = draft.combat.rules.find((r) => r.id === recording.id);
+      if (rule) rule.key = key;
+    }
+    cancelRecording();
+    renderRules();
+    controls();
+  },
+  true,
+);
+document.addEventListener("pointerdown", (e) => {
+  if (
+    recording &&
+    !e.target.closest("#key-record,#toggle-record,#capture-toast")
+  )
+    cancelRecording();
+});
+$("cancel-capture").addEventListener("click", cancelRecording);
+$("toggle-record").addEventListener("click", () => startRecording("toggle"));
+window.addEventListener("blur", cancelRecording);
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) cancelRecording();
+});
+
+// Keep native datalist nodes stable across status polls. Updating a focused
+// input's options can dismiss Chrome's currently open suggestion popup.
+function updateOptions(id, items) {
+  const values = JSON.stringify(items);
+  if ($(id).dataset.values === values) {
+    pendingOptions.delete(id);
+    return;
+  }
+  if (document.activeElement?.getAttribute("list") === id) {
+    pendingOptions.set(id, items);
+    return;
+  }
+  $(id).innerHTML = items
+    .map((s) => `<option value="${esc(s)}"></option>`)
+    .join("");
+  $(id).dataset.values = values;
+  pendingOptions.delete(id);
+}
+document.addEventListener("focusout", () => {
+  setTimeout(() => {
+    for (const [id, items] of pendingOptions) updateOptions(id, items);
+  }, 0);
+});
+
 function newRule(template = "elite") {
   return {
     id: crypto.randomUUID().replaceAll("-", ""),
@@ -204,9 +405,24 @@ function add(template = "elite") {
 $("rules").addEventListener("click", (e) => {
   const button = e.target.closest("[data-rule]");
   if (button) {
+    const move = e.target.closest("[data-move]");
+    if (move) {
+      const rules = draft.combat.rules,
+        from = rules.findIndex((r) => r.id === button.dataset.rule),
+        to = from + Number(move.dataset.move);
+      if (from >= 0 && to >= 0 && to < rules.length)
+        [rules[from], rules[to]] = [rules[to], rules[from]];
+    }
     selected = button.dataset.rule;
     renderRules();
     renderEditor();
+    controls();
+  }
+});
+$("rules").addEventListener("keydown", (e) => {
+  if ((e.key === "Enter" || e.key === " ") && e.target.matches("[data-rule]")) {
+    e.preventDefault();
+    e.target.click();
   }
 });
 $("editor").addEventListener("input", (e) => {
@@ -224,6 +440,7 @@ $("editor").addEventListener("input", (e) => {
         : element.type === "number" || element.tagName === "SELECT"
           ? Number(element.value)
           : element.value;
+  if (element.dataset.key === "name") $("editor-title").textContent = r.name;
   renderRules();
   controls();
 });
@@ -234,10 +451,15 @@ $("editor").addEventListener("click", (e) => {
     add();
     return;
   }
+  if (action === "record") {
+    startRecording();
+    return;
+  }
   const rules = draft.combat.rules,
     index = rules.findIndex((r) => r.id === selected);
   if (index < 0) return;
-  if (action === "delete") {
+  if (action === "clear-key") rules[index].key = 0;
+  else if (action === "delete") {
     rules.splice(index, 1);
     selected = rules[Math.min(index, rules.length - 1)]?.id || "";
   } else if (action === "copy" && rules.length < 32) {
@@ -260,21 +482,52 @@ document
   .forEach((button) =>
     button.addEventListener("click", () => add(button.dataset.template)),
   );
-document.querySelectorAll("[data-tab]").forEach((button) =>
-  button.addEventListener("click", () => {
-    const tab = button.dataset.tab;
-    document
-      .querySelectorAll(".tab-panel")
-      .forEach((panel) => (panel.hidden = panel.id !== "tab-" + tab));
-    document
-      .querySelectorAll("[data-tab]")
-      .forEach((item) => item.classList.toggle("active", item === button));
-    $("page-title").textContent = {
-      combat: "战斗编排",
-      monitor: "实时监测",
-      config: "配置文件",
-    }[tab];
-    $("page-crumb").textContent = tab.toUpperCase();
+function selectTab(tab) {
+  const button = document.querySelector(`[data-tab="${tab}"]`);
+  cancelRecording();
+  document
+    .querySelectorAll(".tab-panel")
+    .forEach((panel) => (panel.hidden = panel.id !== "tab-" + tab));
+  document.querySelectorAll("[data-tab]").forEach((item) => {
+    item.classList.toggle("active", item === button);
+    if (item === button) item.setAttribute("aria-current", "page");
+    else item.removeAttribute("aria-current");
+  });
+  $("page-title").textContent = {
+    combat: "技能优先级",
+    monitor: "实时监测",
+    config: "配置文件",
+    general: "General",
+    follow: "Follow",
+  }[tab];
+  $("page-subtitle").textContent = {
+    combat: "从上到下安排动作，并设置技能按键与触发条件。",
+    monitor: "查看人物、附近敌人和最近的战斗状态。",
+    config: "管理本机配置与备份。",
+    general: "选择运行模式，配置通用行为与启停。",
+    follow: "配置队长、双人协调与导航。",
+  }[tab];
+}
+document
+  .querySelectorAll("[data-tab]")
+  .forEach((button) =>
+    button.addEventListener("click", () => selectTab(button.dataset.tab)),
+  );
+$("mode").addEventListener("change", (e) => {
+  draft.mode = e.target.value;
+  controls();
+  if (draft.mode === "Follow") selectTab("follow");
+});
+document.querySelectorAll("[data-follow]").forEach((element) =>
+  element.addEventListener("input", () => {
+    draft.follow[element.dataset.follow] =
+      element.type === "checkbox"
+        ? element.checked
+        : element.type === "number"
+          ? Number(element.value)
+          : element.value;
+    $("follow-coop-fields").hidden = !draft.follow.localCoopFollow;
+    controls();
   }),
 );
 for (const [id, key] of [
@@ -294,6 +547,11 @@ $("combat-enabled").addEventListener("input", (e) => {
 });
 async function save() {
   if (busy || !dirty()) return;
+  if (!draft.mode) {
+    selectTab("general");
+    message("请先选择运行模式。");
+    return;
+  }
   setBusy(true);
   message();
   try {
@@ -356,8 +614,31 @@ $("import-file").addEventListener("change", async (e) => {
     if (file.size > 256 * 1024) throw new Error("配置超过 256 KiB。");
     const imported = JSON.parse(await file.text());
     // Strict server validation remains authoritative. Reject malformed drafts before rendering controls.
+    if (imported.schemaVersion === 1) {
+      imported.schemaVersion = 2;
+      imported.mode = "";
+      imported.toggleKey = 117;
+      imported.follow = {
+        leaderName: "",
+        localCoopFollow: false,
+        p1Name: "",
+        p2Name: "",
+        p2LagDistance: 35,
+        p2RejoinDistance: 12,
+        stopDistance: 18,
+        resumeDistance: 25,
+        clearance: 1,
+        repathMilliseconds: 350,
+        stuckMilliseconds: 2500,
+        showStatus: true,
+        showRoute: true,
+      };
+    }
     if (
-      imported.schemaVersion !== 1 ||
+      imported.schemaVersion !== 2 ||
+      !["", "Follow"].includes(imported.mode) ||
+      !Number.isInteger(imported.toggleKey) ||
+      !imported.follow ||
       typeof imported.name !== "string" ||
       typeof imported.preview !== "boolean" ||
       typeof imported.monitorCharacter !== "string" ||
@@ -366,8 +647,29 @@ $("import-file").addEventListener("change", async (e) => {
       !Array.isArray(imported.combat.rules) ||
       imported.combat.rules.length > 32
     )
-      throw new Error("不是有效的 Bloodybot2 v1 配置。");
+      throw new Error("不是有效的 Bloodybot2 配置。");
     const sample = newRule();
+    const followSample = {
+      leaderName: "",
+      localCoopFollow: false,
+      p1Name: "",
+      p2Name: "",
+      p2LagDistance: 35,
+      p2RejoinDistance: 12,
+      stopDistance: 18,
+      resumeDistance: 25,
+      clearance: 1,
+      repathMilliseconds: 350,
+      stuckMilliseconds: 2500,
+      showStatus: true,
+      showRoute: true,
+    };
+    if (
+      Object.keys(followSample).some(
+        (key) => typeof imported.follow[key] !== typeof followSample[key],
+      )
+    )
+      throw new Error("Follow 配置字段不完整。");
     if (
       imported.combat.rules.some(
         (r) =>
@@ -385,6 +687,7 @@ $("import-file").addEventListener("change", async (e) => {
     renderRules();
     renderEditor();
     message("已导入草稿，请核对并保存。");
+    if (!draft.mode) selectTab("general");
   } catch (error) {
     message(error.message);
   }
@@ -443,9 +746,7 @@ function renderStatus(status) {
     ["skill-options", skills],
     ["buff-options", status.buffs],
   ])
-    $(id).innerHTML = items
-      .map((s) => `<option value="${esc(s)}"></option>`)
-      .join("");
+    updateOptions(id, items);
   $("accepted").textContent = status.acceptedInputs + " 次输入";
   $("candidate").textContent = status.action
     ? `${status.preview ? "预览建议" : "当前建议"}：${status.action.name} · ${keyName(status.action.key)} · 匹配 ${status.action.matchingEnemies} 个敌人`
@@ -477,10 +778,12 @@ async function poll() {
     connected = true;
     $("connection").textContent = "本地服务已连接";
     $("connection-dot").className = "dot on";
+    $("connection-status").className = "connection online";
   } catch {
     connected = false;
     $("connection").textContent = "连接已断开";
     $("connection-dot").className = "dot error";
+    $("connection-status").className = "connection offline";
     $("reason").textContent =
       "无法连接本地服务，请检查 GameHelper 中的 Bloodybot2。";
   }

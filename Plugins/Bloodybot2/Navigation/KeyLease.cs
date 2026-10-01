@@ -1,4 +1,4 @@
-namespace Follower;
+namespace Bloodybot2.Navigation;
 
 // The lease is renewed only by a valid DrawUI frame. A separate timer expires it
 // if F9 suppresses DrawUI, the render loop stalls, or the foreground window changes.

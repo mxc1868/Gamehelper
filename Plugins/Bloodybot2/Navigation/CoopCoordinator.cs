@@ -1,4 +1,4 @@
-namespace Follower;
+namespace Bloodybot2.Navigation;
 
 using System.Numerics;
 

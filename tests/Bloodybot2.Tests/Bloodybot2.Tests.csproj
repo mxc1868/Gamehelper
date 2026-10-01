@@ -10,6 +10,7 @@
     <ProjectReference Include="../../Modules/Combat/Combat.csproj" />
     <Compile Include="../../Plugins/Bloodybot2/Configuration/*.cs" Link="Configuration/%(Filename)%(Extension)" />
     <Compile Include="../../Plugins/Bloodybot2/Runtime/*.cs" Link="Runtime/%(Filename)%(Extension)" />
+    <Compile Include="../../Plugins/Bloodybot2/Navigation/FollowSettings.cs" Link="Navigation/FollowSettings.cs" />
     <Compile Include="../../Plugins/Bloodybot2/Web/WebConfigServer.cs" Link="Web/WebConfigServer.cs" />
     <EmbeddedResource Include="../../Plugins/Bloodybot2/Web/wwwroot/*" LogicalName="Bloodybot2.Web.wwwroot.%(Filename)%(Extension)" />
   </ItemGroup>

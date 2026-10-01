@@ -1,32 +1,28 @@
-namespace Follower;
+namespace Bloodybot2.Navigation;
 
 using System.Numerics;
-using ClickableTransparentOverlay.Win32;
-using Coroutine;
 using GameHelper;
-using GameHelper.CoroutineEvents;
-using GameHelper.Plugin;
 using GameHelper.RemoteEnums;
 using GameHelper.RemoteEnums.Entity;
 using GameHelper.RemoteObjects.Components;
 using GameHelper.RemoteObjects.States.InGameStateObjects;
 using ImGuiNET;
-using Newtonsoft.Json;
+using Bloodybot2.Configuration;
+using Bloodybot2.Runtime;
 
-public sealed partial class FollowerCore : PCore<FollowerSettings>
+// The former Follower navigation, hosted by Bloodybot2. No plugin lifecycle,
+// settings UI, hotkey loop or independent combat engine lives in this mode.
+internal sealed class FollowMode : INavigationMode
 {
     private readonly FollowSession session = new();
     private readonly CoopCoordinator coop = new();
     private readonly UnstuckRecovery recovery = new();
-    private MovementInput? input;
-    private ActiveCoroutine? areaChanged;
-    private ActiveCoroutine? gameClosed;
+    private readonly MovementInput input;
     private CancellationTokenSource? searchCancellation;
     private Task<List<Vector2>?>? search;
     private List<Vector2>? route;
     private NavigationGrid? grid;
     private readonly FollowRunState run = new();
-    private bool toggleWasDown;
     private IntPtr areaAddress;
     private string areaHash = string.Empty;
     private IntPtr targetAddress;
@@ -39,7 +35,6 @@ public sealed partial class FollowerCore : PCore<FollowerSettings>
     private long nextSearch;
     private long routeAt;
     private long searchAt;
-    private long lastFrame;
     private long nextDoorRead;
     private Vector2 searchGoal;
     private Vector2 routeGoal;
@@ -47,48 +42,29 @@ public sealed partial class FollowerCore : PCore<FollowerSettings>
     private float playerGap;
     private bool correctingP2;
     private MoveKeys planned;
-    private string error = string.Empty;
     private string manualKeys = string.Empty;
-    private string SettingsPath => Path.Join(this.DllDirectory, "config", "settings.txt");
     private string LeaderName => this.Settings.LeaderName.Trim();
-    private string ToggleKeyName => ((VK)this.Settings.ToggleKey).ToString();
 
-    public override void OnEnable(bool isGameOpened)
+
+    private FollowSettings Settings = new();
+    private bool allowController;
+    public FollowMode(MovementInput input) { this.input = input; }
+    public string Name => "Follow";
+    public bool IsActive => this.run.IsEnabled;
+    public string Status => this.run.Status == "manual" ? "手动按键：" + this.manualKeys : this.run.Status;
+    public void Apply(BotConfig config) { this.Stop(); this.Settings = config.Follow; this.allowController = config.AllowControllerWithoutChat; }
+    public void Start() { this.ClearNavigation(); this.input.CaptureManualBaseline(); this.run.Start(); }
+    public void Stop() => this.Halt("stopped");
+    public void Suspend() => this.Suspend("unfocused");
+    public void CombatAccepted(int milliseconds) { this.DiscardRoute(release: false); this.session.PauseProgress(milliseconds); }
+    public void Tick(long now, bool preview, Func<bool> combat)
     {
-        this.OnDisable();
-        try
-        {
-            if (File.Exists(this.SettingsPath))
-                this.Settings = JsonConvert.DeserializeObject<FollowerSettings>(File.ReadAllText(this.SettingsPath)) ?? new();
-        }
-        catch (Exception ex) { this.Settings = new(); this.error = ex.Message; }
-        this.Settings.Normalize();
-        this.combat.Reset();
-        this.input = new();
-        this.areaChanged = CoroutineHandler.Start(this.WaitOn(RemoteEvents.AreaChanged));
-        this.gameClosed = CoroutineHandler.Start(this.WaitOn(GameHelperEvents.OnClose));
-        this.lastFrame = 0;
-        this.toggleWasDown = MovementInput.IsDown(this.Settings.ToggleKey);
+        if (this.run.Ready(now)) this.TickFollow(now, preview, combat);
+        this.DrawOverlay();
     }
-
-    public override void OnDisable()
-    {
-        this.Halt("stopped");
-        this.areaChanged?.Cancel();
-        this.gameClosed?.Cancel();
-        this.areaChanged = this.gameClosed = null;
-        this.input?.Dispose();
-        this.input = null;
-    }
-
-    private IEnumerator<Wait> WaitOn(Event signal)
-    {
-        while (true) { yield return new Wait(signal); this.Suspend("area_changed"); }
-    }
-
     private void ClearNavigation(bool preserveFollowState = false)
     {
-        this.ClearCombat();
+
         this.ClearRoute();
         this.grid = null;
         this.targetAddress = this.followerAddress = this.secondaryAddress = IntPtr.Zero;
@@ -110,9 +86,9 @@ public sealed partial class FollowerCore : PCore<FollowerSettings>
         this.recovery.Reset();
     }
 
-    private void DiscardRoute()
+    private void DiscardRoute(bool release = true)
     {
-        this.input?.Stop();
+        if (release) this.input.Stop();
         this.searchCancellation?.Cancel();
         this.searchCancellation?.Dispose();
         this.searchCancellation = null;
@@ -135,88 +111,6 @@ public sealed partial class FollowerCore : PCore<FollowerSettings>
             ("area_changed" or "game_state" or "follower_changed" or "target_changed"));
     }
 
-    public override void SaveSettings()
-    {
-        this.Settings.Normalize();
-        Directory.CreateDirectory(Path.GetDirectoryName(this.SettingsPath)!);
-        File.WriteAllText(this.SettingsPath + ".tmp", JsonConvert.SerializeObject(this.Settings, Formatting.Indented));
-        File.Move(this.SettingsPath + ".tmp", this.SettingsPath, true);
-    }
-
-    public override void DrawSettings()
-    {
-        // Changing settings never leaves a previous movement command held.
-        if (this.run.IsEnabled) this.Suspend("settings_open");
-        if (ImGui.Checkbox(this.PluginText.Label("local_coop", "Local co-op: shared WASD with P2 arrow correction", "LocalCoop"), ref this.Settings.LocalCoopFollow))
-        {
-            this.ClearNavigation();
-            this.Settings.PreviewOnly = true;
-            this.SaveSettings();
-        }
-        ImGui.TextWrapped(this.Settings.LocalCoopFollow
-            ? this.PluginText.F("coop_hint", "Select the leader, P1 and P2. WASD moves both players toward the leader; arrow keys must control only P2 through your mapping. {0} starts/stops; Escape stops. Check both phases in preview first.", this.ToggleKeyName)
-            : this.PluginText.F("hint", "Select WASD movement in PoE2. {0} starts/stops; Escape stops. Foreground game only. Start in preview mode and inspect the route.", this.ToggleKeyName));
-        if (ImGui.BeginCombo(this.PluginText.Label("toggle_key", "Start/stop hotkey", "ToggleKey"), this.ToggleKeyName))
-        {
-            foreach (var key in Enum.GetValues<VK>().Distinct())
-                if (FollowerSettings.IsToggleKeyAllowed((int)key) && ImGui.Selectable(key.ToString(), (int)key == this.Settings.ToggleKey))
-                {
-                    this.Settings.ToggleKey = (int)key;
-                    this.toggleWasDown = MovementInput.IsDown(this.Settings.ToggleKey);
-                    this.SaveSettings();
-                }
-            ImGui.EndCombo();
-        }
-        this.DrawPlayerChoice("nearby", "Leader to follow", ref this.Settings.LeaderName, includeLocal: this.Settings.LocalCoopFollow);
-        if (this.Settings.LocalCoopFollow)
-        {
-            this.DrawPlayerChoice("p1", "P1: shared WASD navigation", ref this.Settings.P1Name, includeLocal: true);
-            this.DrawPlayerChoice("p2", "P2: controlled by arrows", ref this.Settings.P2Name, includeLocal: true);
-            ImGui.SliderFloat(this.PluginText.Label("p2_lag", "P1/P2 gap to start correction", "P2Lag"), ref this.Settings.P2LagDistance, 6, 150);
-            ImGui.SliderFloat(this.PluginText.Label("p2_rejoin", "P1/P2 gap to resume WASD", "P2Rejoin"), ref this.Settings.P2RejoinDistance, 3, this.Settings.P2LagDistance - 3);
-            ImGui.TextWrapped(this.PluginText.T("coop_limits", "Correction releases WASD, pauses P1, and routes P2 to P1. Once reunited, arrows are released and shared WASD resumes toward the leader. Distances are in grid cells. Stop before opening controller chat; its state is unavailable."));
-        }
-        ImGui.Checkbox(this.PluginText.Label("preview", "Preview only (no keyboard input)", "Preview"), ref this.Settings.PreviewOnly);
-        ImGui.SliderFloat(this.PluginText.Label("stop", "Stop distance (grid cells)", "Stop"), ref this.Settings.StopDistance, 3, 100);
-        ImGui.SliderFloat(this.PluginText.Label("resume", "Resume distance", "Resume"), ref this.Settings.ResumeDistance, this.Settings.StopDistance + 3, 150);
-        ImGui.SliderInt(this.PluginText.Label("clearance", "Preferred wall clearance (grid cells)", "Clearance"), ref this.Settings.Clearance, 0, 2);
-        ImGui.TextWrapped(this.PluginText.T("clearance_hint", "Prefer routes away from walls, but allow closer movement when starting beside a wall or passing through a narrow corridor."));
-        ImGui.SliderInt(this.PluginText.Label("repath", "Recalculate route (ms)", "Repath"), ref this.Settings.RepathMilliseconds, 150, 1000);
-        ImGui.SliderInt(this.PluginText.Label("stuck", "Start recovery after no progress (ms)", "Stuck"), ref this.Settings.StuckMilliseconds, 1000, 10000);
-        ImGui.Checkbox(this.PluginText.Label("show_status", "Show status", "Status"), ref this.Settings.ShowStatus);
-        ImGui.Checkbox(this.PluginText.Label("show_route", "Show route", "Route"), ref this.Settings.ShowRoute);
-        this.DrawCombatSettings();
-        this.Settings.Normalize();
-        ImGui.TextWrapped(this.PluginText.F("limits", "Temporary interruptions release movement and resume automatically. Stalls force short presses toward the current target without terrain filtering. A missing leader or invalid selection stops following; {0} or Escape stops manually. Closed doors still require manual opening; no portal or background input.", this.ToggleKeyName));
-        ImGui.TextWrapped(this.StatusText());
-        if (!string.IsNullOrEmpty(this.error)) ImGui.TextWrapped(this.error);
-    }
-
-    private string StatusText() => this.run.Status == "manual"
-        ? this.PluginText.F("status.manual", "Manual input ({0}) — resumes when the keys are released", this.manualKeys)
-        : this.PluginText.F("status." + this.run.Status, this.run.Status, this.ToggleKeyName);
-
-    private void DrawPlayerChoice(string key, string label, ref string selected, bool includeLocal)
-    {
-        if (!ImGui.BeginCombo(this.PluginText.Label(key, label, key), string.IsNullOrEmpty(selected)
-                ? this.PluginText.T("choose_player", "Select a character") : selected)) return;
-        var names = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
-        if (Core.States.GameCurrentState == GameStateTypes.InGameState)
-        {
-            var area = Core.States.InGameStateObject.CurrentAreaInstance;
-            foreach (var player in ReadPlayers(area).Keys)
-                if (includeLocal || (player.Address != area.Player.Address && player.Id != area.Player.Id)) names.Add(player.Name);
-        }
-        foreach (var name in names)
-            if (ImGui.Selectable(name, string.Equals(name, selected, StringComparison.OrdinalIgnoreCase)))
-            {
-                selected = name;
-                this.ClearNavigation();
-                this.SaveSettings();
-            }
-        if (names.Count == 0) ImGui.TextDisabled(this.PluginText.T("no_players", "No nearby players detected. Move into the same area as the leader."));
-        ImGui.EndCombo();
-    }
 
     private static Dictionary<PlayerIdentity, Entity> ReadPlayers(AreaInstance area)
     {
@@ -231,38 +125,11 @@ public sealed partial class FollowerCore : PCore<FollowerSettings>
     private bool IsUiBlocked(ImportantUiElements ui) => Core.IsSettingsMenuOpen || ui.Address == IntPtr.Zero ||
         // Controller UI deliberately has no ChatParent in the current core. Only
         // explicit co-op mode permits this; the keyboard UI still requires it.
-        (ui.ChatParent.Address == IntPtr.Zero && !(this.Settings.LocalCoopFollow && Core.GHSettings.EnableControllerMode)) ||
+        (ui.ChatParent.Address == IntPtr.Zero && !(this.allowController && Core.GHSettings.EnableControllerMode)) ||
         ui.ChatParent.IsChatActive || ui.IsAnyLargePanelOpen || MovementInput.IsDown(0x0D);
 
-    public override void DrawUI()
-    {
-        try
-        {
-            this.input?.ObserveProcess(Core.Process.Pid);
-            var now = Environment.TickCount64;
-            if (this.run.IsEnabled && this.lastFrame != 0 && now - this.lastFrame > 300) this.Suspend("frame_gap");
-            this.lastFrame = now;
-            var toggleDown = MovementInput.IsDown(this.Settings.ToggleKey);
-            if (toggleDown && !this.toggleWasDown && MovementInput.IsForeground(Core.Process.Pid) && !Core.IsSettingsMenuOpen)
-            {
-                if (this.run.IsEnabled) this.Halt("stopped");
-                else
-                {
-                    this.ClearNavigation();
-                    this.input?.CaptureManualBaseline();
-                    this.run.Start();
-                    this.error = string.Empty;
-                }
-            }
-            this.toggleWasDown = toggleDown;
-            if (MovementInput.IsDown(0x1B) || this.input?.ConsumeStopRequest() == true) this.Halt("stopped");
-            if (this.run.Ready(now)) this.Tick(now);
-            this.DrawOverlay();
-        }
-        catch (Exception ex) { this.Suspend("error", 1000); this.error = ex.Message; }
-    }
 
-    private void Tick(long now)
+    private void TickFollow(long now, bool preview, Func<bool> combat)
     {
         if (!MovementInput.IsForeground(Core.Process.Pid)) { this.Suspend("unfocused"); return; }
         if (Core.States.GameCurrentState != GameStateTypes.InGameState ||
@@ -342,12 +209,12 @@ public sealed partial class FollowerCore : PCore<FollowerSettings>
         // the ordinary leader stop distance must not end this phase early.
         var needsMovement = this.correctingP2 || this.session.NeedsMovement(this.distance,
             this.grid.Clear(player, goal), this.Settings.StopDistance, this.Settings.ResumeDistance);
-        if (!this.Settings.PreviewOnly)
+        if (!preview)
         {
             this.manualKeys = this.input?.ReadManualInput(this.Settings.LocalCoopFollow) ?? string.Empty;
             if (this.manualKeys.Length != 0) { this.Suspend("manual"); return; }
         }
-        if (this.TickCombat(now, area, primary, secondary)) return;
+        if (!this.correctingP2 && !this.recovery.Active && combat()) { this.planned = MoveKeys.None; this.run.Status = "combat"; return; }
         if (!needsMovement)
         {
             this.input?.Stop();
@@ -385,7 +252,7 @@ public sealed partial class FollowerCore : PCore<FollowerSettings>
         var screenY = world.WorldToScreen((player + Vector2.UnitY) * ratio, playerRender.TerrainHeight) - origin;
         this.planned = steer == null ? MoveKeys.None : Steering.Choose(steer.Value - player, screenX, screenY,
             step => this.grid.Clear(player, player + step));
-        if (this.Settings.PreviewOnly) { this.input?.Stop(); this.run.Status = "preview"; return; }
+        if (preview) { this.input?.Stop(); this.run.Status = "preview"; return; }
 
         bool ApplyCurrentMovement(int leaseMilliseconds = 200)
         {
@@ -464,6 +331,7 @@ public sealed partial class FollowerCore : PCore<FollowerSettings>
         return new(area.GridWalkableData, area.TerrainMetadata.BytesPerRow, clearance, opened, closed);
     }
 
+
     private void DrawOverlay()
     {
         if (!MovementInput.IsForeground(Core.Process.Pid)) return;
@@ -471,17 +339,10 @@ public sealed partial class FollowerCore : PCore<FollowerSettings>
         {
             ImGui.SetNextWindowBgAlpha(0.75f);
             ImGui.SetNextWindowPos(new Vector2(30, 180), ImGuiCond.FirstUseEver);
-            ImGui.Begin("Follower##FollowerStatus", ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoInputs | ImGuiWindowFlags.NoFocusOnAppearing);
-            ImGui.TextUnformatted(this.StatusText());
-            var roles = this.Settings.LocalCoopFollow
-                ? (this.correctingP2 ? $"P2: {this.Settings.P2Name} → P1: {this.Settings.P1Name}" : $"P1: {this.Settings.P1Name} → {this.LeaderName}")
-                : this.LeaderName;
-            if (this.Settings.LocalCoopFollow)
-                ImGui.TextUnformatted(this.PluginText.T(this.correctingP2 ? "phase.correction" : "phase.shared",
-                    this.correctingP2 ? "P2 correction: P1 paused" : "Shared WASD follow") +
-                    this.PluginText.F("gap", " | P1/P2 gap: {0:0.0}", this.playerGap));
-            ImGui.TextUnformatted($"{roles} | {this.distance:0.0} | {MovementBindings.Describe(this.planned, this.correctingP2)}");
-            if (this.Settings.Combat.Enabled) ImGui.TextWrapped(this.CombatStatusText());
+            ImGui.Begin("Bloodybot2 · Follow##Bloodybot2Status", ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoInputs | ImGuiWindowFlags.NoFocusOnAppearing);
+            ImGui.TextUnformatted(this.Status);
+            ImGui.TextUnformatted(this.correctingP2 ? $"P2: {this.Settings.P2Name} → P1: {this.Settings.P1Name}" : $"Follow → {this.LeaderName}");
+            ImGui.TextUnformatted($"Distance: {this.distance:0.0} | P1/P2: {this.playerGap:0.0} | {MovementBindings.Describe(this.planned, this.correctingP2)}");
             ImGui.End();
         }
         if (!this.run.IsEnabled || !this.Settings.ShowRoute || this.route == null || Core.States.GameCurrentState != GameStateTypes.InGameState) return;

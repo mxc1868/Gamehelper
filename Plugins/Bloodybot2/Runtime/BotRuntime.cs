@@ -5,26 +5,26 @@ using Bloodybot2.Configuration;
 
 public interface IBotInput
 {
+    bool SkillHeld { get; }
     bool IsKeyAvailable(int key);
     bool TryPress(int key, int milliseconds, long now);
     void Release();
     void Expire(long now, bool allowed);
 }
 
-// Navigation owns movement; combat owns skill selection. A future Follower mode
-// can deny combat during correction/recovery without teaching Combat about paths.
+// Navigation owns movement and gives combat an opportunity when movement can yield.
+// Follow reserves correction/recovery ticks without teaching Combat about paths.
 public interface INavigationMode
 {
     string Name { get; }
-    bool AllowsCombat(CombatSnapshot snapshot, long now);
+    string Status { get; }
+    bool IsActive { get; }
+    void Apply(BotConfig config);
+    void Start();
+    void Suspend();
+    void Tick(long now, bool preview, Func<bool> combat);
+    void CombatAccepted(int milliseconds);
     void Stop();
-}
-
-public sealed class ManualNavigation : INavigationMode
-{
-    public string Name => "手动移动";
-    public bool AllowsCombat(CombatSnapshot snapshot, long now) => true;
-    public void Stop() { }
 }
 
 public sealed record Observation(CombatSnapshot? Combat, string Character, string Area, string[] Players, string[] Skills);
@@ -34,11 +34,11 @@ public sealed record BotStatus(bool Running, bool Preview, string Navigation, st
     int Normal, int Magic, int Rare, int Unique, string[] Players, string[] Buffs, string[] Skills, string[] ReadySkills,
     CombatAction? Action, long AcceptedInputs, BotEvent[] Events);
 
-public sealed class BotRuntime(IBotInput input, INavigationMode? navigation = null)
+public sealed class BotRuntime(IBotInput input, INavigationMode navigation)
 {
     private readonly object sync = new();
     private readonly CombatEngine engine = new();
-    private readonly INavigationMode navigation = navigation ?? new ManualNavigation();
+    private readonly INavigationMode navigation = navigation;
     private readonly Queue<BotEvent> events = new();
     private BotConfig config = new();
     private long revision;
@@ -46,6 +46,7 @@ public sealed class BotRuntime(IBotInput input, INavigationMode? navigation = nu
     private long lastTick;
     private long updatedAt;
     private long acceptedInputs;
+    private long busyUntil;
     private string reason = "已停止";
     private Observation? observation;
     private CombatAction? action;
@@ -58,22 +59,25 @@ public sealed class BotRuntime(IBotInput input, INavigationMode? navigation = nu
             this.StopLocked("配置已应用，请启动");
             this.config = copy;
             this.revision = nextRevision;
+            this.navigation.Apply(copy);
         }
     }
 
     public (BotConfig Config, long Revision) ReadConfig()
     { lock (this.sync) return (this.config.Copy(), this.revision); }
 
+    public int ToggleKey { get { lock (this.sync) return this.config.ToggleKey; } }
+
     public void Start(long now)
     {
         lock (this.sync)
         {
-            if (!this.config.Combat.Enabled || !this.config.Combat.Rules.Any(r => r.Enabled && r.Key != 0))
-                throw new ArgumentException("请先启用战斗，并保存至少一条已绑定按键的技能规则。");
+            this.config.ValidateStart();
+            this.navigation.Start();
             this.running = true;
             this.lastTick = now;
             this.reason = "等待游戏画面";
-            this.Log(this.config.Preview ? "预览已启动，不发送按键" : "战斗已启动");
+            this.Log(this.config.Preview ? "Follow 预览已启动，不发送按键" : "Follow 已启动");
         }
     }
 
@@ -84,6 +88,7 @@ public sealed class BotRuntime(IBotInput input, INavigationMode? navigation = nu
         this.running = false;
         this.reason = reason;
         this.action = null;
+        this.busyUntil = 0;
         input.Release();
         this.navigation.Stop();
         // Cooldowns survive pauses, configuration saves and area changes.
@@ -110,26 +115,40 @@ public sealed class BotRuntime(IBotInput input, INavigationMode? navigation = nu
             this.observation = next;
             this.action = null;
             if (!this.running) { input.Release(); return; }
-            var snapshot = next?.Combat;
-            if (blocked.Length != 0 || snapshot == null || !snapshot.CanFight || !snapshot.Player.IsAlive)
+            if (blocked.Length != 0)
             {
-                this.reason = blocked.Length != 0 ? blocked : "角色数据不可用、入场保护或非战斗区域";
+                this.reason = blocked;
                 input.Release();
-                this.navigation.Stop();
+                this.navigation.Suspend();
                 return;
             }
-            if (!this.navigation.AllowsCombat(snapshot, now)) { this.reason = "导航处理中"; input.Release(); return; }
-            this.action = this.engine.Evaluate(this.config.Combat, snapshot, now, input.IsKeyAvailable);
-            if (this.action == null) { this.reason = "等待条件或技能间隔"; return; }
-            if (this.config.Preview) { input.Release(); this.reason = "预览：" + this.action.Name; return; }
-            if (!recheck()) { input.Release(); this.action = null; this.reason = "游戏状态已改变"; return; }
-            if (!input.TryPress(this.action.Key, this.action.PressMilliseconds, now))
-            { this.reason = "按键未接受（检查焦点或手动按键）"; return; }
-            this.engine.RecordAccepted(this.action, now);
-            this.acceptedInputs++;
-            this.reason = "已发送：" + this.action.Name;
-            this.Log(this.reason + $" · key {this.action.Key} · 敌人 {this.action.MatchingEnemies}");
+            input.Expire(now, !this.config.Preview);
+            this.reason = "等待技能条件";
+            this.navigation.Tick(now, this.config.Preview, () => this.TickCombat(next?.Combat, now, recheck));
+            if (!this.navigation.IsActive) this.StopLocked(this.navigation.Status);
+            else this.reason = this.navigation.Status + " · " + this.reason;
         }
+    }
+
+    private bool TickCombat(CombatSnapshot? snapshot, long now, Func<bool> recheck)
+    {
+        if (input.SkillHeld || now < this.busyUntil) { this.reason = "施法停顿"; return true; }
+        if (snapshot == null || !snapshot.CanFight || !snapshot.Player.IsAlive) { this.reason = "暂不可战斗"; return false; }
+        this.action = this.engine.Evaluate(this.config.Combat, snapshot, now,
+            key => key != this.config.ToggleKey && input.IsKeyAvailable(key));
+        if (this.action == null) return false;
+        if (this.config.Preview) { this.reason = "预览：" + this.action.Name; return false; }
+        if (!recheck()) { input.Release(); this.action = null; this.reason = "游戏状态已改变"; return true; }
+        if (!input.TryPress(this.action.Key, this.action.PressMilliseconds, now))
+        { this.reason = "按键未接受"; return false; }
+        this.engine.RecordAccepted(this.action, now);
+        var duration = this.action.PressMilliseconds + this.action.PauseMilliseconds;
+        this.navigation.CombatAccepted(duration);
+        this.busyUntil = now + duration;
+        this.acceptedInputs++;
+        this.reason = "已发送：" + this.action.Name;
+        this.Log(this.reason + $" · key {this.action.Key} · 敌人 {this.action.MatchingEnemies}");
+        return true;
     }
 
     public BotStatus Status()

@@ -1,4 +1,4 @@
-namespace Follower;
+namespace Bloodybot2.Navigation;
 
 // GetAsyncKeyState includes synthetic input and may lag behind SendInput. Keep
 // per-key send history across key-up and WASD/arrow mapping changes; current

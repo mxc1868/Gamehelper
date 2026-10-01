@@ -1,4 +1,4 @@
-namespace Follower;
+namespace Bloodybot2.Navigation;
 
 internal readonly record struct PlayerIdentity(uint Id, nint Address, string Name);
 internal readonly record struct FollowParticipants(PlayerIdentity Primary, PlayerIdentity Leader, PlayerIdentity? Secondary = null);

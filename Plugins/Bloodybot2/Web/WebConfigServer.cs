@@ -29,7 +29,7 @@ public sealed class WebConfigServer : IDisposable
         this.runtime = runtime;
         this.config = store.Load();
         runtime.Apply(this.config, this.revision);
-        foreach (var (name, type) in new[] { ("index.html", "text/html"), ("app.js", "text/javascript"), ("styles.css", "text/css") })
+        foreach (var (name, type) in new[] { ("index.html", "text/html"), ("app.js", "text/javascript"), ("styles.css", "text/css"), ("bloodybot2.css", "text/css") })
         {
             using var resource = Assembly.GetExecutingAssembly().GetManifestResourceStream("Bloodybot2.Web.wwwroot." + name)
                 ?? throw new InvalidOperationException("Missing web asset: " + name);
@@ -108,6 +108,7 @@ public sealed class WebConfigServer : IDisposable
                 var save = JsonSerializer.Deserialize<SaveRequest>(body, BotConfig.Json) ?? throw new ArgumentException("缺少配置。");
                 if (save.Config == null) throw new ArgumentException("缺少配置。");
                 save.Config.Validate();
+                save.Config.ValidateMode();
                 string result;
                 var code = 200;
                 lock (this.sync)

@@ -8,16 +8,16 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../../Modules/Combat/Combat.csproj" />
-    <Compile Include="../../Plugins/Follower/Navigation.cs" Link="Navigation.cs" />
-    <Compile Include="../../Plugins/Follower/KeyLease.cs" Link="KeyLease.cs" />
-    <Compile Include="../../Plugins/Follower/MovementBindings.cs" Link="MovementBindings.cs" />
-    <Compile Include="../../Plugins/Follower/ManualMovementTracker.cs" Link="ManualMovementTracker.cs" />
-    <Compile Include="../../Plugins/Follower/ParticipantSelection.cs" Link="ParticipantSelection.cs" />
-    <Compile Include="../../Plugins/Follower/CoopCoordinator.cs" Link="CoopCoordinator.cs" />
-    <Compile Include="../../Plugins/Follower/FollowSession.cs" Link="FollowSession.cs" />
-    <Compile Include="../../Plugins/Follower/FollowRunState.cs" Link="FollowRunState.cs" />
-    <Compile Include="../../Plugins/Follower/UnstuckRecovery.cs" Link="UnstuckRecovery.cs" />
-    <Compile Include="../../Plugins/Follower/FollowerSettings.cs" Link="FollowerSettings.cs" />
-    <Compile Include="../../GameHelper/Plugin/IPSettings.cs" Link="IPSettings.cs" />
+    <Compile Include="../../Plugins/Bloodybot2/Navigation/Navigation.cs" Link="Navigation.cs" />
+    <Compile Include="../../Plugins/Bloodybot2/Navigation/KeyLease.cs" Link="KeyLease.cs" />
+    <Compile Include="../../Plugins/Bloodybot2/Navigation/MovementBindings.cs" Link="MovementBindings.cs" />
+    <Compile Include="../../Plugins/Bloodybot2/Navigation/ManualMovementTracker.cs" Link="ManualMovementTracker.cs" />
+    <Compile Include="../../Plugins/Bloodybot2/Navigation/ParticipantSelection.cs" Link="ParticipantSelection.cs" />
+    <Compile Include="../../Plugins/Bloodybot2/Navigation/CoopCoordinator.cs" Link="CoopCoordinator.cs" />
+    <Compile Include="../../Plugins/Bloodybot2/Navigation/FollowSession.cs" Link="FollowSession.cs" />
+    <Compile Include="../../Plugins/Bloodybot2/Navigation/FollowRunState.cs" Link="FollowRunState.cs" />
+    <Compile Include="../../Plugins/Bloodybot2/Navigation/UnstuckRecovery.cs" Link="UnstuckRecovery.cs" />
+    <Compile Include="../../Plugins/Bloodybot2/Navigation/FollowSettings.cs" Link="FollowSettings.cs" />
+    <Compile Include="../../Plugins/Bloodybot2/Configuration/BotConfig.cs" Link="BotConfig.cs" />
   </ItemGroup>
 </Project>

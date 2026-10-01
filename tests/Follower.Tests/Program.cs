@@ -1,5 +1,5 @@
 using System.Numerics;
-using Follower;
+using Bloodybot2.Navigation;
 
 // Pure synthetic checks: no game attachment, overlay or Windows input.
 var passed = 0;
@@ -170,10 +170,10 @@ Check(!session.IsStuck(new(5, 2), false, 9000, 2500), "waiting for route is not 
 Check(!session.IsStuck(new(5, 2), true, 9001, 2500), "resume starts fresh progress timer");
 session.Reset();
 Check(!session.NeedsMovement(20, true, 18, 25), "target/area reset clears hysteresis");
-var settings = new FollowerSettings { StopDistance = float.NaN, ResumeDistance = float.PositiveInfinity, Clearance = -1, RepathMilliseconds = 0 };
+var settings = new FollowSettings { StopDistance = float.NaN, ResumeDistance = float.PositiveInfinity, Clearance = -1, RepathMilliseconds = 0 };
 settings.Normalize();
 Check(settings.StopDistance == 18 && settings.ResumeDistance > 18 && settings.Clearance == 0 && settings.RepathMilliseconds == 150, "invalid settings normalize");
-Check(new FollowerSettings().PreviewOnly, "new install defaults to preview without input");
+Check(new Bloodybot2.Configuration.BotConfig().Preview, "new install defaults to preview without input");
 
 // Role selection must not assume that Area.Player always denotes P1 or P2.
 var p1 = new PlayerIdentity(101, 0x1000, "Primary");
@@ -343,15 +343,15 @@ Check(mappedLease.Held == MoveKeys.None && keyEvents[^1] == ((ushort)0x50, 0x0Bu
 Check(mappedLease.TryReset(() => arrowMode = false) && !arrowMode,
     "mapping can change after release succeeds");
 
-var legacySettings = new FollowerSettings { LeaderName = " Leader " };
+var legacySettings = new FollowSettings { LeaderName = " Leader " };
 legacySettings.Normalize();
 Check(!legacySettings.LocalCoopFollow && legacySettings.LeaderName == "Leader" && legacySettings.P1Name == "" && legacySettings.P2Name == "",
     "missing new configuration fields preserve legacy mode and leader");
-var coopSettings = new FollowerSettings { LocalCoopFollow = true, P1Name = " Leader ", P2Name = " Follower ", ToggleKey = 0x26 };
+var coopSettings = new FollowSettings { LocalCoopFollow = true, P1Name = " Leader ", P2Name = " Follower " };
 coopSettings.Normalize();
-Check(coopSettings.P1Name == "Leader" && coopSettings.P2Name == "Follower" && coopSettings.ToggleKey == FollowerSettings.DefaultToggleKey,
-    "co-op names normalize and arrow hotkeys migrate to F6");
-Check(new[] { 0x25, 0x26, 0x27, 0x28, 0x41, 0x44, 0x53, 0x57 }.All(key => !FollowerSettings.IsToggleKeyAllowed(key)),
+Check(coopSettings.P1Name == "Leader" && coopSettings.P2Name == "Follower",
+    "co-op names normalize");
+Check(new[] { 0x25, 0x26, 0x27, 0x28, 0x41, 0x44, 0x53, 0x57 }.All(key => !Bloodybot2.Configuration.BotConfig.IsToggleKeyAllowed(key)),
     "all movement keys are excluded from start-stop hotkey selection");
 coopSettings.P2LagDistance = 6;
 coopSettings.P2RejoinDistance = float.PositiveInfinity;
@@ -491,8 +491,4 @@ combatProgress.PauseProgress(330);
 Check(!combatProgress.IsStuck(Vector2.Zero, true, 3159, 2500) && combatProgress.IsStuck(Vector2.Zero, true, 3160, 2500),
     "repeated casts cannot indefinitely suppress unstuck recovery");
 Check(!combatProgress.IsStuck(new(2, 0), true, 3160, 2500), "real displacement after a cast resets stall evidence");
-var combatDefaults = new FollowerSettings { Combat = null! };
-combatDefaults.Normalize();
-Check(!combatDefaults.Combat.Enabled && combatDefaults.Combat.Rules.Count == 0,
-    "old/null follower combat settings remain inactive after normalization");
-Console.WriteLine($"All {passed} Follower checks passed. No Windows input or live gameplay tested.");
+Console.WriteLine($"All {passed} Follow navigation checks passed. No Windows input or live gameplay tested.");

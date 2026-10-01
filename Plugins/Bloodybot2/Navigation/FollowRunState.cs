@@ -1,4 +1,4 @@
-namespace Follower;
+namespace Bloodybot2.Navigation;
 
 // Temporary inability to move does not revoke the user's start command.
 internal sealed class FollowRunState

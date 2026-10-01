@@ -1,12 +1,7 @@
-namespace Follower;
+namespace Bloodybot2.Navigation;
 
-using GameHelper.Plugin;
-using BloodyBot.Combat;
-
-public sealed class FollowerSettings : IPSettings
+public class FollowSettings
 {
-    public const int DefaultToggleKey = 0x75; // F6; F8 is PoE2's screenshot key.
-    public int ToggleKey = DefaultToggleKey;
     public string LeaderName = string.Empty;
     public bool LocalCoopFollow;
     public string P1Name = string.Empty;
@@ -18,17 +13,11 @@ public sealed class FollowerSettings : IPSettings
     public int Clearance = 1;
     public int RepathMilliseconds = 350;
     public int StuckMilliseconds = 2500;
-    public bool PreviewOnly = true;
     public bool ShowStatus = true;
     public bool ShowRoute = true;
-    public CombatSettings Combat = new();
-    public bool CombatUseP2;
 
     public void Normalize()
     {
-        this.Combat ??= new();
-        this.Combat.Normalize();
-        if (!IsToggleKeyAllowed(this.ToggleKey)) this.ToggleKey = DefaultToggleKey;
         this.LeaderName = (this.LeaderName ?? string.Empty).Trim();
         this.P1Name = (this.P1Name ?? string.Empty).Trim();
         this.P2Name = (this.P2Name ?? string.Empty).Trim();
@@ -41,8 +30,4 @@ public sealed class FollowerSettings : IPSettings
         this.StuckMilliseconds = Math.Clamp(this.StuckMilliseconds, 1000, 10000);
     }
 
-    // Exclude mouse buttons, movement keys and keys used by the stop/manual-input guards.
-    public static bool IsToggleKeyAllowed(int key) => key is >= 0x08 and <= 0xFE &&
-        key is not (0x0D or 0x10 or 0x11 or 0x12 or 0x1B or 0x25 or 0x26 or 0x27 or 0x28 or 0x41 or 0x44 or 0x53 or 0x57 or
-                    0x5B or 0x5C or 0xA0 or 0xA1 or 0xA2 or 0xA3 or 0xA4 or 0xA5);
 }

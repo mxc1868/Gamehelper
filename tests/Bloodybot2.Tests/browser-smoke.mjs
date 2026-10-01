@@ -83,6 +83,26 @@ async function input(selector, value) {
   );
 }
 const bootstrap = async () => await (await fetch(url + "api/bootstrap")).json();
+async function key(key, code, windowsVirtualKeyCode, modifiers = 0) {
+  await send("Input.dispatchKeyEvent", {
+    type: "rawKeyDown",
+    key,
+    code,
+    windowsVirtualKeyCode,
+    modifiers,
+  });
+  await send("Input.dispatchKeyEvent", {
+    type: "keyUp",
+    key,
+    code,
+    windowsVirtualKeyCode,
+    modifiers,
+  });
+}
+async function record(keyName, code, vk, selector = "#key-record") {
+  await click(selector);
+  await key(keyName, code, vk);
+}
 async function save() {
   await click("#save");
   await waitFor(
@@ -152,8 +172,126 @@ try {
     ),
     "preview default visible",
   );
+  await click('[data-tab="general"]');
+  check(
+    await evaluate(
+      `document.querySelector('#tab-general #preview')!==null && document.querySelector('#tab-general #mode')!==null`,
+    ),
+    "common settings live in General",
+  );
+  await evaluate(
+    `document.getElementById('mode').value='';document.getElementById('mode').dispatchEvent(new Event('change',{bubbles:true}))`,
+  );
+  check(
+    await evaluate(
+      `document.getElementById('run').disabled && document.getElementById('save').disabled && document.getElementById('follow-nav').hidden`,
+    ),
+    "mode must be selected before save or start",
+  );
+  await evaluate(
+    `document.getElementById('mode').value='Follow';document.getElementById('mode').dispatchEvent(new Event('change',{bubbles:true}))`,
+  );
+  check(
+    await evaluate(
+      `!document.getElementById('tab-follow').hidden && !document.getElementById('follow-nav').hidden`,
+    ),
+    "Follow selection opens mode-specific settings",
+  );
+  await input('[data-follow="leaderName"]', "Chrome 队长");
+  await click('[data-follow="localCoopFollow"]');
+  check(
+    await evaluate(`!document.getElementById('follow-coop-fields').hidden`),
+    "co-op exposes P1/P2 fields",
+  );
+  await click('[data-follow="localCoopFollow"]');
+  await click('[data-tab="general"]');
+  await record("F7", "F7", 118, "#toggle-record");
+  check(
+    await evaluate(
+      `document.querySelector('#toggle-record kbd').textContent==='F7'`,
+    ),
+    "General hotkey uses recording",
+  );
+  await save();
+  check(
+    (await bootstrap()).config.follow.leaderName === "Chrome 队长" &&
+      (await bootstrap()).config.toggleKey === 118,
+    "Follow and General fields persist",
+  );
+  await waitFor(
+    () =>
+      evaluate(
+        `document.querySelectorAll('#player-options option').length===2`,
+      ),
+    "player suggestions",
+  );
+  await evaluate(
+    `window.originalOption=document.querySelector('#player-options option')`,
+  );
+  await sleep(1400);
+  check(
+    await evaluate(
+      `window.originalOption===document.querySelector('#player-options option')`,
+    ),
+    "unchanged polling preserves datalist option nodes",
+  );
+  check(
+    await evaluate(
+      `(()=>{document.getElementById('monitor-character').focus(); updateOptions('player-options',['changed']); return window.originalOption===document.querySelector('#player-options option');})()`,
+    ),
+    "changed suggestions are deferred while the input is focused",
+  );
+  await evaluate(`document.getElementById('monitor-character').blur()`);
+  await waitFor(
+    () =>
+      evaluate(
+        `document.querySelector('#player-options option').value==='changed'`,
+      ),
+    "deferred suggestions",
+  );
+  check(true, "deferred suggestions apply after focus leaves");
+  await click('[data-tab="combat"]');
   await input('[data-key="name"]', "Chrome 精英技能");
-  await input('[data-key="key"]', "69");
+  check(
+    await evaluate(`document.querySelector('select[data-key="key"]')===null`),
+    "skill key dropdown replaced by recording",
+  );
+  await record("w", "KeyW", 87);
+  check(
+    await evaluate(
+      `!document.getElementById('capture-toast').hidden && document.getElementById('capture-title').textContent.includes('不支持')`,
+    ),
+    "movement key is rejected while recording continues",
+  );
+  await key("Escape", "Escape", 27);
+  check(
+    await evaluate(
+      `document.getElementById('capture-toast').hidden && document.querySelector('#key-record kbd').textContent==='Q'`,
+    ),
+    "Escape cancels without changing the binding",
+  );
+  await click("#key-record");
+  const beforeCapture = (await bootstrap()).revision;
+  await key("s", "KeyS", 83, 2);
+  check(
+    (await bootstrap()).revision === beforeCapture,
+    "Ctrl+S during recording cannot save the draft",
+  );
+  await key("e", "KeyE", 69);
+  check(
+    await evaluate(
+      `document.querySelector('#key-record kbd').textContent==='E' && document.getElementById('capture-toast').hidden`,
+    ),
+    "Chrome keyboard event records skill key",
+  );
+  await click("#key-record");
+  await evaluate(`window.dispatchEvent(new Event('blur'))`);
+  check(
+    await evaluate(
+      `document.getElementById('capture-toast').hidden && document.querySelector('#key-record kbd').textContent==='E'`,
+    ),
+    "focus loss cancels recording and keeps the binding",
+  );
   check(
     await evaluate(`document.getElementById('run').disabled`),
     "unsaved edits prevent starting wrong config",
@@ -168,10 +306,10 @@ try {
   await save();
   check(
     (await bootstrap()).config.combat.rules[0].key === 69,
-    "key selection persists through real API",
+    "recorded key persists through real API",
   );
   await click('[data-template="life"]');
-  await input('[data-key="key"]', "82");
+  await record("r", "KeyR", 82);
   await click('[data-action="up"]');
   check(
     await evaluate(
@@ -237,7 +375,7 @@ try {
     ),
   );
   await click("#stop");
-  await click('[data-tab="config"]');
+  await click('[data-tab="general"]');
   await click("#preview");
   await save();
   await click("#run");
@@ -280,6 +418,7 @@ try {
     "conflict retains unsaved draft",
   );
   // Reload without dismissing a user dialog: preserve draft via export first.
+  await click('[data-tab="config"]');
   await send("Browser.setDownloadBehavior", {
     behavior: "allow",
     downloadPath: output,
@@ -348,6 +487,16 @@ try {
     "desktop has no horizontal overflow",
   );
   await send("Emulation.setDeviceMetricsOverride", {
+    width: 1100,
+    height: 900,
+    deviceScaleFactor: 1,
+    mobile: false,
+  });
+  check(
+    await evaluate(`document.documentElement.scrollWidth<=window.innerWidth`),
+    "medium desktop has no horizontal overflow",
+  );
+  await send("Emulation.setDeviceMetricsOverride", {
     width: 390,
     height: 844,
     deviceScaleFactor: 1,
@@ -368,6 +517,16 @@ try {
   check(
     await evaluate(`document.documentElement.scrollWidth<=window.innerWidth`),
     "mobile has no horizontal overflow",
+  );
+  await click('[data-tab="general"]');
+  check(
+    await evaluate(`document.documentElement.scrollWidth<=window.innerWidth`),
+    "General fits narrow screens",
+  );
+  await click('[data-tab="follow"]');
+  check(
+    await evaluate(`document.documentElement.scrollWidth<=window.innerWidth`),
+    "Follow fits narrow screens",
   );
   check(errors.length === 0, "no JavaScript or CSP errors");
   console.log(`All ${checks} Chrome UI checks passed. Screenshots: ${output}`);

@@ -2,6 +2,20 @@
 
 更新日期：2026-09-28。后续 agent 请先读本文，再读 [插件说明](Plugins/ShowMeWisp/README.md) 和 [Windows 调试说明](Plugins/ShowMeWisp/WINDOWS-DEBUG.zh-CN.md)。
 
+## Bloodybot2：General / Follow、录制按键及提交前更新 Test（2026-09-28）
+
+本节为最新要求，替代下面历史记录中的“暂不接入 Follower”和“只交付源码、不更新 Test”。用户要求通用配置进入 General，必须明确选择模式，当前只支持 Follow，模式专属设置单独显示；迁移完后删除独立 Follower。继续不做 Simulacrum，只用 Chrome。
+
+- [x] General：模式、配置名、预览、战斗开关、监测角色、手柄聊天许可和启停快捷键。选择 Follow 后显示导航页面，配置队长、P1/P2、纠偏/停止/恢复距离、寻路、脱困、状态和路线。未选模式不能保存/启动；没有战斗规则或关闭战斗仍可跟随。
+- [x] `Plugins/Bloodybot2/Navigation` 接入原 Follower 寻路/输入/双人协调/脱困；战斗保留为独立 `Modules/Combat`。纠偏/脱困优先，施法释放移动并在停顿后重算路线，技能间隔和无进展记录保留。独立 Follower 项目、源码和原生 UI 已移除；保留迁移说明及运行配置。核心仅新增内部发现去重与旧启用状态继承，没有新增公共 API 或 offsets。
+- [x] 配置升级为 schemaVersion=2。首次可读旧 Follower 设置，已有 Bloodybot2 v1 优先保留自身通用/战斗设置，仅补充旧导航；仍需明确选择模式并保存。损坏旧设置不污染有效配置；旧文件不修改，v2 不重复迁移。实际个人配置尚未在游戏中执行迁移。
+- [x] 原始 Bloodybot1 `cf4dc688ee6ad1b9ea16904c080df4fe8d8410f0` 的 `styles.css` 原样沿用，SHA-256 为 `C03788C150B6B32CD1666D1434F980FC3CDEF2276CE7FC264444F12AB1685C25`；补充布局在 `bloodybot2.css`。技能键和启停键改为点击录制，Esc/失焦/超时取消，拦截录制中的 Ctrl+S，拒绝移动键和组合键。
+- [x] 找到下拉被打断的前端原因：600 ms 状态轮询反复重建 datalist。现内容相同保留节点，关联输入获得焦点时延后变更，失焦后应用。Chrome 自动化验证节点稳定/延后更新；游戏开着时原生候选弹窗仍待用户确认。
+- [x] Windows 整套 Release 构建成功，0 错误、3 条既存核心警告。87 项配置/运行/真实 HTTP、221 项迁移后的 Follow 导航、80 项 Combat、37 项 Chrome、118 项幽火/内部迁移、13 项部署保护以及构建输出的 13 项真实加载检查通过。Chrome 检查 1440/1100/390px、录制、模式选择、导入导出、草稿/冲突；截图 `artifacts/bloodybot2/ui-1790655996955`。所有输入均模拟，没有连接游戏或发送真实按键。
+- [x] **用户最新交付规则已写入 AGENTS.md：每次提交前运行 `rebuild-test.ps1`，重新编译并更新 Test，再验证实际插件加载。** 保留配置归档及占用保护，不能强杀进程或清空设置绕过锁；不得只编译 bin 后声称 Test 已更新。继续提交到用户 fork 的 main，不发布 ZIP/Release。
+- [x] 9 月 28 日 21:31 的部署曾因 `Test/Ocbxvmov.exe`（PID 73796）仍在运行而停止；当时未替换 Test，35 个配置备份在 `artifacts/bloodybot2/deploy-20260928-213137`。2026-10-01 此历史阻塞已解除，成功运行 `rebuild-test.ps1` 更新整套 Test，13 项实际插件加载通过，当前 37 个配置逐一哈希核对一致。本次备份和日志在 `artifacts/bloodybot2/radar-detection-20261001`。
+- [ ] 游戏内验证：Follow 与技能交接、P2 纠偏/脱困优先、配置迁移、角色/怪物/技能读数、映射与实际施法效果、Esc/F9/失焦/切区释放。离线通过不等于游戏验证。
+
 ## 独立 Bloodybot2 与 Chrome 本地 Web 配置（2026-09-28）
 
 用户改为直接实现 Bloodybot2，暂时不继续 Follower，要求像 Bloodybot1 一样通过本地 Web UI 配置；明确**不做 Simulacrum**，PoE2 与 PoE1 的该策略不同。浏览器必须用 **Chrome，不用 Edge**。本轮仍仅交付源码，不更新 Test 或个人配置。

@@ -1,4 +1,4 @@
-namespace Follower;
+namespace Bloodybot2.Navigation;
 
 // Logical directions are independent of the physical keys sent to Windows.
 internal readonly record struct MovementBinding(int VirtualKey, ushort Scan, bool Extended, string Label)

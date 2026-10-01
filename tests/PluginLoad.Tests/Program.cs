@@ -33,7 +33,11 @@ var renameOk = names.Contains("ShowMeWisp", StringComparer.OrdinalIgnoreCase) &&
 failed |= !renameOk;
 Console.WriteLine($"{(renameOk ? "PASS" : "FAIL")} discovery uses ShowMeWisp without the legacy duplicate");
 
-foreach (var name in new[] { "ShowMeWisp", "UniqueLoot", "Radar", "Follower", "Bloodybot2" })
+var followOk = names.Contains("Bloodybot2", StringComparer.OrdinalIgnoreCase) && !names.Contains("Follower", StringComparer.OrdinalIgnoreCase);
+failed |= !followOk;
+Console.WriteLine($"{(followOk ? "PASS" : "FAIL")} discovery uses Bloodybot2 without the retired Follower plugin");
+
+foreach (var name in new[] { "ShowMeWisp", "UniqueLoot", "Radar", "Bloodybot2" })
 {
     AssemblyLoadContext? alc = null;
     try
@@ -44,7 +48,7 @@ foreach (var name in new[] { "ShowMeWisp", "UniqueLoot", "Radar", "Follower", "B
         var result = loadPlugin.Invoke(null, [assembly, alc, directory]);
         if (result == null) throw new InvalidOperationException("Host plugin loader rejected the plugin; see error above.");
         Console.WriteLine($"PASS {name}: loaded and instantiated by PManager");
-        if (name is "Follower" or "Bloodybot2")
+        if (name == "Bloodybot2")
         {
             // Bloodybot2 initializes its runtime in OnEnable. Resolve the lazy
             // dependency explicitly without starting HTTP or an input watchdog.
@@ -91,5 +95,5 @@ foreach (var (typeName, methodName, parameterCount) in new[]
     Console.WriteLine($"{(found ? "PASS" : "FAIL")} core API: {typeName}.{methodName}");
 }
 
-Console.WriteLine(failed ? "Plugin load checks failed." : "All 14 plugin discovery/load/API checks passed. Game rendering is not tested.");
+Console.WriteLine(failed ? "Plugin load checks failed." : "All 13 plugin discovery/load/API checks passed. Game rendering is not tested.");
 return failed ? 1 : 0;

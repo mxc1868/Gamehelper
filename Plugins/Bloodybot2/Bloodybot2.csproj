@@ -13,5 +13,7 @@
   <Target Name="CopyPlugin" AfterTargets="Build">
     <Copy SourceFiles="$(OutDir)$(TargetName).dll;$(OutDir)$(TargetName).pdb;$(OutDir)$(TargetName).deps.json;$(OutDir)BloodyBot.Combat.dll;$(OutDir)BloodyBot.Combat.pdb"
           DestinationFolder="../../GameHelper/$(OutDir)Plugins/Bloodybot2" SkipUnchangedFiles="true" />
+    <!-- Retire the old entry assembly in incremental host outputs; keep legacy config for migration. -->
+    <Delete Files="../../GameHelper/$(OutDir)Plugins/Follower/Follower.dll;../../GameHelper/$(OutDir)Plugins/Follower/Follower.pdb;../../GameHelper/$(OutDir)Plugins/Follower/Follower.deps.json" />
   </Target>
 </Project>

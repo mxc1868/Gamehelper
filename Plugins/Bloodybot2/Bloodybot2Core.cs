@@ -13,12 +13,13 @@ using Bloodybot2.Configuration;
 using Bloodybot2.Game;
 using Bloodybot2.Runtime;
 using Bloodybot2.Web;
+using Bloodybot2.Navigation;
 
 public sealed class Bloodybot2Settings : IPSettings;
 
 public sealed class Bloodybot2Core : PCore<Bloodybot2Settings>
 {
-    private KeyboardInput? input;
+    private MovementInput? input;
     private BotRuntime? runtime;
     private WebConfigServer? web;
     private Timer? watchdog;
@@ -28,10 +29,9 @@ public sealed class Bloodybot2Core : PCore<Bloodybot2Settings>
     private long nextRead;
     private string error = "";
     private string lastArea = "";
-    public override string GetDescription() => "Bloodybot2 · 本地 Web 配置与独立战斗模块。F6 启停，Esc 停止。";
+    public override string GetDescription() => "Bloodybot2 · Follow 导航与独立战斗模块，在 Chrome 配置。默认 F6 启停，Esc 停止。";
+    // The loader supersedes old Follower binaries; this also protects mixed hosts.
     public override IReadOnlyCollection<string> ConflictsWith => ["Follower"];
-    // Installing the new DLL must not steal an already enabled Follower at startup.
-    public override int ConflictPriority => -10;
 
     public override void OnEnable(bool isGameOpened)
     {
@@ -42,12 +42,13 @@ public sealed class Bloodybot2Core : PCore<Bloodybot2Settings>
             this.lastArea = "";
             this.nextRead = 0;
             var input = this.input = new();
-            var runtime = this.runtime = new(input);
-            this.web = new(new ConfigStore(Path.Combine(this.DllDirectory, "config")), runtime);
+            var runtime = this.runtime = new(input, new FollowMode(input));
+            this.web = new(new ConfigStore(Path.Combine(this.DllDirectory, "config"),
+                Path.Combine(Path.GetDirectoryName(this.DllDirectory)!, "Follower", "config", "settings.txt")), runtime);
             this.web.Start();
-            this.toggleWasDown = KeyboardInput.IsDown(0x75); // F6
+            this.toggleWasDown = MovementInput.IsDown(runtime.ReadConfig().Config.ToggleKey);
             this.watchdog = new(_ => runtime.Watchdog(Environment.TickCount64, input.Foreground,
-                input.Foreground && KeyboardInput.IsDown(0x1B)), null, 25, 25);
+                input.Foreground && (MovementInput.IsDown(0x1B) || input.ConsumeStopRequest())), null, 25, 25);
             this.areaChanged = CoroutineHandler.Start(this.WaitOn(RemoteEvents.AreaChanged, "区域已改变，请重新启动"));
             this.gameClosed = CoroutineHandler.Start(this.WaitOn(GameHelperEvents.OnClose, "游戏已关闭"));
             AppDomain.CurrentDomain.ProcessExit += this.OnExit;
@@ -72,7 +73,7 @@ public sealed class Bloodybot2Core : PCore<Bloodybot2Settings>
 
     public override void DrawSettings()
     {
-        ImGui.TextWrapped("Bloodybot2 uses a local Web UI. F6: start/stop. Esc: stop.");
+        ImGui.TextWrapped("Configure Bloodybot2 in Chrome. Start/stop hotkey: General (default F6). Esc: stop.");
         if (this.web != null)
         {
             ImGui.TextUnformatted(this.web.Url);
@@ -93,14 +94,14 @@ public sealed class Bloodybot2Core : PCore<Bloodybot2Settings>
         if (this.runtime == null || this.input == null) return;
         try
         {
-            this.input.Observe(Core.Process.Pid);
+            this.input.ObserveProcess(Core.Process.Pid);
             var now = Environment.TickCount64;
-            var toggle = KeyboardInput.IsDown(0x75);
+            var toggle = MovementInput.IsDown(this.runtime.ToggleKey);
             var togglePressed = toggle && !this.toggleWasDown;
             this.toggleWasDown = toggle;
             if (togglePressed && this.input.Foreground && !Core.IsSettingsMenuOpen)
             {
-                if (this.runtime.Status().Running) this.runtime.Stop("F6 已停止");
+                if (this.runtime.Status().Running) this.runtime.Stop("快捷键已停止");
                 else this.runtime.Start(now);
             }
             if (now < this.nextRead) return;
@@ -128,7 +129,7 @@ public sealed class Bloodybot2Core : PCore<Bloodybot2Settings>
             var observation = new Observation(snapshot, selected == null ? "" : Name(selected), details.Name, names, skills);
             var address = selected?.Address ?? IntPtr.Zero;
             var id = selected?.Id ?? 0;
-            this.runtime.Tick(observation, selected == null ? "未找到唯一的监测角色" : blocked, revision, now, () =>
+            this.runtime.Tick(observation, blocked, revision, now, () =>
                 this.Blocked(config).Length == 0 && identity == area.Address + ":" + area.AreaHash &&
                 selected != null && selected.Address == address && selected.Id == id && selected.IsValid &&
                 CombatSnapshotReader.ReadComponent(selected, out Life life) && life.IsAlive &&
@@ -141,7 +142,7 @@ public sealed class Bloodybot2Core : PCore<Bloodybot2Settings>
     {
         if (Core.States.GameCurrentState != GameStateTypes.InGameState) return "等待进入游戏";
         if (this.input?.Foreground != true) return "等待游戏获得焦点";
-        if (this.input.Allowed != true) return "手动按键暂时阻止施法";
+        if (this.input.CanInput != true) return "手动按键暂时阻止输入";
         var ui = Core.States.InGameStateObject.GameUi;
         if (Core.IsSettingsMenuOpen || ui.Address == IntPtr.Zero || ui.IsAnyLargePanelOpen || ui.ChatParent.IsChatActive) return "面板或聊天已打开";
         if (ui.ChatParent.Address == IntPtr.Zero && !(Core.GHSettings.EnableControllerMode && config.AllowControllerWithoutChat))

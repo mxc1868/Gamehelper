@@ -1,9 +1,10 @@
-namespace Follower;
+namespace Bloodybot2.Navigation;
 
 using System.Runtime.InteropServices;
 using BloodyBot.Combat;
+using Bloodybot2.Runtime;
 
-internal sealed class MovementInput : IDisposable
+internal sealed class MovementInput : IBotInput, IDisposable
 {
     private readonly KeyLease lease;
     private readonly SkillKeyPulse skill;
@@ -25,12 +26,23 @@ internal sealed class MovementInput : IDisposable
             if (IsDown(0x1B) && IsForeground(Volatile.Read(ref this.pid))) Interlocked.Exchange(ref this.stopRequested, 1);
             this.lease.Expire(Environment.TickCount64, this.Allowed());
             this.skill.Expire(Environment.TickCount64, this.Allowed());
+            if (this.disposed && this.lease.Held == MoveKeys.None && this.skill.Held == 0) this.watchdog?.Dispose();
         }, null, 25, 25);
         AppDomain.CurrentDomain.ProcessExit += this.OnExit;
     }
 
     public MoveKeys Held => this.lease.Held;
     public bool SkillHeld => this.skill.Held != 0;
+    public bool Foreground => IsForeground(Volatile.Read(ref this.pid));
+    public bool CanInput => this.Allowed();
+    public bool IsKeyAvailable(int key) => !IsDown(key);
+    public bool TryPress(int key, int milliseconds, long now) => this.TrySkill(key, milliseconds, Volatile.Read(ref this.pid));
+    public void Release() => this.Stop();
+    public void Expire(long now, bool allowed)
+    {
+        this.skill.Expire(now, allowed && this.Allowed());
+        this.lease.Expire(now, allowed && this.Allowed());
+    }
     public bool ConsumeStopRequest() => Interlocked.Exchange(ref this.stopRequested, 0) != 0;
     public static bool IsDown(int key) => (GetAsyncKeyState(key) & 0x8000) != 0;
     public static bool IsForeground(uint processId)
@@ -104,7 +116,7 @@ internal sealed class MovementInput : IDisposable
     {
         this.disposed = true;
         this.Stop();
-        this.watchdog.Dispose();
+        if (this.lease.Held == MoveKeys.None && !this.SkillHeld) this.watchdog.Dispose();
         AppDomain.CurrentDomain.ProcessExit -= this.OnExit;
     }
 

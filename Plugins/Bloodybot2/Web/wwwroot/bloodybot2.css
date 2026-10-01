@@ -1,0 +1,516 @@
+/* styles.css is the unchanged Bloodybot1 stylesheet from cf4dc688ee6ad1b9ea16904c080df4fe8d8410f0.
+   Only Bloodybot2-specific status, conditions and monitoring layout belongs here. */
+.key-help {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  margin: 16px 0 0 18px;
+  color: var(--subtle);
+  font-size: 10px;
+}
+.key-help kbd {
+  border: 1px solid var(--line-strong);
+  border-radius: 5px;
+  padding: 2px 5px;
+  color: var(--muted);
+}
+.top-actions {
+  align-self: center;
+}
+.run-strip {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 22px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.02);
+}
+.run-copy {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: 11px;
+}
+.run-copy strong {
+  font-size: 12px;
+  white-space: nowrap;
+}
+#reason {
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.run-actions {
+  display: flex;
+  align-items: center;
+  flex: none;
+  gap: 8px;
+}
+.run-actions .button {
+  min-height: 34px;
+  padding: 5px 11px;
+  font-size: 11px;
+}
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--subtle);
+}
+.dot.on {
+  background: var(--green);
+}
+.template-label {
+  margin-right: 5px;
+  color: var(--subtle);
+  font-size: 10px;
+  white-space: nowrap;
+}
+.action-item {
+  text-align: left;
+}
+.action-title-line strong {
+  font: inherit;
+}
+.rule-mark {
+  cursor: default;
+  font-size: 10px;
+}
+.editor-head > div:first-child {
+  min-width: 0;
+}
+.editor-empty p {
+  padding-inline: 15px;
+  line-height: 1.7;
+}
+.editor-empty .button {
+  margin-top: 18px;
+}
+.simple-switch input:focus-visible + i {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+.condition-group {
+  grid-column: 1/-1;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 13px;
+  background: rgba(255, 255, 255, 0.014);
+}
+.condition-group > .form-grid {
+  margin-top: 14px;
+}
+.condition-toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.condition-toggle b {
+  font-size: 11px;
+  color: var(--text);
+}
+.condition-toggle small {
+  display: block;
+  margin-top: 4px;
+  color: var(--subtle);
+  font-size: 10px;
+}
+input[type="checkbox"]:not(.simple-switch input) {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  accent-color: var(--gold);
+}
+.rarities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 13px;
+}
+.rarities label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 10px;
+}
+.magic {
+  color: var(--blue);
+}
+.rare {
+  color: var(--gold-light);
+}
+.unique {
+  color: #f0957c;
+}
+.threshold {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.capture-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.clear-key {
+  border: 0;
+  padding: 0;
+  color: var(--subtle);
+  background: none;
+  cursor: pointer;
+  font-size: 10px;
+}
+.clear-key:hover {
+  color: var(--red);
+}
+.section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  margin: 0 0 20px;
+}
+.section-heading h2 {
+  margin: 0;
+  font-size: 19px;
+}
+.section-heading p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+.vitals {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.vitals article > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+  color: var(--muted);
+  font-size: 12px;
+}
+.vitals b {
+  color: var(--text);
+  font-size: 23px;
+  font-weight: 600;
+}
+progress {
+  appearance: none;
+  width: 100%;
+  height: 5px;
+  margin-top: 18px;
+  display: block;
+}
+progress::-webkit-progress-bar {
+  background: var(--panel-high);
+  border-radius: 5px;
+}
+progress::-webkit-progress-value {
+  background: var(--red);
+  border-radius: 5px;
+}
+#shield::-webkit-progress-value {
+  background: var(--purple);
+}
+#mana::-webkit-progress-value {
+  background: var(--blue);
+}
+.enemy-grid {
+  display: grid;
+  grid-template-columns: 2fr repeat(4, 1fr);
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+  font-size: 12px;
+}
+.enemy-grid small {
+  display: block;
+  margin-top: 5px;
+  color: var(--subtle);
+  font-size: 10px;
+}
+.enemy-grid b {
+  display: block;
+  font-size: 24px;
+}
+.monitor-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.monitor-card h3 {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0;
+  font-size: 15px;
+}
+.monitor-card h3 span {
+  color: var(--subtle);
+  font-size: 11px;
+  font-weight: 400;
+}
+.monitor-card p {
+  margin: 10px 0 15px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.6;
+}
+.scan-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 7px;
+  min-height: 60px;
+  max-height: 270px;
+  overflow: auto;
+}
+.scan-list button {
+  max-width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 6px 9px;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.02);
+  text-align: left;
+  overflow-wrap: anywhere;
+  font:
+    11px Consolas,
+    monospace;
+  cursor: pointer;
+}
+.scan-list button.ready {
+  color: var(--green);
+  border-color: rgba(114, 217, 161, 0.22);
+  background: var(--green-dim);
+}
+.events {
+  max-height: 230px;
+  overflow: auto;
+  font-size: 11px;
+}
+.event {
+  display: flex;
+  gap: 18px;
+  border-bottom: 1px solid var(--line);
+  padding: 9px 0;
+}
+.event time {
+  color: var(--subtle);
+  white-space: nowrap;
+}
+.config-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.config-card h3 {
+  margin: 0 0 20px;
+  font-size: 16px;
+}
+.config-card > .field {
+  margin: 18px 0;
+}
+.general-layout {
+  max-width: 760px;
+}
+.general-hotkey .key-capture {
+  max-width: 300px;
+}
+.config-card .form-grid {
+  margin-top: 18px;
+}
+.config-card p {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+.switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 17px 0;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+}
+.switch-row small {
+  display: block;
+  margin-top: 5px;
+  color: var(--subtle);
+  font-size: 10px;
+  line-height: 1.6;
+}
+.file-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 20px;
+}
+.info-box {
+  margin: 22px 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.018);
+}
+.info-box strong {
+  font-size: 12px;
+}
+.info-box p {
+  font-size: 11px;
+}
+.muted {
+  color: var(--subtle);
+}
+.config-card > .muted {
+  font-size: 10px;
+}
+footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  margin-top: 30px;
+  border-top: 1px solid var(--line);
+  padding-top: 18px;
+  color: var(--subtle);
+  font:
+    9px Consolas,
+    monospace;
+  letter-spacing: 1px;
+}
+footer span {
+  font:
+    10px "Segoe UI",
+    "Microsoft YaHei UI",
+    sans-serif;
+  letter-spacing: 0;
+}
+/* The original workbench minima overflow when the fixed 276px sidebar is present
+   on 981–1190px windows. Collapse at that width; the source stylesheet is intact. */
+@media (min-width: 981px) and (max-width: 1190px) {
+  .workbench {
+    grid-template-columns: 1fr;
+  }
+  .queue-pane {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+}
+@media (max-width: 1240px) {
+  .run-strip {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .run-actions {
+    justify-content: flex-end;
+  }
+  .config-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 980px) {
+  .key-help {
+    display: none;
+  }
+}
+@media (max-width: 980px) {
+  .sidebar {
+    grid-template-columns: 1fr auto;
+  }
+  .sidebar nav {
+    grid-column: 1/-1;
+    grid-row: 2;
+    justify-content: flex-start;
+  }
+  .nav-item {
+    flex: 1;
+    justify-content: center;
+    padding: 8px;
+  }
+  .nav-item b {
+    font-size: 12px;
+  }
+}
+@media (max-width: 680px) {
+  .sidebar nav {
+    justify-content: space-between;
+  }
+  .nav-item {
+    min-width: 0;
+  }
+  .nav-item > span:nth-child(2) {
+    display: block;
+  }
+  .nav-item b {
+    font-size: 10px;
+  }
+  .nav-item {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}
+@media (max-width: 680px) {
+  .run-copy #reason {
+    width: 100%;
+  }
+  .run-actions {
+    flex-wrap: wrap;
+  }
+  .vitals {
+    gap: 8px;
+  }
+  .vitals .card {
+    padding: 12px;
+  }
+  .vitals article > div {
+    display: block;
+  }
+  .vitals b {
+    display: block;
+  }
+  .enemy-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .enemy-grid > div:first-child {
+    grid-column: 1/-1;
+  }
+  .monitor-grid {
+    grid-template-columns: 1fr;
+  }
+  .config-card {
+    padding: 19px;
+  }
+  .file-actions .button {
+    flex: 1;
+  }
+  footer {
+    display: block;
+  }
+  footer span {
+    display: block;
+    margin-top: 8px;
+  }
+}
