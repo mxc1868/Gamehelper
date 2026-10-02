@@ -14,7 +14,6 @@ public sealed class BotConfig
     public string Name { get; set; } = "我的配置";
     public bool Preview { get; set; } = true;
     public string MonitorCharacter { get; set; } = "";
-    public bool AllowControllerWithoutChat { get; set; }
     public CombatSettings Combat { get; set; } = new() { Enabled = true };
     public FollowSettings Follow { get; set; } = new();
 
@@ -33,6 +32,8 @@ public sealed class BotConfig
     {
         var node = JsonNode.Parse(json) as JsonObject ?? throw new ArgumentException("配置不能为空。");
         if (node["schemaVersion"] is JsonValue schema && schema.TryGetValue<int>(out var version) && version == 1) node["schemaVersion"] = 2;
+        // Retired switch: accept old v1/v2 files, but never write it back.
+        node.Remove("allowControllerWithoutChat");
         var config = node.Deserialize<BotConfig>(Json) ?? throw new ArgumentException("配置不能为空。");
         config.Validate();
         return config;

@@ -28,6 +28,26 @@ try
     var config = Config();
     Check(BotConfig.Parse(config.Serialize()).Combat.Rules[0].Key == 'Q', "round trip preserves combat fields");
     Check(new BotConfig().Preview && new BotConfig().Combat.Rules.Count == 0, "first run is empty and preview only");
+    foreach (var version in new[] { 1, 2 })
+        foreach (var oldSwitch in new[] { false, true })
+        {
+            var legacy = System.Text.Json.Nodes.JsonNode.Parse(config.Serialize())!.AsObject();
+            legacy["schemaVersion"] = version; legacy["allowControllerWithoutChat"] = oldSwitch;
+            var parsed = BotConfig.Parse(legacy.ToJsonString());
+            Check(parsed.Combat.Rules[0].Key == 'Q' && !parsed.Serialize().Contains("allowControllerWithoutChat"),
+                $"retired controller switch {oldSwitch} accepted and omitted on serialization (v{version})");
+        }
+    var oldStore = new ConfigStore(Path.Combine(root, "old-controller"));
+    Directory.CreateDirectory(Path.GetDirectoryName(oldStore.FilePath)!);
+    var oldConfig = System.Text.Json.Nodes.JsonNode.Parse(config.Serialize())!.AsObject();
+    oldConfig["allowControllerWithoutChat"] = false;
+    var oldText = oldConfig.ToJsonString(); File.WriteAllText(oldStore.FilePath, oldText);
+    var loadedOld = oldStore.Load();
+    Check(oldStore.Warning.Length == 0 && loadedOld.Combat.Rules[0].Key == 'Q' && File.ReadAllText(oldStore.FilePath) == oldText,
+        "old controller setting loads without warnings or rewriting user file");
+    oldStore.Save(loadedOld);
+    Check(!File.ReadAllText(oldStore.FilePath).Contains("allowControllerWithoutChat") &&
+        File.ReadAllText(oldStore.FilePath + ".bak") == oldText, "explicit save retires switch and backs up original config");
     Reject(() => BotConfig.Parse("null"), "null document");
     Reject(() => BotConfig.Parse("{\"schemaVersion\":3}"), "unsupported schema");
     Reject(() => BotConfig.Parse("{\"simulacrum\":{}}"), "unknown configuration rejected");
@@ -51,8 +71,8 @@ try
     var migrated = migratedStore.Load();
     Check(migrated.Mode == "" && migrated.Follow.LeaderName == "Leader" && migrated.Follow.LocalCoopFollow && migrated.Follow.StopDistance == 20,
         "Follower navigation migrates without choosing a mode");
-    Check(!migrated.Preview && migrated.ToggleKey == 0x75 && migrated.MonitorCharacter == "P2" && migrated.AllowControllerWithoutChat,
-        "Follower preview / character / controller and invalid hotkey migrate");
+    Check(!migrated.Preview && migrated.ToggleKey == 0x75 && migrated.MonitorCharacter == "P2",
+        "Follower preview / character and invalid hotkey migrate");
     Check(!migrated.Combat.Enabled && migrated.Combat.Rules.Count == 0, "legacy null combat remains disabled");
     Check(!File.Exists(migratedStore.FilePath) && File.ReadAllText(legacyPath) == legacyJson,
         "migration preserves source and never writes defaults");
@@ -159,6 +179,25 @@ try
     heldRuntime.Apply(toggleConflict, 2); heldRuntime.Start(6000); heldRuntime.Tick(Frame(6000), "", 2, 6000, () => true);
     Check(heldRuntime.Status().Action == null, "toggle hotkey is reserved from combat");
 
+    var renderInput = new FakeInput(); var renderNav = new FakeNavigation();
+    var renderRuntime = new BotRuntime(renderInput, renderNav);
+    renderRuntime.Apply(Config(false), 1);
+    renderRuntime.DrawOverlay();
+    Check(renderNav.Draws == 1 && renderNav.Ticks == 0 && renderInput.Presses == 0,
+        "stopped status can render without advancing navigation or input");
+    renderRuntime.Start(7000); renderRuntime.Tick(Frame(7000), "", 1, 7000, () => true);
+    for (var frame = 0; frame < 5; frame++) renderRuntime.DrawOverlay();
+    Check(renderNav.Draws == 6 && renderNav.Ticks == 1 && renderInput.Presses == 1,
+        "all frames between observations render without repeating movement or skills");
+    renderRuntime.Tick(Frame(7075), "panel", 1, 7075, () => false);
+    renderRuntime.DrawOverlay();
+    Check(renderNav.Draws == 7 && renderNav.Ticks == 1 && !renderInput.Held,
+        "blocked status still renders while movement and skills remain suspended");
+    renderRuntime.Watchdog(7500, true, false);
+    renderRuntime.DrawOverlay();
+    Check(!renderRuntime.Status().Running && renderNav.Draws == 8 && renderInput.Presses == 1,
+        "rendering does not refresh watchdog or restart stopped input");
+
     var webStore = new ConfigStore(Path.Combine(root, "web"));
     var webRuntime = new BotRuntime(new FakeInput(), new FakeNavigation());
     using var server = new WebConfigServer(webStore, webRuntime);
@@ -201,6 +240,18 @@ try
     Check((await Send("api/run", "POST", new { running = false }, token)).StatusCode == HttpStatusCode.OK && !webRuntime.Status().Running, "web stop works without DrawUI");
     Check((await Send("api/config", "PUT", new { padding = new string('x', 270000) }, token)).StatusCode == HttpStatusCode.RequestEntityTooLarge, "oversized config rejected");
     Check(!(await client.GetAsync("api/bootstrap")).Headers.Contains("Access-Control-Allow-Origin"), "no cross-origin grants");
+    foreach (var oldSwitch in new[] { false, true })
+    {
+        var legacyRequest = System.Text.Json.Nodes.JsonNode.Parse(Config().Serialize())!.AsObject();
+        legacyRequest["allowControllerWithoutChat"] = oldSwitch;
+        Check((await Send("api/config", "PUT", new { revision = webRuntime.ReadConfig().Revision, config = legacyRequest }, token)).StatusCode == HttpStatusCode.OK &&
+            !File.ReadAllText(webStore.FilePath).Contains("allowControllerWithoutChat"),
+            $"old browser request with controller switch {oldSwitch} saves without the retired field");
+    }
+    var unknownRequest = System.Text.Json.Nodes.JsonNode.Parse(Config().Serialize())!.AsObject();
+    unknownRequest["unknownSetting"] = true;
+    Check((await Send("api/config", "PUT", new { revision = webRuntime.ReadConfig().Revision, config = unknownRequest }, token)).StatusCode == HttpStatusCode.UnprocessableEntity,
+        "retiring one field does not loosen HTTP validation of unknown fields");
     Console.WriteLine($"All {checks} Bloodybot2 checks passed. Fake input only; no game memory or Win32 calls.");
 
     if (args.Contains("--serve"))
@@ -235,7 +286,7 @@ sealed class FakeNavigation : INavigationMode
 {
     public bool Allow = true;
     public bool EndOnTick;
-    public int Ticks, Moves, PausedMilliseconds;
+    public int Ticks, Moves, PausedMilliseconds, Draws;
     public string Name => "Follow";
     public string Status => "跟随中";
     public bool IsActive { get; private set; }
@@ -248,6 +299,7 @@ sealed class FakeNavigation : INavigationMode
         if (this.EndOnTick) this.IsActive = false;
         else if (!this.Allow || !combat()) this.Moves++;
     }
+    public void DrawOverlay() { this.Draws++; }
     public void CombatAccepted(int milliseconds) { this.PausedMilliseconds += milliseconds; }
     public void Stop() { this.IsActive = false; }
 }

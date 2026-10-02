@@ -47,12 +47,11 @@ internal sealed class FollowMode : INavigationMode
 
 
     private FollowSettings Settings = new();
-    private bool allowController;
     public FollowMode(MovementInput input) { this.input = input; }
     public string Name => "Follow";
     public bool IsActive => this.run.IsEnabled;
     public string Status => this.run.Status == "manual" ? "手动按键：" + this.manualKeys : this.run.Status;
-    public void Apply(BotConfig config) { this.Stop(); this.Settings = config.Follow; this.allowController = config.AllowControllerWithoutChat; }
+    public void Apply(BotConfig config) { this.Stop(); this.Settings = config.Follow; }
     public void Start() { this.ClearNavigation(); this.input.CaptureManualBaseline(); this.run.Start(); }
     public void Stop() => this.Halt("stopped");
     public void Suspend() => this.Suspend("unfocused");
@@ -60,7 +59,6 @@ internal sealed class FollowMode : INavigationMode
     public void Tick(long now, bool preview, Func<bool> combat)
     {
         if (this.run.Ready(now)) this.TickFollow(now, preview, combat);
-        this.DrawOverlay();
     }
     private void ClearNavigation(bool preserveFollowState = false)
     {
@@ -123,9 +121,9 @@ internal sealed class FollowMode : INavigationMode
     }
 
     private bool IsUiBlocked(ImportantUiElements ui) => Core.IsSettingsMenuOpen || ui.Address == IntPtr.Zero ||
-        // Controller UI deliberately has no ChatParent in the current core. Only
-        // explicit co-op mode permits this; the keyboard UI still requires it.
-        (ui.ChatParent.Address == IntPtr.Zero && !(this.allowController && Core.GHSettings.EnableControllerMode)) ||
+        // Controller UI deliberately has no ChatParent in the current core;
+        // controller mode permits this automatically; keyboard UI still requires it.
+        (ui.ChatParent.Address == IntPtr.Zero && !Core.GHSettings.EnableControllerMode) ||
         ui.ChatParent.IsChatActive || ui.IsAnyLargePanelOpen || MovementInput.IsDown(0x0D);
 
 
@@ -332,7 +330,7 @@ internal sealed class FollowMode : INavigationMode
     }
 
 
-    private void DrawOverlay()
+    public void DrawOverlay()
     {
         if (!MovementInput.IsForeground(Core.Process.Pid)) return;
         if (this.Settings.ShowStatus)

@@ -179,6 +179,11 @@ try {
     ),
     "common settings live in General",
   );
+  check(
+    await evaluate("document.getElementById('controller')===null") &&
+      !("allowControllerWithoutChat" in (await bootstrap()).config),
+    "retired controller chat switch is absent from UI and config",
+  );
   await evaluate(
     `document.getElementById('mode').value='';document.getElementById('mode').dispatchEvent(new Event('change',{bubbles:true}))`,
   );
@@ -443,6 +448,7 @@ try {
   check(true, "reload resolves concurrent revision");
   const imported = structuredClone(external);
   imported.name = "导入测试";
+  imported.allowControllerWithoutChat = false;
   imported.combat.rules[0].name = "<img src=x onerror=alert(1)>";
   const importPath = path.join(output, "import-test.json");
   await writeFile(importPath, JSON.stringify(imported));
@@ -469,6 +475,10 @@ try {
   );
   await input('[data-key="name"]', "低生命防护");
   await save();
+  check(
+    !("allowControllerWithoutChat" in (await bootstrap()).config),
+    "legacy export imports and saves without the retired controller switch",
+  );
   await click(".rule:nth-child(2)");
   await writeFile(
     path.join(output, "combat-desktop.png"),

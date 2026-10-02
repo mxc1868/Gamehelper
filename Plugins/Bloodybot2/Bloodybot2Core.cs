@@ -122,7 +122,7 @@ public sealed class Bloodybot2Core : PCore<Bloodybot2Settings>
                 players.Where(e => Name(e).Equals(config.MonitorCharacter.Trim(), StringComparison.OrdinalIgnoreCase)).ToArray();
             var selected = matches.Length == 1 ? matches[0] : null;
             var details = game.CurrentWorldInstance.AreaDetails;
-            var blocked = this.Blocked(config);
+            var blocked = this.Blocked();
             var snapshot = selected == null ? null : CombatSnapshotReader.Read(area, selected, now,
                 details.Address != IntPtr.Zero && !details.IsTown && !details.IsHideout);
             var skills = selected != null && CombatSnapshotReader.ReadComponent(selected, out Actor actor) ? actor.ActiveSkills.Keys.Order().ToArray() : [];
@@ -130,23 +130,30 @@ public sealed class Bloodybot2Core : PCore<Bloodybot2Settings>
             var address = selected?.Address ?? IntPtr.Zero;
             var id = selected?.Id ?? 0;
             this.runtime.Tick(observation, blocked, revision, now, () =>
-                this.Blocked(config).Length == 0 && identity == area.Address + ":" + area.AreaHash &&
+                this.Blocked().Length == 0 && identity == area.Address + ":" + area.AreaHash &&
                 selected != null && selected.Address == address && selected.Id == id && selected.IsValid &&
                 CombatSnapshotReader.ReadComponent(selected, out Life life) && life.IsAlive &&
                 Environment.TickCount64 - now <= 150);
         }
         catch (Exception ex) { this.error = ex.Message; this.runtime.Stop("读取失败：" + ex.Message); }
+        finally
+        {
+            // ImGui needs a draw on every host frame, including the frames where
+            // the 75 ms observation cadence returns early or input is suspended.
+            try { this.runtime.DrawOverlay(); }
+            catch (Exception ex) { this.error = ex.Message; this.runtime.Stop("显示失败：" + ex.Message); }
+        }
     }
 
-    private string Blocked(BotConfig config)
+    private string Blocked()
     {
         if (Core.States.GameCurrentState != GameStateTypes.InGameState) return "等待进入游戏";
         if (this.input?.Foreground != true) return "等待游戏获得焦点";
         if (this.input.CanInput != true) return "手动按键暂时阻止输入";
         var ui = Core.States.InGameStateObject.GameUi;
         if (Core.IsSettingsMenuOpen || ui.Address == IntPtr.Zero || ui.IsAnyLargePanelOpen || ui.ChatParent.IsChatActive) return "面板或聊天已打开";
-        if (ui.ChatParent.Address == IntPtr.Zero && !(Core.GHSettings.EnableControllerMode && config.AllowControllerWithoutChat))
-            return "聊天状态不可读；手柄模式需在网页中明确启用";
+        if (ui.ChatParent.Address == IntPtr.Zero && !Core.GHSettings.EnableControllerMode)
+            return "聊天状态不可读";
         return "";
     }
 }

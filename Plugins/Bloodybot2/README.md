@@ -24,12 +24,12 @@ Follow 单人使用本地角色追队长；本地双人按 P1→队长共享 WAS
 - 生命 / 护盾 / 魔力低于阈值、最低魔力、存在 / 缺少 Buff、指定内部技能就绪，启用的条件取 AND。百分比使用未保留上限；数据未知时不视为满足，无护盾不当作护盾 0%。Buff 为不区分大小写的部分匹配，技能使用完整内部名。页面提供现场名称扫描，不推测 PoE1 技能栏映射。
 - 按键支持字母（除 WASD）、数字、空格；不支持鼠标键、功能键、修饰键或移动键。短按 30–200 ms，默认 80 ms；重复间隔至少 300 ms，默认 2000 ms；同键规则共享间隔。按住时长 + 施法停顿后另留至少 150 ms 再发下一个技能。
 - 只发送技能键，沿用当前鼠标 / 手柄瞄准。移动由 Follow 控制；不追怪、不移动鼠标、不自动战术走位，也不声称距离等同于视线可达。已发送按键仅表示 Windows 接受输入，不代表游戏施法成功。
-- 失焦、聊天、面板、Ctrl/Alt/Windows/Enter/Esc、死亡、城镇/藏身处、入场保护或关键数据不可读时阻止施法。25 ms 看门狗负责短按释放；失败的 key-up 保留归属重试，包括禁用后的释放重试。手柄 UI 的聊天状态目前不可读，默认阻止；仅在明确勾选“允许手柄模式下聊天状态不可读”后放行，打开手柄聊天前须先停止。
+- 失焦、聊天、面板、Ctrl/Alt/Windows/Enter/Esc、死亡、城镇/藏身处、入场保护或关键数据不可读时阻止施法。25 ms 看门狗负责短按释放；失败的 key-up 保留归属重试，包括禁用后的释放重试。手柄 UI 没有聊天指针时自动兼容，不再提供聊天许可开关；键鼠模式仍要求可读聊天状态，已识别的聊天和面板仍阻止输入。核心尚不能识别手柄聊天是否打开，使用手柄聊天前先用启停键或 Esc 停止。
 - 暂停和配置保存不重置技能间隔。新插件实例从空历史开始，且始终停止；配置不会持久化运行状态。
 
 ## 配置保存与恢复
 
-路径为运行插件目录的 `config/config.json`，当前 schemaVersion=2。首次安装读取旧 `Plugins/Follower/config/settings.txt` 的导航、预览、快捷键和战斗设置，但仍需选择模式并保存；原文件保留。已有 v1 Bloodybot2 配置优先保留自身的通用/战斗设置，只补充 Follower 导航；损坏的旧配置不覆盖有效的新配置。已有 v2 配置不再重复迁移。网页支持导入 / 导出 JSON；导入先成为草稿，成功保存后才应用。Bloodybot1 配置不是兼容格式。
+路径为运行插件目录的 `config/config.json`，当前 schemaVersion=2。首次安装读取旧 `Plugins/Follower/config/settings.txt` 的导航、预览、快捷键和战斗设置，但仍需选择模式并保存；原文件保留。已有 v1 Bloodybot2 配置优先保留自身的通用/战斗设置，只补充 Follower 导航；损坏的旧配置不覆盖有效的新配置。已有 v2 配置不再重复迁移。旧配置中的 `allowControllerWithoutChat` 会兼容读取并忽略，下次显式保存/导出不再包含该字段；加载不会改写原文件。网页支持导入 / 导出 JSON；导入先成为草稿，成功保存后才应用。Bloodybot1 配置不是兼容格式。
 
 先校验，再写同目录临时文件并 flush，然后原子替换；保留上一版有效配置为 `config.json.bak`。保存失败返回错误，不发布新的运行配置或版本号。多个页面持有不同版本时拒绝陈旧保存（409），页面保留草稿供导出。
 
@@ -56,6 +56,7 @@ flowchart LR
 - `Modules/Combat`：规则求值、优先级、冷却和短按，不引用 GameHelper、Web、Follower 或 Win32。
 - `Configuration/`：版本、字段校验、备份和原子保存。
 - `Runtime/`：运行状态、预览、输入仲裁、事件记录；输入和导航使用接口，可用假输入测试。`INavigationMode` 当前实现 Follow，模式在 General 中显式选择；战斗关闭或没有技能规则时仍可跟随。
+- 状态窗口和路线每个绘制帧都显示；游戏数据/导航/战斗仍按 75 ms 更新，绘制不会发按键或刷新输入看门狗。
 - `Navigation/`：原 Follower 的网格寻路、共享 WASD、P2 箭头纠偏、卡住后朝目标方向短按脱困，以及统一输入释放。纠偏/脱困优先，施法短按和停顿期间让出导航，随后重新寻路。
 - `Game/` 与 `Bloodybot2Core`：原有公开 GameHelper API 的状态适配与生命周期。核心仅增加旧 Follower 的内部发现去重/启用元数据迁移，没有新增公共 API 或 offsets。
 - `Web/`：网页和服务；HTTP 线程不读取游戏内存。配置切换后旧扫描会因版本不匹配被拒绝，发键前再次核对前台、区域、角色身份、存活及快照时效。
@@ -70,8 +71,8 @@ dotnet run --project tests/Follower.Tests -c Release
 dotnet run --project tests/PluginLoad.Tests -c Release -- GameHelper/bin/Release/net10.0-windows/win-x64
 ```
 
-已通过 87 项配置/运行/HTTP 检查、80 项 Combat、221 项 Follow 导航，以及实际加载器的 13 项检查。回环 HTTP 测试在 Windows 普通受限沙箱内无法创建 HTTP.sys 句柄，需在允许本机 HTTP 服务的环境中运行。没有测试调用真实键盘输入或连接游戏。
+已通过 100 项配置/运行/HTTP 检查、80 项 Combat、31 项怪物读取适配器、221 项 Follow 导航，以及实际加载器的 13 项检查。回环 HTTP 测试在 Windows 普通受限沙箱内无法创建 HTTP.sys 句柄，需在允许本机 HTTP 服务的环境中运行。没有测试调用真实键盘输入或连接游戏。
 
-Chrome 页面测试使用 Node 的内置 CDP 客户端，无 npm 依赖。在一个终端运行 `dotnet run --project tests/Bloodybot2.Tests -c Release -- --serve`，将其输出的 `UI_TEST_URL` 传给 `node tests/Bloodybot2.Tests/browser-smoke.mjs <UI_TEST_URL>`。测试会创建独立的无头 Chrome 配置，连接假运行器，检查 37 项模式/导航配置/按键录制/下拉稳定性/编辑/保存/冲突/预览/导入导出/布局行为；截图保存在被忽略的 `artifacts/bloodybot2`。测试服务器按 Enter 结束或 15 分钟自动退出。
+Chrome 页面测试使用 Node 的内置 CDP 客户端，无 npm 依赖。在一个终端运行 `dotnet run --project tests/Bloodybot2.Tests -c Release -- --serve`，将其输出的 `UI_TEST_URL` 传给 `node tests/Bloodybot2.Tests/browser-smoke.mjs <UI_TEST_URL>`。测试会创建独立的无头 Chrome 配置，连接假运行器，检查 39 项模式/导航配置/按键录制/下拉稳定性/编辑/保存/冲突/预览/导入导出/布局行为；截图保存在被忽略的 `artifacts/bloodybot2`。测试服务器按 Enter 结束或 15 分钟自动退出。
 
 Windows 编译、实际插件加载与 Chrome 网页已验证；游戏内人物/怪物识别、技能就绪含义、手柄输入映射、实际施法效果和按键时长仍需实测。这是可编译的第一版原型，不是已通过游戏实测的发布版。

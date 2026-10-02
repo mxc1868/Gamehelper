@@ -23,6 +23,7 @@ public interface INavigationMode
     void Start();
     void Suspend();
     void Tick(long now, bool preview, Func<bool> combat);
+    void DrawOverlay();
     void CombatAccepted(int milliseconds);
     void Stop();
 }
@@ -128,6 +129,13 @@ public sealed class BotRuntime(IBotInput input, INavigationMode navigation)
             if (!this.navigation.IsActive) this.StopLocked(this.navigation.Status);
             else this.reason = this.navigation.Status + " · " + this.reason;
         }
+    }
+
+    // Host render thread only. Drawing never advances navigation, sends input or
+    // refreshes the watchdog; HTTP/config changes serialize with this snapshot.
+    public void DrawOverlay()
+    {
+        lock (this.sync) this.navigation.DrawOverlay();
     }
 
     private bool TickCombat(CombatSnapshot? snapshot, long now, Func<bool> recheck)

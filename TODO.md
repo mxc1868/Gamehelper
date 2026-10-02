@@ -2,6 +2,15 @@
 
 更新日期：2026-10-01。后续 agent 请先读本文，再读 [插件说明](Plugins/ShowMeWisp/README.md) 和 [Windows 调试说明](Plugins/ShowMeWisp/WINDOWS-DEBUG.zh-CN.md)。
 
+## Bloodybot2 移除手柄聊天开关与状态窗闪烁修复（2026-10-01）
+
+- [x] 用户要求删除“允许手柄模式下聊天状态不可读”开关。已从 General、配置模型和 Follower 迁移中移除，核心手柄模式下缺少 ChatParent 自动兼容；键鼠缺失聊天状态仍阻止，已识别聊天/面板、Enter、Esc、前台、预览等保护保留。旧 v1/v2 文件、旧导出及旧浏览器 HTTP 请求中的 `allowControllerWithoutChat` 均接受并忽略；加载不改原文件，显式保存/导出不再含该字段，保存仍保留原文件备份。
+- [x] 定位状态窗口闪烁：整合后的 `FollowMode.Tick` 内调用 ImGui 绘制，但 `Bloodybot2Core.DrawUI` 每 75 ms 才进入 Tick，其余帧直接返回，导致窗口/路线多数帧不绘制。现将绘制移到每个宿主 DrawUI 帧的 finally 路径，经过 runtime 锁与配置/停止操作串行；Follow Tick 只更新逻辑。跳过读取、暂停和停止时也可显示状态。绘制不推进导航/战斗，不发键，不刷新看门狗。仅插件接口增加 DrawOverlay，无核心 API 或 offsets 修改。
+- [x] 100 项配置/运行/真实 HTTP 检查、221 项 Follow、80 项 Combat、31 项真实适配器离线样本通过；新增旧开关兼容及跨更新间隔连续绘制/阻止输入/看门狗回归。插件 Release 编译 0 错误/0 警告。
+- [x] 隔离无头 Chrome 的 39 项检查通过：开关缺席、旧导出导入保存、预览、录制、草稿/冲突、下拉稳定性、1440/1100/390px 布局，无 JS/CSP 错误。截图 `artifacts/bloodybot2/ui-1790916711847`。原 Bloodybot1 styles.css 哈希保持不变。测试服务已正常结束，无真实游戏输入。
+- [x] 已成功运行 `rebuild-test.ps1` 更新整套 Test：0 错误、4 条既存 WorldDrawing nullable 警告。Test 的 13 项实际插件发现/加载/API 检查通过，Bloodybot2 DLL 与构建输出哈希一致；37 个既有配置均与本轮部署前哈希一致（plugins.json 经语义核对后恢复原字节）。配置备份和构建/加载日志：`artifacts/bloodybot2/status-controller-20261001`。提交推送到用户 fork main，不创建 ZIP/Release。
+- [ ] 重启 GameHelper 并刷新 Chrome 后，实机确认状态窗口/路线不再间歇消失、手柄正常跟随。尚未验证实际游戏 ImGui 显示；当前核心仍不能可靠识别手柄聊天是否打开，使用聊天前用启停键/Esc 停止。
+
 ## Bloodybot2 怪物计数沿用 Radar；Test 根目录占用修复（2026-10-01）
 
 - [x] 用户报告白、蓝、黄、暗金全为 0，明确要求沿用 Radar 的精英图标识别。核对 `Plugins/Radar/Radar.cs` 的普通怪物分支：`AwakeEntities` → `EntityTypes.Monster` / `EntityStates.None` → `ObjectMagicProperties.Rarity`。Bloodybot2 原先额外强制读取怪物 Life/Positioned/Targetable，已移除这些重复门槛；死亡/友方/隐藏 Boss 采用核心状态，Radar 的 `is_hidden_monster=1` 单独排除。仍保留有效实体、组件父地址、150 格扫描范围、规则自己的范围、隐藏 Buff 与已知免伤限制；未修改 Radar、核心或 offsets，无新增框架 API。

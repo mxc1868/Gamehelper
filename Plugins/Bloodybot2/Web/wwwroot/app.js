@@ -123,7 +123,6 @@ function renderConfig() {
   $("preview").checked = draft.preview;
   $("combat-enabled").checked = draft.combat.enabled;
   $("monitor-character").value = draft.monitorCharacter;
-  $("controller").checked = draft.allowControllerWithoutChat;
   controls();
 }
 function ruleSummary(r) {
@@ -534,7 +533,6 @@ for (const [id, key] of [
   ["config-name", "name"],
   ["preview", "preview"],
   ["monitor-character", "monitorCharacter"],
-  ["controller", "allowControllerWithoutChat"],
 ])
   $(id).addEventListener("input", (e) => {
     draft[key] =
@@ -613,6 +611,8 @@ $("import-file").addEventListener("change", async (e) => {
   try {
     if (file.size > 256 * 1024) throw new Error("配置超过 256 KiB。");
     const imported = JSON.parse(await file.text());
+    // Retired switch in older exports; controller mode now handles this automatically.
+    delete imported.allowControllerWithoutChat;
     // Strict server validation remains authoritative. Reject malformed drafts before rendering controls.
     if (imported.schemaVersion === 1) {
       imported.schemaVersion = 2;
@@ -642,7 +642,6 @@ $("import-file").addEventListener("change", async (e) => {
       typeof imported.name !== "string" ||
       typeof imported.preview !== "boolean" ||
       typeof imported.monitorCharacter !== "string" ||
-      typeof imported.allowControllerWithoutChat !== "boolean" ||
       typeof imported.combat?.enabled !== "boolean" ||
       !Array.isArray(imported.combat.rules) ||
       imported.combat.rules.length > 32

@@ -63,7 +63,6 @@ public sealed class ConfigStore(string directory, string? legacyFollowerPath = n
             {
                 config.ToggleKey = BotConfig.IsToggleKeyAllowed(legacy.ToggleKey) ? legacy.ToggleKey : 0x75;
                 config.Preview = legacy.PreviewOnly;
-                config.AllowControllerWithoutChat = legacy.LocalCoopFollow;
                 config.MonitorCharacter = legacy.LocalCoopFollow ? (legacy.CombatUseP2 ? legacy.P2Name : legacy.P1Name) : "";
                 config.Combat = legacy.Combat ?? new();
                 config.Combat.Normalize();

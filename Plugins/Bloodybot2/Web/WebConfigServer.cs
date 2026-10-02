@@ -106,9 +106,11 @@ public sealed class WebConfigServer : IDisposable
             {
                 var body = await this.ReadBody(request);
                 var save = JsonSerializer.Deserialize<SaveRequest>(body, BotConfig.Json) ?? throw new ArgumentException("缺少配置。");
-                if (save.Config == null) throw new ArgumentException("缺少配置。");
-                save.Config.Validate();
-                save.Config.ValidateMode();
+                if (save.Config.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined) throw new ArgumentException("缺少配置。");
+                // Use the same legacy-field handling as files/imports, including
+                // requests from a page opened before the controller switch retired.
+                var config = BotConfig.Parse(save.Config.GetRawText());
+                config.ValidateMode();
                 string result;
                 var code = 200;
                 lock (this.sync)
@@ -122,8 +124,8 @@ public sealed class WebConfigServer : IDisposable
                     else
                     {
                         // Publish only after durable save. Failure leaves both the live config and revision unchanged.
-                        this.store.Save(save.Config);
-                        this.config = save.Config;
+                        this.store.Save(config);
+                        this.config = config;
                         this.revision++;
                         this.runtime.Apply(this.config, this.revision);
                         result = JsonSerializer.Serialize(this.Bootstrap(), BotConfig.Json);
@@ -195,7 +197,7 @@ public sealed class WebConfigServer : IDisposable
             this.listener.Close();
         }
     }
-    private sealed record SaveRequest(long Revision, BotConfig? Config);
+    private sealed record SaveRequest(long Revision, JsonElement Config);
     private sealed record RunRequest(bool Running);
     private sealed class BodyTooLargeException : Exception;
 }
