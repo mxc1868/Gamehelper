@@ -25,7 +25,7 @@ internal static class ParticipantSelection
         if (Ambiguous(candidates, leaderName) || (localCoop &&
             (Ambiguous(candidates, primaryName) || Ambiguous(candidates, secondaryName)))) return null;
         // Check the leader independently of P1/P2 availability: a missing follower
-        // is a temporary wait, while a genuinely absent selected leader stops.
+        // and a missing leader each wait until their configured characters reappear.
         failure = "target_missing";
         if (FindUnique(candidates, leaderName) == null) return null;
 

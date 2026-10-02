@@ -359,7 +359,7 @@ coopSettings.Normalize();
 Check(coopSettings.P2RejoinDistance == 3 && coopSettings.P2LagDistance == 6, "correction thresholds retain a non-overlapping gap after normalization");
 
 foreach (var reason in new[] { "unfocused", "panel", "settings_open", "frame_gap", "manual", "area_changed",
-    "game_state", "player_invalid", "secondary_invalid", "leader_unavailable", "follower_changed", "target_changed", "terrain_missing", "input_failed", "error" })
+    "game_state", "player_invalid", "secondary_invalid", "target_missing", "leader_unavailable", "follower_changed", "target_changed", "terrain_missing", "input_failed", "error" })
 {
     var run = new FollowRunState();
     run.Start();
@@ -369,7 +369,7 @@ foreach (var reason in new[] { "unfocused", "panel", "settings_open", "frame_gap
     run.Fail(reason, 350);
     Check(run.IsEnabled && !run.Ready(599) && run.Ready(600), reason + " can wait repeatedly and automatically retry");
 }
-foreach (var reason in new[] { "target_missing", "leader_name", "primary_name", "follower_name", "same_player", "ambiguous_player" })
+foreach (var reason in new[] { "leader_name", "primary_name", "follower_name", "same_player", "ambiguous_player" })
 {
     var run = new FollowRunState();
     run.Start();
@@ -388,7 +388,21 @@ Check(stoppedRun.Ready(9000), "manual restart after a stop is allowed");
 Check(ParticipantSelection.Resolve([p2, leader], p2, true, "Leader", "Primary", "Secondary", out selectionReason) == null &&
     selectionReason == "player_invalid" && !FollowRunState.IsTerminal(selectionReason), "missing P1 with a visible leader waits");
 Check(ParticipantSelection.Resolve([p2], p2, true, "Leader", "Primary", "Secondary", out selectionReason) == null &&
-    selectionReason == "target_missing", "missing leader is not hidden by a simultaneously missing P1");
+    selectionReason == "target_missing" && !FollowRunState.IsTerminal(selectionReason),
+    "missing leader waits even when P1 is also missing");
+var lostLeaderRun = new FollowRunState();
+lostLeaderRun.Start();
+Check(ParticipantSelection.Resolve([p1, p2], p1, true, "Leader", "Primary", "Secondary", out selectionReason) == null,
+    "a transient leader disappearance has no follow target");
+lostLeaderRun.Fail(selectionReason, 1000);
+Check(lostLeaderRun.IsEnabled && !lostLeaderRun.Ready(1249), "leader loss keeps start but delays the next scan");
+Check(ParticipantSelection.Resolve([p1, p2, leader], p1, true, "Leader", "Primary", "Secondary", out selectionReason) != null &&
+    lostLeaderRun.Ready(1250), "leader reappearance allows following without a second Start");
+lostLeaderRun.Fail("target_missing", 1300);
+lostLeaderRun.Stop("stopped");
+lostLeaderRun.Fail("target_missing", 2000);
+Check(!lostLeaderRun.IsEnabled && !lostLeaderRun.Ready(long.MaxValue) && lostLeaderRun.Status == "stopped",
+    "explicit stop while the leader is missing prevents automatic resume");
 Check(ParticipantSelection.Resolve([p1, p2, leader, new(105, 0x5000, "Primary")], p1, true, "Leader", "Primary", "Secondary", out selectionReason) == null &&
     selectionReason == "ambiguous_player" && FollowRunState.IsTerminal(selectionReason), "ambiguous role selection is a configuration stop");
 

@@ -50,11 +50,17 @@ internal sealed class FollowMode : INavigationMode
     public FollowMode(MovementInput input) { this.input = input; }
     public string Name => "Follow";
     public bool IsActive => this.run.IsEnabled;
-    public string Status => this.run.Status == "manual" ? "手动按键：" + this.manualKeys : this.run.Status;
+    public string Status => this.run.Status switch
+    {
+        "manual" => "手动按键：" + this.manualKeys,
+        "target_missing" => "队长暂不可见，等待重新出现",
+        "frame_gap" => "画面更新中断，等待恢复",
+        _ => this.run.Status
+    };
     public void Apply(BotConfig config) { this.Stop(); this.Settings = config.Follow; }
     public void Start() { this.ClearNavigation(); this.input.CaptureManualBaseline(); this.run.Start(); }
     public void Stop() => this.Halt("stopped");
-    public void Suspend() => this.Suspend("unfocused");
+    public void Suspend(string reason = "unfocused") => this.Suspend(reason, 250);
     public void CombatAccepted(int milliseconds) { this.DiscardRoute(release: false); this.session.PauseProgress(milliseconds); }
     public void Tick(long now, bool preview, Func<bool> combat)
     {
@@ -102,7 +108,7 @@ internal sealed class FollowMode : INavigationMode
         this.ClearNavigation();
     }
 
-    private void Suspend(string reason, int retryMilliseconds = 250)
+    private void Suspend(string reason, int retryMilliseconds)
     {
         this.run.Fail(reason, Environment.TickCount64, retryMilliseconds);
         this.ClearNavigation(this.run.IsEnabled && reason is not
@@ -254,6 +260,7 @@ internal sealed class FollowMode : INavigationMode
 
         bool ApplyCurrentMovement(int leaseMilliseconds = 200)
         {
+            if (Environment.TickCount64 - now > 150) { this.Suspend("frame_gap"); return false; }
             if (area.Address != this.areaAddress || area.AreaHash != this.areaHash || !target.IsValid ||
                 target.Address != this.targetAddress || target.Id != this.targetId ||
                 !primary.IsValid || primary.Address != this.followerAddress || primary.Id != this.followerId ||

@@ -1,6 +1,15 @@
 # GameHelper 插件：TODO 与接手上下文
 
-更新日期：2026-10-01。后续 agent 请先读本文，再读 [插件说明](Plugins/ShowMeWisp/README.md) 和 [Windows 调试说明](Plugins/ShowMeWisp/WINDOWS-DEBUG.zh-CN.md)。
+更新日期：2026-10-02。后续 agent 请先读本文，再读 [插件说明](Plugins/ShowMeWisp/README.md) 和 [Windows 调试说明](Plugins/ShowMeWisp/WINDOWS-DEBUG.zh-CN.md)。
+
+## Bloodybot2 Follow：队长丢失与更新中断自动恢复（2026-10-02）
+
+- [x] 用户确认将两种自动停止改为松键等待：`target_missing` 不再关闭 Follow，按既有至少 250 ms 间隔重试；逻辑更新中断超过 400 ms（包括 F9）保留启动状态，清除旧路线/寻路并等待。状态窗明确显示队长暂不可见或画面更新中断；超时/更新恢复事件只在状态转换时记录。
+- [x] 保留 150 ms 过期松键保护；宿主传入读取起止时间，耗时超过 150 ms 的旧读取不能恢复导航或刷新看门狗，导航发移动键前也检查本次处理耗时。恢复时重新读取角色/寻路，仍检查前台、面板、角色、区域和预览，保留技能冷却、共享 WASD/P2 纠偏及脱困优先。Esc、启停键、网页主动停止、配置应用、切区、禁用及游戏关闭仍要求重新启动。仅调整插件自身 Runtime/Navigation 接口，没有新增框架 API 或 offsets。
+- [x] 118 项配置/运行/真实 HTTP、226 项 Follow 导航、80 项 Combat 检查通过；覆盖队长消失后重现、150/400 ms 边界、旧读取/旧配置拒绝、重复看门狗与绘制不恢复输入、主动停止不被恢复、技能冷却及预览。HTTP 测试在普通沙箱遇到已知 HTTP.sys 无效句柄后，获准在外部运行模拟测试服务通过；未连接游戏或发送真实按键。日志：`artifacts/bloodybot2/auto-resume-20261002`。
+- [x] 整套 Windows Release 源码构建成功，0 错误、7 条既存核心/WorldDrawing 警告；构建输出的 13 项实际插件发现/加载/API 检查通过。已从用户 fork 拉取并核对 `main`，本轮修改前本地与远端一致；`git diff --check` 通过。
+- [x] 10 月 2 日 01:06 的首次部署被 `Test/Oevatdf.exe`（PID 33572）占用阻止。用户正常关闭后，重新备份当前 37 个配置/布局，并于 01:13 成功运行 `rebuild-test.ps1` 更新整套 Test；本次增量构建 0 错误/0 警告（此前完整源码构建的 7 条既存警告见上）。Test 的 13 项实际插件发现/加载/API 检查通过，Bloodybot2 DLL 与构建输出哈希一致。37 个文件与本轮部署前哈希全部一致；`plugins.json` 的脚本格式变化经 JSON 语义一致性检查后恢复原字节。新备份、部署/加载日志及校验记录位于 `artifacts/bloodybot2/auto-resume-20261002/deploy-after-close`。未强制终止进程或绕过占用保护；提交目标为用户 fork `main`，不创建 ZIP/Release。
+- [ ] 游戏内确认队长短暂离开读取范围后可继续跟随、F9/卡顿恢复后继续、等待期间主动停止后不会自行恢复；离线测试不等于游戏验证。
 
 ## Bloodybot2 移除手柄聊天开关与状态窗闪烁修复（2026-10-01）
 

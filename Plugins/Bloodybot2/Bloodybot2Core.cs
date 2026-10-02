@@ -122,18 +122,17 @@ public sealed class Bloodybot2Core : PCore<Bloodybot2Settings>
                 players.Where(e => Name(e).Equals(config.MonitorCharacter.Trim(), StringComparison.OrdinalIgnoreCase)).ToArray();
             var selected = matches.Length == 1 ? matches[0] : null;
             var details = game.CurrentWorldInstance.AreaDetails;
-            var blocked = this.Blocked();
             var snapshot = selected == null ? null : CombatSnapshotReader.Read(area, selected, now,
                 details.Address != IntPtr.Zero && !details.IsTown && !details.IsHideout);
             var skills = selected != null && CombatSnapshotReader.ReadComponent(selected, out Actor actor) ? actor.ActiveSkills.Keys.Order().ToArray() : [];
             var observation = new Observation(snapshot, selected == null ? "" : Name(selected), details.Name, names, skills);
             var address = selected?.Address ?? IntPtr.Zero;
             var id = selected?.Id ?? 0;
-            this.runtime.Tick(observation, blocked, revision, now, () =>
+            this.runtime.Tick(observation, this.Blocked(), revision, Environment.TickCount64, () =>
                 this.Blocked().Length == 0 && identity == area.Address + ":" + area.AreaHash &&
                 selected != null && selected.Address == address && selected.Id == id && selected.IsValid &&
                 CombatSnapshotReader.ReadComponent(selected, out Life life) && life.IsAlive &&
-                Environment.TickCount64 - now <= 150);
+                Environment.TickCount64 - now <= 150, readStartedAt: now);
         }
         catch (Exception ex) { this.error = ex.Message; this.runtime.Stop("读取失败：" + ex.Message); }
         finally

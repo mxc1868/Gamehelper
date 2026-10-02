@@ -20,5 +20,5 @@ internal sealed class FollowRunState
     }
 
     public static bool IsTerminal(string reason) => reason is
-        "target_missing" or "leader_name" or "primary_name" or "follower_name" or "same_player" or "ambiguous_player";
+        "leader_name" or "primary_name" or "follower_name" or "same_player" or "ambiguous_player";
 }

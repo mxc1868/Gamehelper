@@ -144,7 +144,9 @@ try
     runtime.Tick(Frame(2060), "", 2, 2060, () => true);
     Check(input.Presses == 2, "cooldown expires");
     runtime.Watchdog(2070, false, false); Check(!input.Held, "focus loss releases input");
-    runtime.Watchdog(2500, true, false); Check(!runtime.Status().Running, "F9 / stalled frames stop run");
+    runtime.Watchdog(2500, true, false);
+    Check(runtime.Status().Running && !input.Held && runtime.Status().Action == null && runtime.Status().Reason.Contains("等待恢复"),
+        "F9 / stalled frames release input and wait without revoking start");
     runtime.Start(2600); runtime.Watchdog(2601, true, true); Check(!runtime.Status().Running, "escape stops even without game tick");
     runtime.Start(2700); runtime.Tick(Frame(2000), "", 2, 2700, () => true);
     Check(input.Presses == 2, "stale combat observation rejected");
@@ -195,8 +197,70 @@ try
         "blocked status still renders while movement and skills remain suspended");
     renderRuntime.Watchdog(7500, true, false);
     renderRuntime.DrawOverlay();
-    Check(!renderRuntime.Status().Running && renderNav.Draws == 8 && renderInput.Presses == 1,
-        "rendering does not refresh watchdog or restart stopped input");
+    Check(renderRuntime.Status().Running && renderRuntime.Status().Reason.Contains("等待恢复") &&
+        renderNav.Draws == 8 && renderInput.Presses == 1 && !renderInput.Held,
+        "rendering does not refresh watchdog or resume suspended input");
+
+    var gapInput = new FakeInput(); var gapNav = new FakeNavigation();
+    var gapRuntime = new BotRuntime(gapInput, gapNav);
+    gapRuntime.Apply(followOnly, 1); gapRuntime.Start(10000);
+    gapRuntime.Tick(null, "", 1, 10000, () => false);
+    gapInput.TryPress('Q', 200, 10000);
+    gapRuntime.Watchdog(10150, true, false);
+    Check(gapInput.Held, "freshness boundary retains an unexpired input lease");
+    gapRuntime.Watchdog(10151, true, false);
+    Check(!gapInput.Held && gapRuntime.Status().Running && gapNav.Suspends == 0,
+        "150 ms freshness cutoff releases input before frame-gap suspension");
+    gapRuntime.Watchdog(10400, true, false);
+    Check(gapNav.Suspends == 0, "400 ms boundary does not yet discard navigation");
+    gapRuntime.Watchdog(10401, true, false);
+    Check(gapNav.Suspends == 1 && gapNav.LastSuspension == "frame_gap" && gapNav.IsActive && gapNav.Moves == 1,
+        "frame gap suspends navigation to discard stale routes while retaining start");
+    gapRuntime.Watchdog(11000, true, false); gapRuntime.DrawOverlay();
+    Check(gapNav.Suspends == 1 && gapNav.Moves == 1 && gapRuntime.Status().Events.Length == 2,
+        "repeated watchdog and rendering neither retry navigation nor flood pause events");
+    gapRuntime.Tick(null, "", 0, 11010, () => false);
+    gapRuntime.Tick(null, "", 1, 11020, () => false, readStartedAt: 10000);
+    Check(gapNav.Moves == 1 && gapRuntime.Status().Reason.Contains("等待恢复") && gapRuntime.Status().Events.Length == 2,
+        "old config revision and delayed pre-stall reads cannot resume navigation");
+    gapRuntime.Tick(null, "panel", 1, 11030, () => false);
+    Check(gapRuntime.Status().Running && gapRuntime.Status().Reason == "panel" && gapNav.Moves == 1 && !gapInput.Held,
+        "fresh update still waits for blocking UI conditions to clear");
+    gapRuntime.Tick(null, "", 1, 11040, () => false);
+    Check(gapNav.Moves == 2 && gapRuntime.Status().Running,
+        "fresh unblocked observation automatically resumes navigation without Start");
+
+    foreach (var stopReason in new[] { "Esc", "快捷键已停止", "网页已停止", "区域已改变，请重新启动", "插件已禁用", "游戏已关闭", "保存配置" })
+    {
+        var stoppedInput = new FakeInput(); var stoppedNav = new FakeNavigation();
+        var stoppedRuntime = new BotRuntime(stoppedInput, stoppedNav);
+        stoppedRuntime.Apply(followOnly, 1); stoppedRuntime.Start(12000);
+        stoppedRuntime.Tick(null, "", 1, 12000, () => false);
+        stoppedRuntime.Watchdog(12401, true, false);
+        if (stopReason == "Esc") stoppedRuntime.Watchdog(12402, true, true);
+        else if (stopReason == "保存配置") stoppedRuntime.Apply(followOnly, 2);
+        else stoppedRuntime.Stop(stopReason);
+        stoppedRuntime.Watchdog(13000, true, false);
+        stoppedRuntime.Tick(null, "", stoppedRuntime.ReadConfig().Revision, 13000, () => false);
+        Check(!stoppedRuntime.Status().Running && !stoppedNav.IsActive && stoppedNav.Moves == 1 && !stoppedInput.Held,
+            stopReason + " during a frame gap cannot be undone by later updates");
+    }
+
+    var resumeInput = new FakeInput(); var resumeNav = new FakeNavigation();
+    var resumeRuntime = new BotRuntime(resumeInput, resumeNav);
+    resumeRuntime.Apply(Config(false), 1); resumeRuntime.Start(14000);
+    resumeRuntime.Tick(Frame(14000), "", 1, 14000, () => true);
+    resumeRuntime.Watchdog(14401, true, false);
+    resumeRuntime.Tick(Frame(14410), "", 1, 14410, () => true);
+    Check(resumeInput.Presses == 1 && resumeRuntime.Status().Running && resumeNav.Moves == 1,
+        "automatic resume retains skill cooldowns and can return to movement");
+    resumeRuntime.Tick(Frame(15000), "", 1, 15000, () => true);
+    Check(resumeInput.Presses == 2, "combat resumes when its retained cooldown actually expires");
+    resumeRuntime.Apply(Config(), 2); resumeRuntime.Start(16000);
+    resumeRuntime.Watchdog(16401, true, false);
+    resumeRuntime.Tick(Frame(16410), "", 2, 16410, () => true);
+    Check(resumeRuntime.Status().Running && resumeRuntime.Status().Action != null && resumeInput.Presses == 2,
+        "preview automatically resumes evaluation without sending input");
 
     var webStore = new ConfigStore(Path.Combine(root, "web"));
     var webRuntime = new BotRuntime(new FakeInput(), new FakeNavigation());
@@ -286,13 +350,14 @@ sealed class FakeNavigation : INavigationMode
 {
     public bool Allow = true;
     public bool EndOnTick;
-    public int Ticks, Moves, PausedMilliseconds, Draws;
+    public int Ticks, Moves, PausedMilliseconds, Draws, Suspends;
+    public string LastSuspension = "";
     public string Name => "Follow";
     public string Status => "跟随中";
     public bool IsActive { get; private set; }
     public void Apply(BotConfig config) { this.Stop(); }
     public void Start() { this.IsActive = true; }
-    public void Suspend() { }
+    public void Suspend(string reason = "unfocused") { this.Suspends++; this.LastSuspension = reason; }
     public void Tick(long now, bool preview, Func<bool> combat)
     {
         this.Ticks++;

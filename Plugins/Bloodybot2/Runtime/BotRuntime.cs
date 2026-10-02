@@ -21,7 +21,7 @@ public interface INavigationMode
     bool IsActive { get; }
     void Apply(BotConfig config);
     void Start();
-    void Suspend();
+    void Suspend(string reason = "unfocused");
     void Tick(long now, bool preview, Func<bool> combat);
     void DrawOverlay();
     void CombatAccepted(int milliseconds);
@@ -44,6 +44,7 @@ public sealed class BotRuntime(IBotInput input, INavigationMode navigation)
     private BotConfig config = new();
     private long revision;
     private bool running;
+    private bool waitingForUpdates;
     private long lastTick;
     private long updatedAt;
     private long acceptedInputs;
@@ -76,6 +77,7 @@ public sealed class BotRuntime(IBotInput input, INavigationMode navigation)
             this.config.ValidateStart();
             this.navigation.Start();
             this.running = true;
+            this.waitingForUpdates = false;
             this.lastTick = now;
             this.reason = "等待游戏画面";
             this.Log(this.config.Preview ? "Follow 预览已启动，不发送按键" : "Follow 已启动");
@@ -87,6 +89,7 @@ public sealed class BotRuntime(IBotInput input, INavigationMode navigation)
     {
         if (this.running) this.Log(reason);
         this.running = false;
+        this.waitingForUpdates = false;
         this.reason = reason;
         this.action = null;
         this.busyUntil = 0;
@@ -100,22 +103,46 @@ public sealed class BotRuntime(IBotInput input, INavigationMode navigation)
         lock (this.sync)
         {
             if (escape) this.StopLocked("Esc 已停止");
-            else if (this.running && now - this.lastTick > 400) this.StopLocked("画面更新中断，请重新启动（检查 F9）");
+            else if (this.running && now - this.lastTick > 400) this.WaitForUpdatesLocked();
             input.Expire(now, this.running && !this.config.Preview && foreground && now - this.lastTick <= 150);
         }
     }
 
+    private void WaitForUpdatesLocked()
+    {
+        input.Release();
+        this.action = null;
+        if (this.waitingForUpdates) return;
+        this.waitingForUpdates = true;
+        this.reason = "画面更新中断，等待恢复（检查 F9）";
+        this.navigation.Suspend("frame_gap");
+        this.Log(this.reason);
+    }
+
     // Only the host game tick creates observations. HTTP and the watchdog never read game memory.
-    public void Tick(Observation? next, string blocked, long expectedRevision, long now, Func<bool> recheck)
+    public void Tick(Observation? next, string blocked, long expectedRevision, long now, Func<bool> recheck,
+        long? readStartedAt = null)
     {
         lock (this.sync)
         {
             if (expectedRevision != this.revision) return;
+            // A read that began before a stall cannot resume movement or refresh the watchdog.
+            if (now - (readStartedAt ?? now) > 150)
+            {
+                if (this.running) this.WaitForUpdatesLocked();
+                else input.Release();
+                return;
+            }
             this.lastTick = now;
             this.updatedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             this.observation = next;
             this.action = null;
             if (!this.running) { input.Release(); return; }
+            if (this.waitingForUpdates)
+            {
+                this.waitingForUpdates = false;
+                this.Log("画面更新已恢复");
+            }
             if (blocked.Length != 0)
             {
                 this.reason = blocked;
