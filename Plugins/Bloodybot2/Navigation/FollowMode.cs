@@ -55,6 +55,8 @@ internal sealed class FollowMode : INavigationMode
         "manual" => "手动按键：" + this.manualKeys,
         "target_missing" => "队长暂不可见，等待重新出现",
         "frame_gap" => "画面更新中断，等待恢复",
+        "recovering" => "朝目标直走脱困",
+        "recovery_wait" => "脱困观察，准备重试",
         _ => this.run.Status
     };
     public void Apply(BotConfig config) { this.Stop(); this.Settings = config.Follow; }
@@ -83,9 +85,9 @@ internal sealed class FollowMode : INavigationMode
         this.distance = this.playerGap = 0;
     }
 
-    private void ClearRoute()
+    private void ClearRoute(bool release = true)
     {
-        this.DiscardRoute();
+        this.DiscardRoute(release);
         this.session.ResetProgress();
         this.recovery.Reset();
     }
@@ -212,31 +214,49 @@ internal sealed class FollowMode : INavigationMode
         // During correction the coordinator alone decides when P2 has rejoined;
         // the ordinary leader stop distance must not end this phase early.
         var needsMovement = this.correctingP2 || this.session.NeedsMovement(this.distance,
-            this.grid.Clear(player, goal), this.Settings.StopDistance, this.Settings.ResumeDistance);
+            this.Settings.StopDistance, this.Settings.ResumeDistance);
         if (!preview)
         {
             this.manualKeys = this.input?.ReadManualInput(this.Settings.LocalCoopFollow) ?? string.Empty;
             if (this.manualKeys.Length != 0) { this.Suspend("manual"); return; }
         }
-        if (!this.correctingP2 && !this.recovery.Active && combat()) { this.planned = MoveKeys.None; this.run.Status = "combat"; return; }
         if (!needsMovement)
         {
-            this.input?.Stop();
-            this.planned = MoveKeys.None;
-            this.session.IsStuck(player, false, now, this.Settings.StuckMilliseconds);
-            this.recovery.Reset();
-            this.run.Status = "in_range";
+            // This also cancels an ongoing forced advance as soon as we enter
+            // the stop radius. Never reuse its search/keys after the next resume.
+            this.input?.StopMovement();
+            this.ClearRoute(release: false);
+            this.run.Status = combat() ? "combat" : "in_range";
             return;
         }
+        var pathFailed = false;
         if (this.search?.IsCompleted == true)
         {
             this.route = this.search.GetAwaiter().GetResult();
+            pathFailed = this.route == null;
             this.routeAt = this.searchAt;
             this.routeGoal = this.searchGoal;
             this.search = null;
             this.searchCancellation?.Dispose();
             this.searchCancellation = null;
         }
+        var routeCurrent = this.route != null && now - this.routeAt < 1500 && Vector2.Distance(this.routeGoal, goal) < 30;
+        var steer = routeCurrent ? this.grid.Steer(this.route!, player) : null;
+        var world = game.CurrentWorldInstance;
+        var ratio = area.WorldToGridConvertor;
+        var origin = world.WorldToScreen(player * ratio, playerRender.TerrainHeight);
+        var screenX = world.WorldToScreen((player + Vector2.UnitX) * ratio, playerRender.TerrainHeight) - origin;
+        var screenY = world.WorldToScreen((player + Vector2.UnitY) * ratio, playerRender.TerrainHeight) - origin;
+        this.planned = steer == null ? MoveKeys.None : Steering.Choose(steer.Value - player, screenX, screenY,
+            step => this.grid.Clear(player, player + step));
+        // A completed failed search or unusable existing route gets an immediate
+        // direct advance. An initial pending search alone is not a path failure.
+        // Detect stalls before combat can defer navigation again.
+        if (!preview && this.recovery.BeginIfNeeded(player,
+            pathFailed || (routeCurrent && this.planned == MoveKeys.None),
+            this.session.IsStuck(player, true, now, this.Settings.StuckMilliseconds)))
+            this.DiscardRoute();
+        if (!this.correctingP2 && !this.recovery.Active && combat()) { this.planned = MoveKeys.None; this.run.Status = "combat"; return; }
         if (!this.recovery.Active && this.search == null && now >= this.nextSearch)
         {
             this.searchGoal = goal;
@@ -247,15 +267,6 @@ internal sealed class FollowMode : INavigationMode
             this.search = Task.Run(() => snapshot.FindPath(player, goal, token));
             this.nextSearch = now + this.Settings.RepathMilliseconds;
         }
-        var steer = this.route != null && now - this.routeAt < 1500 && Vector2.Distance(this.routeGoal, goal) < 30
-            ? this.grid.Steer(this.route, player) : null;
-        var world = game.CurrentWorldInstance;
-        var ratio = area.WorldToGridConvertor;
-        var origin = world.WorldToScreen(player * ratio, playerRender.TerrainHeight);
-        var screenX = world.WorldToScreen((player + Vector2.UnitX) * ratio, playerRender.TerrainHeight) - origin;
-        var screenY = world.WorldToScreen((player + Vector2.UnitY) * ratio, playerRender.TerrainHeight) - origin;
-        this.planned = steer == null ? MoveKeys.None : Steering.Choose(steer.Value - player, screenX, screenY,
-            step => this.grid.Clear(player, player + step));
         if (preview) { this.input?.Stop(); this.run.Status = "preview"; return; }
 
         bool ApplyCurrentMovement(int leaseMilliseconds = 200)
@@ -273,13 +284,6 @@ internal sealed class FollowMode : INavigationMode
             return true;
         }
 
-        // Count the entire interval without displacement, including no-path,
-        // searching and no-direction frames. Replanning must not reset this timer.
-        if (!this.recovery.Active && this.session.IsStuck(player, true, now, this.Settings.StuckMilliseconds))
-        {
-            this.recovery.Begin(player);
-            this.DiscardRoute();
-        }
         if (this.recovery.Active)
         {
             // A false terrain block must not veto recovery too. Use the live
@@ -348,6 +352,8 @@ internal sealed class FollowMode : INavigationMode
             ImGui.TextUnformatted(this.Status);
             ImGui.TextUnformatted(this.correctingP2 ? $"P2: {this.Settings.P2Name} → P1: {this.Settings.P1Name}" : $"Follow → {this.LeaderName}");
             ImGui.TextUnformatted($"Distance: {this.distance:0.0} | P1/P2: {this.playerGap:0.0} | {MovementBindings.Describe(this.planned, this.correctingP2)}");
+            if (!this.correctingP2)
+                ImGui.TextUnformatted($"Stop: {this.Settings.StopDistance:0.0} | Resume: {this.Settings.ResumeDistance:0.0}");
             ImGui.End();
         }
         if (!this.run.IsEnabled || !this.Settings.ShowRoute || this.route == null || Core.States.GameCurrentState != GameStateTypes.InGameState) return;

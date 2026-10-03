@@ -86,6 +86,7 @@ internal sealed class MovementInput : IBotInput, IDisposable
         return string.Join(" + ", keys);
     }
     public static bool HasModifier() => IsDown(0x11) || IsDown(0x12) || IsDown(0x5B) || IsDown(0x5C);
+    public void StopMovement() => this.lease.Stop();
     public void Stop() { this.lease.Stop(); this.skill.Stop(); }
     private bool Allowed() => !this.disposed && IsForeground(Volatile.Read(ref this.pid)) &&
         !IsDown(0x1B) && !IsDown(0x0D) && !HasModifier(); // Escape, Enter, Ctrl/Alt/Windows

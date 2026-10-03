@@ -5,11 +5,13 @@ using System.Numerics;
 internal enum RecoveryAction { Wait, Press, Repath }
 internal readonly record struct RecoveryStep(RecoveryAction Action, MoveKeys Keys = MoveKeys.None, int LeaseMilliseconds = 200);
 
-// Force short presses toward the current target, independent of terrain flags.
-// Actual displacement ends recovery; failed rounds rest and replan.
+// Force bounded advances toward the current target, independent of terrain flags.
+// Meaningful displacement ends recovery; failed rounds rest and replan.
 internal sealed class UnstuckRecovery
 {
-    internal const int PulseMilliseconds = 150;
+    internal const int PulseMilliseconds = 600;
+    internal const int InputLeaseMilliseconds = 150;
+    internal const float ProgressDistance = 8;
     internal const int RestMilliseconds = 120;
     internal const int RoundRestMilliseconds = 1000;
     internal const int MaxPulses = 8;
@@ -20,6 +22,13 @@ internal sealed class UnstuckRecovery
     private long restUntil;
     private long finishAt;
     public bool Active { get; private set; }
+
+    public bool BeginIfNeeded(Vector2 position, bool routeUnavailable, bool stalled)
+    {
+        if (this.Active || (!routeUnavailable && !stalled)) return false;
+        this.Begin(position);
+        return true;
+    }
 
     public void Begin(Vector2 position)
     {
@@ -34,12 +43,12 @@ internal sealed class UnstuckRecovery
     {
         if (!this.Active) return new(RecoveryAction.Repath);
         if (!float.IsFinite(position.X + position.Y)) return new(RecoveryAction.Wait);
-        if (Vector2.DistanceSquared(position, this.anchor) >= 1)
+        if (Vector2.DistanceSquared(position, this.anchor) >= ProgressDistance * ProgressDistance)
             return this.Finish(); // Real displacement: release the probe and replan immediately.
         if (this.held != MoveKeys.None)
         {
             if (now < this.pulseUntil && this.held == towardTarget)
-                return new(RecoveryAction.Press, this.held, (int)(this.pulseUntil - now));
+                return new(RecoveryAction.Press, this.held, Math.Min(InputLeaseMilliseconds, (int)(this.pulseUntil - now)));
             this.held = MoveKeys.None;
             this.restUntil = now + RestMilliseconds;
             return new(RecoveryAction.Wait);
@@ -52,7 +61,8 @@ internal sealed class UnstuckRecovery
             this.pulses++;
             this.held = towardTarget;
             this.pulseUntil = now + PulseMilliseconds;
-            return new(RecoveryAction.Press, towardTarget, PulseMilliseconds);
+            // A longer advance still requires fresh frames to renew a short lease.
+            return new(RecoveryAction.Press, towardTarget, InputLeaseMilliseconds);
         }
         this.finishAt = now + RoundRestMilliseconds;
         return new(RecoveryAction.Wait);

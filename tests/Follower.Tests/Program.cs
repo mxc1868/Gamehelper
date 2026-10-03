@@ -155,21 +155,35 @@ var partial = new KeyLease((key, down) => !down || key != MoveKeys.Right);
 Check(!partial.Renew(MoveKeys.Up | MoveKeys.Right, 0) && partial.Held == MoveKeys.None, "partial diagonal send failure cleans up");
 
 var session = new FollowSession();
-Check(!session.NeedsMovement(20, true, 18, 25), "idle inside hysteresis band");
-Check(session.NeedsMovement(30, true, 18, 25), "resume outside distance");
-Check(session.NeedsMovement(20, true, 18, 25), "continue within hysteresis band");
-Check(!session.NeedsMovement(18, true, 18, 25), "stop at following distance");
-Check(session.NeedsMovement(10, false, 18, 25), "nearby target behind wall still needs route");
+Check(!session.NeedsMovement(20, 18, 25), "idle inside hysteresis band");
+Check(session.NeedsMovement(30, 18, 25), "resume outside distance");
+Check(session.NeedsMovement(20, 18, 25), "continue within hysteresis band");
+Check(!session.NeedsMovement(18, 18, 25), "stop at following distance");
+Check(!session.NeedsMovement(10, 18, 25), "nearby target stops even when a wall or terrain flag blocks the direct line");
 session.Reset();
-Check(!session.NeedsMovement(5, nearWallGrid.Clear(new(9, 2), new(9, 7)), 18, 25),
+Check(!session.NeedsMovement(5, 18, 25),
     "wall proximity alone does not prevent stopping within following distance");
+var thirtyGrid = new NavigationGrid(Map(80, 80, (x, _) => x != 20), 40, 2, [], []);
+var thirtySession = new FollowSession();
+var thirtyLeader = new Vector2(45, 5);
+Check(thirtySession.NeedsMovement(40, 30, 33), "30-grid setting starts pursuit beyond resume radius");
+var thirtyPlayer = new Vector2(15, 5);
+Check(!thirtyGrid.Clear(thirtyPlayer, thirtyLeader) &&
+    !thirtySession.NeedsMovement(Vector2.Distance(thirtyPlayer, thirtyLeader), 30, 33),
+    "regression: exactly 30 grids stops an active pursuit even with a blocked line");
+Check(!thirtySession.NeedsMovement(29, 30, 33) && !thirtySession.NeedsMovement(32.9f, 30, 33),
+    "blocked terrain cannot restart movement inside stop/resume hysteresis");
+Check(thirtySession.NeedsMovement(33, 30, 33) && thirtySession.NeedsMovement(30.1f, 30, 33),
+    "resume boundary restarts pursuit until it reaches the stop radius again");
+Check(!thirtySession.NeedsMovement(float.NaN, 30, 33) && !thirtySession.NeedsMovement(31, 30, 33),
+    "invalid distance releases pursuit and clears its hysteresis");
 Check(!session.IsStuck(new(2, 2), true, 100, 2500), "start progress monitor");
 Check(session.IsStuck(new(2, 2), true, 2600, 2500), "stationary movement times out");
 Check(!session.IsStuck(new(5, 2), true, 2601, 2500), "movement resets progress timer");
 Check(!session.IsStuck(new(5, 2), false, 9000, 2500), "waiting for route is not stuck movement");
 Check(!session.IsStuck(new(5, 2), true, 9001, 2500), "resume starts fresh progress timer");
 session.Reset();
-Check(!session.NeedsMovement(20, true, 18, 25), "target/area reset clears hysteresis");
+Check(!session.NeedsMovement(20, 18, 25), "target/area reset clears hysteresis");
 var settings = new FollowSettings { StopDistance = float.NaN, ResumeDistance = float.PositiveInfinity, Clearance = -1, RepathMilliseconds = 0 };
 settings.Normalize();
 Check(settings.StopDistance == 18 && settings.ResumeDistance > 18 && settings.Clearance == 0 && settings.RepathMilliseconds == 150, "invalid settings normalize");
@@ -224,10 +238,10 @@ coordinator.Reset();
 Check(!coordinator.CorrectingP2 && !coordinator.Update(fixedP1, new(100, 75), true, 35, 12),
     "area/stop reset clears correction phase");
 session.Reset();
-Check(session.NeedsMovement(40, true, 18, 25), "normal leader following begins before correction");
+Check(session.NeedsMovement(40, 18, 25), "normal leader following begins before correction");
 session.IsStuck(new(2, 2), true, 0, 2500);
 session.ResetProgress();
-Check(session.NeedsMovement(20, true, 18, 25) && !session.IsStuck(new(2, 2), true, 9000, 2500),
+Check(session.NeedsMovement(20, 18, 25) && !session.IsStuck(new(2, 2), true, 9000, 2500),
     "phase change preserves leader-distance hysteresis but resets actor progress tracking");
 
 foreach (var (direction, vk, scan) in new[]
@@ -411,19 +425,28 @@ Check(!noPathProgress.IsStuck(new(5, 5), true, 0, 2500) &&
     !noPathProgress.IsStuck(new(5, 5), true, 2000, 2500) && noPathProgress.IsStuck(new(5, 5), true, 2500, 2500),
     "no-path and no-direction movement demand reaches recovery timeout without key output");
 var recovery = new UnstuckRecovery();
+Check(!recovery.BeginIfNeeded(new(5, 5), false, false) && !recovery.Active,
+    "an initial pending route does not trigger blind movement");
+Check(recovery.BeginIfNeeded(new(5, 5), false, true) && recovery.Active,
+    "a stationary actor with a usable route still enters recovery after the stall timeout");
+recovery.Reset();
 recovery.Begin(new(5, 5));
 var firstProbe = recovery.Advance(new(5, 5), 0, MoveKeys.Up);
 Check(firstProbe.Action == RecoveryAction.Press && firstProbe.Keys == MoveKeys.Up && firstProbe.LeaseMilliseconds == 150,
     "recovery presses directly toward the target instead of choosing a side-step");
-Check(recovery.Advance(new(5, 5), 100, MoveKeys.Up).LeaseMilliseconds == 50,
+Check(recovery.Advance(new(6, 5), 75, MoveKeys.Up).Action == RecoveryAction.Press && recovery.Active,
+    "one grid of motion no longer abandons the recovery advance");
+Check(recovery.Advance(new(12.9f, 5), 450, MoveKeys.Up).Action == RecoveryAction.Press,
+    "recovery keeps advancing beyond the old 150 ms pulse while below eight grids");
+Check(recovery.Advance(new(5, 5), 550, MoveKeys.Up).LeaseMilliseconds == 50,
     "renewing a probe preserves its original deadline");
-Check(recovery.Advance(new(5, 5), 150, MoveKeys.Up).Action == RecoveryAction.Wait &&
-    recovery.Advance(new(5, 5), 269, MoveKeys.Up).Action == RecoveryAction.Wait,
+Check(recovery.Advance(new(5, 5), 600, MoveKeys.Up).Action == RecoveryAction.Wait &&
+    recovery.Advance(new(5, 5), 719, MoveKeys.Up).Action == RecoveryAction.Wait,
     "probe release is followed by a rest interval");
-Check(recovery.Advance(new(5, 5), 270, MoveKeys.Up).Keys == MoveKeys.Up,
+Check(recovery.Advance(new(5, 5), 720, MoveKeys.Up).Keys == MoveKeys.Up,
     "stationary recovery retries toward the target rather than cycling away");
-Check(recovery.Advance(new(6, 5), 280, MoveKeys.Up).Action == RecoveryAction.Repath && !recovery.Active,
-    "one grid of actual displacement ends recovery and requests a fresh route");
+Check(recovery.Advance(new(13, 5), 730, MoveKeys.Up).Action == RecoveryAction.Repath && !recovery.Active,
+    "eight grids of actual displacement ends recovery and requests a fresh route");
 recovery.Reset();
 var inaccurateTerrain = Grid(Map(20, 20, (_, _) => false));
 var stuckPosition = new Vector2(5, 5);
@@ -433,14 +456,22 @@ Check(inaccurateTerrain.FindPath(stuckPosition, visibleTarget, default) == null 
         step => inaccurateTerrain.Clear(stuckPosition, stuckPosition + step)) == MoveKeys.None,
     "regression setup: blocked start makes both ordinary routing and steering refuse movement");
 var forcedDirection = Steering.Choose(visibleTarget - stuckPosition, Vector2.UnitX, Vector2.UnitY, _ => true);
-recovery.Begin(stuckPosition);
+Check(recovery.BeginIfNeeded(stuckPosition,
+    inaccurateTerrain.FindPath(stuckPosition, visibleTarget, default) == null, false),
+    "failed search immediately enters recovery without waiting for a stall timeout");
 var forcedProbe = recovery.Advance(stuckPosition, 0, forcedDirection);
 Check(forcedProbe.Action == RecoveryAction.Press && forcedProbe.Keys == MoveKeys.Right,
     "all terrain directions blocked still produces a forced press toward the visible target");
+Check(!recovery.BeginIfNeeded(stuckPosition, true, true),
+    "persistent no-path and stall evidence do not restart the recovery deadline");
 Check(recovery.Advance(stuckPosition, 20, MoveKeys.Left).Action == RecoveryAction.Wait,
     "target changing sides releases the old direction before a new press");
 Check(recovery.Advance(stuckPosition, 140, MoveKeys.Left).Keys == MoveKeys.Left,
     "next press follows the target's updated direction");
+recovery.Reset();
+var newlyBlockedSteer = inaccurateTerrain.Steer([stuckPosition, visibleTarget], stuckPosition);
+Check(recovery.BeginIfNeeded(stuckPosition, newlyBlockedSteer == null, false),
+    "an existing route blocked by fresh terrain enters recovery immediately");
 recovery.Reset();
 recovery.Begin(stuckPosition);
 Check(recovery.Advance(new(float.NaN, 5), 0, MoveKeys.Right).Action == RecoveryAction.Wait,
@@ -453,15 +484,15 @@ recovery.Begin(new(5, 5));
 var triedDirections = new List<MoveKeys>();
 for (var trial = 0; trial < 8; trial++)
 {
-    var at = trial * 270;
+    var at = trial * 720;
     var probe = recovery.Advance(new(5, 5), at, MoveKeys.Up);
     triedDirections.Add(probe.Keys);
-    Check(probe.Action == RecoveryAction.Press && recovery.Advance(new(5, 5), at + 150, MoveKeys.Up).Action == RecoveryAction.Wait,
+    Check(probe.Action == RecoveryAction.Press && recovery.Advance(new(5, 5), at + 600, MoveKeys.Up).Action == RecoveryAction.Wait,
         "stationary recovery probe " + trial + " always releases");
 }
 Check(triedDirections.Count == 8 && triedDirections.All(key => key == MoveKeys.Up), "one recovery round keeps all eight bounded attempts toward the target");
-Check(recovery.Advance(new(5, 5), 2160, MoveKeys.Up).Action == RecoveryAction.Wait &&
-    recovery.Advance(new(5, 5), 3160, MoveKeys.Up).Action == RecoveryAction.Repath && !recovery.Active,
+Check(recovery.Advance(new(5, 5), 5760, MoveKeys.Up).Action == RecoveryAction.Wait &&
+    recovery.Advance(new(5, 5), 6760, MoveKeys.Up).Action == RecoveryAction.Repath && !recovery.Active,
     "failed full round rests then returns to navigation without disabling follow");
 recovery.Begin(new(5, 5));
 recovery.Reset();
@@ -481,6 +512,28 @@ shortLease.Expire(149, true);
 Check(shortLease.Held == MoveKeys.Up, "short probe lease is alive before its deadline");
 shortLease.Expire(150, true);
 Check(shortLease.Held == MoveKeys.None, "watchdog releases a 150 ms probe even if no new draw frame arrives");
+recovery.Reset();
+recovery.Begin(new(5, 5));
+var longAdvanceEvents = new List<(MoveKeys, bool)>();
+var longAdvanceLease = new KeyLease((key, down) => { longAdvanceEvents.Add((key, down)); return true; });
+for (var at = 0; at <= 600; at += 75)
+{
+    longAdvanceLease.Expire(at, true);
+    var step = recovery.Advance(new(5 + at / 100f, 5), at, MoveKeys.Right);
+    if (step.Action == RecoveryAction.Press) longAdvanceLease.Renew(step.Keys, at, step.LeaseMilliseconds);
+    else longAdvanceLease.Stop();
+    Check(longAdvanceLease.Held == (at < 600 ? MoveKeys.Right : MoveKeys.None),
+        "fresh 75 ms observations sustain one bounded 600 ms advance: " + at);
+}
+Check(longAdvanceEvents.SequenceEqual(new[] { (MoveKeys.Right, true), (MoveKeys.Right, false) }),
+    "a longer advance holds continuously instead of repeatedly tapping the key");
+recovery.Reset();
+recovery.Begin(new(5, 5));
+var interruptedAdvance = recovery.Advance(new(5, 5), 0, MoveKeys.Right);
+longAdvanceLease.Renew(interruptedAdvance.Keys, 0, interruptedAdvance.LeaseMilliseconds);
+longAdvanceLease.Expire(150, true);
+Check(longAdvanceLease.Held == MoveKeys.None && recovery.Active,
+    "missing frames release an extended advance at 150 ms, before its 600 ms deadline");
 foreach (var useArrows in new[] { false, true })
 {
     var sent = new List<MovementBinding>();

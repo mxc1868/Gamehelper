@@ -9,11 +9,13 @@ internal sealed class FollowSession
     private long progressAt;
     private bool measuring;
 
-    public bool NeedsMovement(float distance, bool directLine, float stop, float resume)
+    public bool NeedsMovement(float distance, float stop, float resume)
     {
         if (!float.IsFinite(distance)) { this.Reset(); return false; }
-        if (directLine && distance <= stop) this.catchingUp = false;
-        else if (!directLine || distance >= resume) this.catchingUp = true;
+        // Stop distance is a radius, independent of imperfect terrain/door flags.
+        // A blocked line must neither override this radius nor restart movement.
+        if (distance <= stop) this.catchingUp = false;
+        else if (distance >= resume) this.catchingUp = true;
         return this.catchingUp;
     }
 
