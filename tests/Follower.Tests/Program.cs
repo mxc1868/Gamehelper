@@ -115,6 +115,62 @@ using (var cancel = new CancellationTokenSource())
     cancel.Cancel();
     Check(grid.FindPath(new(3, 5), new(17, 5), cancel.Token) == null, "canceled search discards even direct route");
 }
+Check(Grid(split).SearchPath(new(10, 5), new(17, 5), default).Status == PathSearchStatus.StartBlocked,
+    "search reports blocked actual start separately from unreachable terrain");
+Check(Grid(split).SearchPath(new(3, 5), new(10, 5), default).Status == PathSearchStatus.GoalBlocked,
+    "search reports blocked goal without inventing a walkable endpoint");
+Check(Grid(split).SearchPath(new(3, 5), new(17, 5), default).Status == PathSearchStatus.Unreachable,
+    "an exhausted disconnected search reports no route");
+Check(detourGrid.SearchPath(new(3, 5), new(17, 5), default, maxNodes: 1).Status == PathSearchStatus.BudgetExceeded,
+    "node limit does not mislabel a real detour as an impassable wall");
+Check(grid.SearchPath(new(3, 5), new(17, 5), default, maxMilliseconds: 0).Status == PathSearchStatus.BudgetExceeded,
+    "time budget exhaustion remains distinct from path failure");
+using (var cancelledSearch = new CancellationTokenSource())
+{
+    cancelledSearch.Cancel();
+    Check(grid.SearchPath(new(3, 5), new(17, 5), cancelledSearch.Token).Status == PathSearchStatus.Cancelled,
+        "cancelled search is not treated as terrain failure");
+}
+var regionRoute = nearWallGrid.SearchPath(new(3, 5), new(9, 5), default, arrivalRadius: 3);
+Check(regionRoute.Route is { Count: > 1 } && regionRoute.Route[^1] != new Vector2(9, 5) &&
+    Vector2.Distance(regionRoute.Route[^1], new(9, 5)) <= 3,
+    "arrival region reaches a connected landing near a wall-adjacent target without occupying its exact cell");
+Check(regionRoute.Route != null && regionRoute.Route.Zip(regionRoute.Route.Skip(1)).All(p => nearWallGrid.Clear(p.First, p.Second)),
+    "arrival-region paths retain physically walkable segments");
+Check(Grid(split).SearchPath(new(9, 5), new(11, 5), default, arrivalRadius: 12).Status == PathSearchStatus.Unreachable,
+    "a large arrival radius cannot accept a nearby cell across a disconnected wall");
+var targetHistory = new NavigationTarget();
+Check(targetHistory.Observe(nearWallGrid, new(10, 5)) == null,
+    "an initially blocked target has no invented anchor");
+Check(targetHistory.Observe(nearWallGrid, new(9, 5)) == new Vector2(9, 5),
+    "target history records the actual observed walkable position");
+var observedAnchor = targetHistory.Observe(nearWallGrid, new(10, 5));
+var anchoredRoute = nearWallGrid.SearchPath(new(3, 5), new(10, 5), default, arrivalRadius: 4, observedGoalAnchor: observedAnchor);
+Check(observedAnchor == new Vector2(9, 5) && anchoredRoute.Route != null && anchoredRoute.Route.All(p => p.X < 10),
+    "a terrain-mismatched target can use its nearby observed anchor on the same side of the wall");
+Check(nearWallGrid.SearchPath(new(10, 5), new(9, 5), default, arrivalRadius: 4, observedGoalAnchor: new(9, 5)).Status == PathSearchStatus.StartBlocked,
+    "goal tolerance never snaps a blocked follower start");
+Check(targetHistory.Observe(nearWallGrid, new(10, 12)) == null,
+    "target movement beyond the small anchor tolerance discards old history");
+targetHistory.Observe(nearWallGrid, new(9, 5));
+targetHistory.Reset();
+Check(targetHistory.Observe(nearWallGrid, new(10, 5)) == null, "area or identity reset discards target anchors");
+Check(Grid(split, closed: [(10, 5)]).SearchPath(new(3, 5), new(10, 5), default,
+    arrivalRadius: 4, observedGoalAnchor: new(9, 5)).Status == PathSearchStatus.GoalBlocked,
+    "an observed anchor cannot bypass an explicitly closed door");
+var localCorner = Grid(Map(20, 20, (x, y) => (x, y) != (10, 10)));
+Check(!localCorner.Clear(new(9, 10), new(11, 10)) && localCorner.HasShortConnection(new(9, 10), new(11, 10), 4),
+    "nearby players can rejoin via a short corner detour when the straight line is blocked");
+Check(!Grid(split).HasShortConnection(new(9, 10), new(11, 10), 4),
+    "distance alone does not declare players on opposite sides of a wall reunited");
+var longDetourGrid = Grid(Map(20, 20, (x, y) => x != 10 || y == 18));
+Check(!longDetourGrid.HasShortConnection(new(9, 2), new(11, 2), 12),
+    "a long wall detour is not a short reunion despite nearby coordinates");
+var cornerCoop = new CoopCoordinator();
+cornerCoop.Update(new(11, 10), new(1, 10), false, 6, 4);
+Check(!cornerCoop.Update(new(11, 10), new(9, 10), localCorner.HasShortConnection(new(9, 10), new(11, 10), 4), 6, 4),
+    "short-path evidence ends P2 correction without requiring a direct line");
+
 foreach (var (direction, keys) in new[]
 {
     (new Vector2(0,-5), MoveKeys.Up), (new Vector2(5,0), MoveKeys.Right),
@@ -420,132 +476,169 @@ Check(!lostLeaderRun.IsEnabled && !lostLeaderRun.Ready(long.MaxValue) && lostLea
 Check(ParticipantSelection.Resolve([p1, p2, leader, new(105, 0x5000, "Primary")], p1, true, "Leader", "Primary", "Secondary", out selectionReason) == null &&
     selectionReason == "ambiguous_player" && FollowRunState.IsTerminal(selectionReason), "ambiguous role selection is a configuration stop");
 
-var noPathProgress = new FollowSession();
-Check(!noPathProgress.IsStuck(new(5, 5), true, 0, 2500) &&
-    !noPathProgress.IsStuck(new(5, 5), true, 2000, 2500) && noPathProgress.IsStuck(new(5, 5), true, 2500, 2500),
-    "no-path and no-direction movement demand reaches recovery timeout without key output");
-var recovery = new UnstuckRecovery();
-Check(!recovery.BeginIfNeeded(new(5, 5), false, false) && !recovery.Active,
-    "an initial pending route does not trigger blind movement");
-Check(recovery.BeginIfNeeded(new(5, 5), false, true) && recovery.Active,
-    "a stationary actor with a usable route still enters recovery after the stall timeout");
-recovery.Reset();
-recovery.Begin(new(5, 5));
-var firstProbe = recovery.Advance(new(5, 5), 0, MoveKeys.Up);
-Check(firstProbe.Action == RecoveryAction.Press && firstProbe.Keys == MoveKeys.Up && firstProbe.LeaseMilliseconds == 150,
-    "recovery presses directly toward the target instead of choosing a side-step");
-Check(recovery.Advance(new(6, 5), 75, MoveKeys.Up).Action == RecoveryAction.Press && recovery.Active,
-    "one grid of motion no longer abandons the recovery advance");
-Check(recovery.Advance(new(12.9f, 5), 450, MoveKeys.Up).Action == RecoveryAction.Press,
-    "recovery keeps advancing beyond the old 150 ms pulse while below eight grids");
-Check(recovery.Advance(new(5, 5), 550, MoveKeys.Up).LeaseMilliseconds == 50,
-    "renewing a probe preserves its original deadline");
-Check(recovery.Advance(new(5, 5), 600, MoveKeys.Up).Action == RecoveryAction.Wait &&
-    recovery.Advance(new(5, 5), 719, MoveKeys.Up).Action == RecoveryAction.Wait,
-    "probe release is followed by a rest interval");
-Check(recovery.Advance(new(5, 5), 720, MoveKeys.Up).Keys == MoveKeys.Up,
-    "stationary recovery retries toward the target rather than cycling away");
-Check(recovery.Advance(new(13, 5), 730, MoveKeys.Up).Action == RecoveryAction.Repath && !recovery.Active,
-    "eight grids of actual displacement ends recovery and requests a fresh route");
-recovery.Reset();
-var inaccurateTerrain = Grid(Map(20, 20, (_, _) => false));
+// Recovery uses fresh synthetic 100/75 ms frames; long timestamp jumps must not
+// be mistaken for two seconds of actual movement attempts.
 var stuckPosition = new Vector2(5, 5);
 var visibleTarget = new Vector2(15, 5);
-Check(inaccurateTerrain.FindPath(stuckPosition, visibleTarget, default) == null &&
-    Steering.Choose(visibleTarget - stuckPosition, Vector2.UnitX, Vector2.UnitY,
-        step => inaccurateTerrain.Clear(stuckPosition, stuckPosition + step)) == MoveKeys.None,
-    "regression setup: blocked start makes both ordinary routing and steering refuse movement");
+var inaccurateTerrain = Grid(Map(20, 20, (_, _) => false));
 var forcedDirection = Steering.Choose(visibleTarget - stuckPosition, Vector2.UnitX, Vector2.UnitY, _ => true);
+var recovery = new UnstuckRecovery(new Random(17));
+Check(!recovery.BeginIfNeeded(stuckPosition, false, false) && !recovery.Active,
+    "pending or budget-exhausted search alone does not trigger blind movement");
 Check(recovery.BeginIfNeeded(stuckPosition,
-    inaccurateTerrain.FindPath(stuckPosition, visibleTarget, default) == null, false),
-    "failed search immediately enters recovery without waiting for a stall timeout");
-var forcedProbe = recovery.Advance(stuckPosition, 0, forcedDirection);
-Check(forcedProbe.Action == RecoveryAction.Press && forcedProbe.Keys == MoveKeys.Right,
-    "all terrain directions blocked still produces a forced press toward the visible target");
-Check(!recovery.BeginIfNeeded(stuckPosition, true, true),
-    "persistent no-path and stall evidence do not restart the recovery deadline");
-Check(recovery.Advance(stuckPosition, 20, MoveKeys.Left).Action == RecoveryAction.Wait,
-    "target changing sides releases the old direction before a new press");
-Check(recovery.Advance(stuckPosition, 140, MoveKeys.Left).Keys == MoveKeys.Left,
-    "next press follows the target's updated direction");
+    inaccurateTerrain.SearchPath(stuckPosition, visibleTarget, default).Status == PathSearchStatus.StartBlocked, false),
+    "blocked real start immediately begins direct recovery without snapping the actor across a wall");
+var firstProbe = recovery.Advance(stuckPosition, 0, forcedDirection);
+Check(firstProbe.Keys == MoveKeys.Right && firstProbe.LeaseMilliseconds == 150,
+    "all terrain directions blocked still permits a short-lease direct probe");
+Check(!recovery.BeginIfNeeded(stuckPosition, true, true), "repeated path failures do not restart an active recovery");
+for (var at = 100; at < 2000; at += 100)
+{
+    var step = recovery.Advance(stuckPosition, at, forcedDirection);
+    Check((step.Keys is MoveKeys.None or MoveKeys.Right) && !recovery.Exploring,
+        "direct attempts persist before two seconds despite pulse rests: " + at);
+}
+Check(recovery.Advance(stuckPosition, 2000, forcedDirection).Action == RecoveryAction.Wait && recovery.Exploring,
+    "two seconds without displacement releases forward input and enters exploration");
+recovery.Advance(stuckPosition, 2100, forcedDirection);
+var sideProbe = recovery.Advance(stuckPosition, 2200, forcedDirection);
+Check(sideProbe.Keys is MoveKeys.Up or MoveKeys.Down,
+    "the first randomized exploration tier is sideways relative to the target");
+
+// A repath at the same spot must not spend another two seconds on the failed direction.
+recovery.Begin(stuckPosition);
+Check(recovery.Advance(stuckPosition, 2300, forcedDirection).Action == RecoveryAction.Wait && recovery.Exploring,
+    "a remembered local failure skips the next direct attempt");
+recovery.Advance(stuckPosition, 2400, forcedDirection);
+Check(recovery.Advance(stuckPosition, 2500, forcedDirection).Keys is MoveKeys.Up or MoveKeys.Down,
+    "remembered forward failure still allows alternate movement");
+recovery.Begin(stuckPosition);
+Check(recovery.Advance(stuckPosition, 13000, forcedDirection).Keys == MoveKeys.Right && !recovery.Exploring,
+    "local failure memory expires instead of permanently banning a direction");
+
 recovery.Reset();
-var newlyBlockedSteer = inaccurateTerrain.Steer([stuckPosition, visibleTarget], stuckPosition);
-Check(recovery.BeginIfNeeded(stuckPosition, newlyBlockedSteer == null, false),
-    "an existing route blocked by fresh terrain enters recovery immediately");
+recovery.BeginIfNeeded(stuckPosition, false, true);
+var triedDirections = new List<MoveKeys>();
+var previousKeys = MoveKeys.None;
+for (var at = 0; at <= 6500; at += 100)
+{
+    var step = recovery.Advance(stuckPosition, at, MoveKeys.Right);
+    if (step.Keys != MoveKeys.None && step.Keys != previousKeys) triedDirections.Add(step.Keys);
+    previousKeys = step.Keys;
+}
+Check(triedDirections.Count == 7 && triedDirections.Distinct().Count() == 7 && !triedDirections.Contains(MoveKeys.Right),
+    "stationary exploration tries all seven alternatives once, excluding the already failed forward direction");
+Check(recovery.Active && recovery.Advance(stuckPosition, 6600, MoveKeys.Right).Action == RecoveryAction.Wait,
+    "exhausted directions rest without disabling follow or immediately retrying a failed direction");
+recovery.Begin(new(30, 5));
+Check(recovery.Advance(new(30, 5), 6700, MoveKeys.Right).Keys == MoveKeys.Right && !recovery.Exploring,
+    "failure memory is local and is discarded after leaving the corner");
 recovery.Reset();
 recovery.Begin(stuckPosition);
-Check(recovery.Advance(new(float.NaN, 5), 0, MoveKeys.Right).Action == RecoveryAction.Wait,
-    "unreadable position still prevents forced movement");
-Check(recovery.Advance(stuckPosition, 0, MoveKeys.None).Action == RecoveryAction.Wait &&
-    recovery.Advance(stuckPosition, 1000, MoveKeys.Right).Action == RecoveryAction.Press,
-    "missing direction waits without spending attempts and resumes when direction recovers");
+Check(recovery.Advance(stuckPosition, 6800, MoveKeys.Right).Keys == MoveKeys.Right,
+    "actor, target, area and explicit stop reset old failure memory");
+
+Vector2 KeyDelta(MoveKeys keys) => new(
+    ((keys & MoveKeys.Right) != 0 ? 1 : 0) - ((keys & MoveKeys.Left) != 0 ? 1 : 0),
+    ((keys & MoveKeys.Down) != 0 ? 1 : 0) - ((keys & MoveKeys.Up) != 0 ? 1 : 0));
 recovery.Reset();
-recovery.Begin(new(5, 5));
-var triedDirections = new List<MoveKeys>();
-for (var trial = 0; trial < 8; trial++)
+recovery.BeginIfNeeded(stuckPosition, false, true);
+var escapingSide = recovery.Advance(stuckPosition, 0, MoveKeys.Right).Keys;
+var escapeDelta = KeyDelta(escapingSide);
+Check(escapingSide is MoveKeys.Up or MoveKeys.Down, "a known stalled route starts with an alternate direction");
+for (var at = 100; at <= 1500; at += 100)
 {
-    var at = trial * 720;
-    var probe = recovery.Advance(new(5, 5), at, MoveKeys.Up);
-    triedDirections.Add(probe.Keys);
-    Check(probe.Action == RecoveryAction.Press && recovery.Advance(new(5, 5), at + 600, MoveKeys.Up).Action == RecoveryAction.Wait,
-        "stationary recovery probe " + trial + " always releases");
+    var step = recovery.Advance(stuckPosition + escapeDelta * (at / 200f), at, MoveKeys.Right, escapingSide);
+    Check(recovery.Active && recovery.Exploring && (step.Keys == escapingSide || step.Keys == MoveKeys.None),
+        "an available route does not interrupt a productive side-step before eight grids: " + at);
 }
-Check(triedDirections.Count == 8 && triedDirections.All(key => key == MoveKeys.Up), "one recovery round keeps all eight bounded attempts toward the target");
-Check(recovery.Advance(new(5, 5), 5760, MoveKeys.Up).Action == RecoveryAction.Wait &&
-    recovery.Advance(new(5, 5), 6760, MoveKeys.Up).Action == RecoveryAction.Repath && !recovery.Active,
-    "failed full round rests then returns to navigation without disabling follow");
-recovery.Begin(new(5, 5));
+Check(recovery.Advance(stuckPosition + escapeDelta * 8, 1600, MoveKeys.Right, escapingSide).Keys == escapingSide &&
+    recovery.Active && !recovery.Exploring, "after escaping eight grids a fresh route is tried but not yet declared successful");
+recovery.Advance(stuckPosition + escapeDelta * 9.5f, 1700, MoveKeys.Right, escapingSide);
+recovery.Advance(stuckPosition + escapeDelta * 11, 1800, MoveKeys.Right, escapingSide);
+Check(recovery.Advance(stuckPosition + escapeDelta * 12.5f, 1900, MoveKeys.Right, escapingSide).Action == RecoveryAction.Repath &&
+    !recovery.Active, "a route with 300 ms and four grids of real progress ends recovery");
+
+// Merely moving eight grids, or merely finding a route, cannot reset the recovery.
 recovery.Reset();
-Check(!recovery.Active && recovery.Advance(new(5, 5), 0, MoveKeys.Up).Action == RecoveryAction.Repath,
-    "pause, actor switch and area reset cancel old recovery commands");
+recovery.Begin(stuckPosition);
+for (var at = 0; at <= 1600; at += 100)
+    recovery.Advance(stuckPosition + new Vector2(at / 100f, 0), at, MoveKeys.Right);
+Check(recovery.Active, "displacement alone does not end recovery while routing remains unavailable");
+recovery.Reset();
+recovery.Begin(stuckPosition);
+for (var at = 0; at < 2000; at += 100)
+    recovery.Advance(stuckPosition, at, MoveKeys.Right, MoveKeys.Right);
+Check(recovery.Active && recovery.Advance(stuckPosition, 2000, MoveKeys.Right, MoveKeys.Right).Action == RecoveryAction.Wait &&
+    recovery.Exploring, "a repeatedly found route that cannot move the actor still escalates to exploration");
+
+recovery.Reset();
+recovery.Begin(stuckPosition);
+for (var at = 0; at <= 1000; at += 100) recovery.Advance(stuckPosition, at, MoveKeys.Right);
+recovery.Pause();
+Check(recovery.Advance(stuckPosition, 10000, MoveKeys.Right).Keys == MoveKeys.Right && !recovery.Exploring,
+    "a long focus/panel suspension does not count as two seconds of attempted movement");
+for (var at = 10100; at < 11000; at += 100) recovery.Advance(stuckPosition, at, MoveKeys.Right);
+Check(recovery.Advance(stuckPosition, 11000, MoveKeys.Right).Action == RecoveryAction.Wait && recovery.Exploring,
+    "pausing excludes idle time without forgetting the earlier one second of stall evidence");
+
+recovery.Reset();
+recovery.Begin(stuckPosition);
+recovery.Advance(stuckPosition, 0, MoveKeys.Right);
+Check(recovery.Advance(stuckPosition, 1000, MoveKeys.Right).Action == RecoveryAction.Wait && !recovery.Exploring,
+    "an unobserved frame gap releases recovery rather than counting stale time or sending a key");
+Check(recovery.Advance(stuckPosition, 1100, MoveKeys.Left).Keys == MoveKeys.Left,
+    "fresh input after a gap follows the current target direction");
+
+recovery.Reset();
+recovery.Begin(stuckPosition);
+recovery.Advance(stuckPosition, 0, MoveKeys.Right);
+Check(recovery.Advance(stuckPosition, 100, MoveKeys.Left).Action == RecoveryAction.Wait,
+    "target changing sides releases the old direct direction first");
+recovery.Advance(stuckPosition, 200, MoveKeys.Left);
+Check(recovery.Advance(stuckPosition, 300, MoveKeys.Left).Keys == MoveKeys.Left,
+    "the next direct pulse follows the updated target");
+Check(recovery.Advance(new(float.NaN, 5), 400, MoveKeys.Left).Action == RecoveryAction.Wait,
+    "invalid actor position never sends forced input");
+var invalidDirection = Steering.Choose(Vector2.UnitX, Vector2.Zero, Vector2.Zero, _ => true);
+Check(recovery.Advance(stuckPosition, 500, invalidDirection).Action == RecoveryAction.Wait,
+    "invalid screen projection never falls back to a guessed screen direction");
+recovery.Reset();
 recovery.Begin(stuckPosition);
 var isometricDirection = Steering.Choose(new(1, -1), new(1, 0.5f), new(-1, 0.5f), _ => true);
 Check(recovery.Advance(stuckPosition, 0, isometricDirection).Keys == MoveKeys.Right,
-    "forced target direction still uses the actual isometric screen projection");
-var invalidDirection = Steering.Choose(Vector2.UnitX, Vector2.Zero, Vector2.Zero, _ => true);
-Check(recovery.Advance(stuckPosition, 10, invalidDirection).Action == RecoveryAction.Wait,
-    "invalid projection releases the old press rather than guessing a target direction");
-var shortLease = new KeyLease((_, _) => true);
-shortLease.Renew(MoveKeys.Up, 0, 150);
-shortLease.Renew(MoveKeys.Up, 100, 50);
-shortLease.Expire(149, true);
-Check(shortLease.Held == MoveKeys.Up, "short probe lease is alive before its deadline");
-shortLease.Expire(150, true);
-Check(shortLease.Held == MoveKeys.None, "watchdog releases a 150 ms probe even if no new draw frame arrives");
-recovery.Reset();
-recovery.Begin(new(5, 5));
+    "initial target direction uses the actor's isometric projection");
+
 var longAdvanceEvents = new List<(MoveKeys, bool)>();
 var longAdvanceLease = new KeyLease((key, down) => { longAdvanceEvents.Add((key, down)); return true; });
+recovery.Reset();
+recovery.Begin(stuckPosition);
 for (var at = 0; at <= 600; at += 75)
 {
     longAdvanceLease.Expire(at, true);
-    var step = recovery.Advance(new(5 + at / 100f, 5), at, MoveKeys.Right);
+    var step = recovery.Advance(stuckPosition + new Vector2(at / 100f, 0), at, MoveKeys.Right);
     if (step.Action == RecoveryAction.Press) longAdvanceLease.Renew(step.Keys, at, step.LeaseMilliseconds);
     else longAdvanceLease.Stop();
     Check(longAdvanceLease.Held == (at < 600 ? MoveKeys.Right : MoveKeys.None),
-        "fresh 75 ms observations sustain one bounded 600 ms advance: " + at);
+        "fresh frames sustain a bounded 600 ms pulse: " + at);
 }
 Check(longAdvanceEvents.SequenceEqual(new[] { (MoveKeys.Right, true), (MoveKeys.Right, false) }),
-    "a longer advance holds continuously instead of repeatedly tapping the key");
-recovery.Reset();
-recovery.Begin(new(5, 5));
-var interruptedAdvance = recovery.Advance(new(5, 5), 0, MoveKeys.Right);
-longAdvanceLease.Renew(interruptedAdvance.Keys, 0, interruptedAdvance.LeaseMilliseconds);
-longAdvanceLease.Expire(150, true);
-Check(longAdvanceLease.Held == MoveKeys.None && recovery.Active,
-    "missing frames release an extended advance at 150 ms, before its 600 ms deadline");
+    "long advances hold continuously rather than repeating key-down events");
 foreach (var useArrows in new[] { false, true })
 {
     var sent = new List<MovementBinding>();
     var probeLease = new KeyLease((key, _) => { sent.Add(MovementBindings.Get(key, useArrows)); return true; });
     recovery.Reset();
-    recovery.Begin(new(5, 5));
-    var probe = recovery.Advance(new(5, 5), 0, MoveKeys.Up);
+    recovery.BeginIfNeeded(stuckPosition, false, true);
+    var probe = recovery.Advance(stuckPosition, 0, MoveKeys.Up);
     probeLease.Renew(probe.Keys, 0, probe.LeaseMilliseconds);
     probeLease.Expire(150, true);
-    Check(sent.Count == 2 && sent.All(binding => binding.Extended == useArrows),
-        useArrows ? "P2 recovery presses and releases only extended arrow keys" : "shared recovery presses and releases only WASD");
+    Check(probeLease.Held == MoveKeys.None && sent.Count == 2 && sent.All(binding => binding.Extended == useArrows),
+        useArrows ? "P2 exploratory presses use arrows only and expire at 150 ms" : "shared exploratory presses use WASD only and expire at 150 ms");
 }
+recovery.Reset();
+Check(!recovery.Active && recovery.Advance(stuckPosition, 0, MoveKeys.Right).Action == RecoveryAction.Repath,
+    "stop/range/actor reset cancels all old exploratory commands");
 var combatProgress = new FollowSession();
 Check(!combatProgress.IsStuck(Vector2.Zero, true, 0, 2500), "combat progress starts measuring movement");
 combatProgress.PauseProgress(330);

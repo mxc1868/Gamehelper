@@ -8,10 +8,10 @@ internal sealed class CoopCoordinator
 {
     public bool CorrectingP2 { get; private set; }
 
-    public bool Update(Vector2 p1, Vector2 p2, bool playersHaveClearLine, float startGap, float rejoinGap)
+    public bool Update(Vector2 p1, Vector2 p2, bool playersCanRejoin, float startGap, float rejoinGap)
     {
         var gap = Vector2.Distance(p1, p2);
-        if (this.CorrectingP2 && playersHaveClearLine && gap <= rejoinGap)
+        if (this.CorrectingP2 && playersCanRejoin && gap <= rejoinGap)
             this.CorrectingP2 = false;
         else if (gap >= startGap)
             this.CorrectingP2 = true;

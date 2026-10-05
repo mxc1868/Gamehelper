@@ -3,6 +3,29 @@ namespace Bloodybot2.Navigation;
 using System.Diagnostics;
 using System.Numerics;
 
+internal enum PathSearchStatus { Found, StartBlocked, GoalBlocked, Unreachable, BudgetExceeded, Cancelled, Invalid }
+internal sealed record PathSearchResult(PathSearchStatus Status, List<Vector2>? Route = null);
+
+// A blocked target can use its own recently observed walkable position, never
+// an arbitrary nearest cell on the other side of a wall. Scoped to one identity.
+internal sealed class NavigationTarget
+{
+    private Vector2? anchor;
+    private Vector2? previous;
+    public Vector2? Observe(NavigationGrid grid, Vector2 target)
+    {
+        if (!grid.Contains(target)) { this.Reset(); return null; }
+        if (this.previous is Vector2 last && Vector2.DistanceSquared(last, target) > 64) this.anchor = null;
+        this.previous = target;
+        if (grid.Walkable(target)) this.anchor = target;
+        if (this.anchor is Vector2 point && grid.CanUseObservedAnchor(point, target))
+            return point;
+        this.anchor = null;
+        return null;
+    }
+    public void Reset() { this.anchor = this.previous = null; }
+}
+
 // Uses the same packed terrain format and 8-neighbour A* approach as Radar.
 // Movement requires stricter edges than a display route: bounded coordinates,
 // no endpoint snapping across walls and no diagonal corner cutting. Clearance is
@@ -18,6 +41,21 @@ internal sealed class NavigationGrid(byte[] data, int stride, int clearance,
         if (stride <= 0 || x < 0 || y < 0 || x >= stride * 2L || y >= data.Length / stride) return false;
         if (closedDoors.Contains((x, y))) return false;
         return openDoors.Contains((x, y)) || ((data[y * stride + x / 2] >> ((x & 1) * 4)) & 15) != 0;
+    }
+
+    public bool Walkable(Vector2 p) => this.Contains(p) && this.Walkable((int)MathF.Round(p.X), (int)MathF.Round(p.Y));
+
+    public bool CanUseObservedAnchor(Vector2 anchor, Vector2 goal)
+    {
+        if (!this.Walkable(anchor) || !this.Contains(goal) || Vector2.DistanceSquared(anchor, goal) > 16) return false;
+        // A terrain mismatch may use the actor's observed history; an explicitly
+        // closed doorway must not be bypassed by that history.
+        for (var i = 0; i <= 16; i++)
+        {
+            var p = Vector2.Lerp(anchor, goal, i / 16f);
+            if (closedDoors.Contains(((int)MathF.Round(p.X), (int)MathF.Round(p.Y)))) return false;
+        }
+        return true;
     }
 
     private float CellCost(int x, int y)
@@ -77,15 +115,59 @@ internal sealed class NavigationGrid(byte[] data, int stride, int clearance,
 
     public List<Vector2>? FindPath(Vector2 start, Vector2 goal, CancellationToken cancellation,
         int maxNodes = 40000, int maxMilliseconds = 100)
+        => this.SearchPath(start, goal, cancellation, maxNodes: maxNodes, maxMilliseconds: maxMilliseconds).Route;
+
+    public PathSearchResult SearchPath(Vector2 start, Vector2 goal, CancellationToken cancellation,
+        float arrivalRadius = 0, Vector2? observedGoalAnchor = null, int maxNodes = 40000, int maxMilliseconds = 100)
     {
-        if (cancellation.IsCancellationRequested || !this.Contains(start) || !this.Contains(goal) || Vector2.Distance(start, goal) > 600) return null;
+        if (cancellation.IsCancellationRequested) return new(PathSearchStatus.Cancelled);
+        if (!this.Contains(start) || !this.Contains(goal) || Vector2.Distance(start, goal) > 600 ||
+            !float.IsFinite(arrivalRadius) || arrivalRadius < 0) return new(PathSearchStatus.Invalid);
         var first = ((int)MathF.Round(start.X), (int)MathF.Round(start.Y));
-        var last = ((int)MathF.Round(goal.X), (int)MathF.Round(goal.Y));
-        if (!this.Walkable(first.Item1, first.Item2) || !this.Walkable(last.Item1, last.Item2)) return null;
+        if (!this.Walkable(first.Item1, first.Item2)) return new(PathSearchStatus.StartBlocked);
+        var endpoint = goal;
+        if (!this.Walkable(goal))
+        {
+            if (observedGoalAnchor is not Vector2 anchor || !this.CanUseObservedAnchor(anchor, goal))
+                return new(PathSearchStatus.GoalBlocked);
+            endpoint = anchor;
+        }
+        if (maxNodes <= 0 || maxMilliseconds <= 0) return new(PathSearchStatus.BudgetExceeded);
+        var last = ((int)MathF.Round(endpoint.X), (int)MathF.Round(endpoint.Y));
+        var clock = Stopwatch.StartNew();
+        // Only cells locally connected to the target's observed side are arrival
+        // candidates. A radius alone would incorrectly accept a spot across a wall.
+        var radius = Math.Clamp(arrivalRadius, 0, 12);
+        var endpointOffset = Vector2.Distance(endpoint, goal);
+        if (radius > 0 && endpointOffset > radius) return new(PathSearchStatus.GoalBlocked);
+        var goals = new HashSet<(int x, int y)> { last };
+        if (radius > 0)
+        {
+            var frontier = new PriorityQueue<(int x, int y), float>();
+            var localCosts = new Dictionary<(int x, int y), float> { [last] = 0 };
+            frontier.Enqueue(last, 0);
+            while (frontier.TryDequeue(out var cell, out var localCost))
+            {
+                if (cancellation.IsCancellationRequested) return new(PathSearchStatus.Cancelled);
+                if (clock.ElapsedMilliseconds > maxMilliseconds) return new(PathSearchStatus.BudgetExceeded);
+                if (localCost > localCosts[cell]) continue;
+                foreach (var next in this.Neighbours(cell))
+                {
+                    var nextCost = localCost + (next.x == cell.x || next.y == cell.y ? 1 : 1.41421356f);
+                    if (nextCost + endpointOffset > radius ||
+                        Vector2.DistanceSquared(new(next.x, next.y), goal) > radius * radius ||
+                        localCosts.TryGetValue(next, out var oldCost) && oldCost <= nextCost) continue;
+                    localCosts[next] = nextCost;
+                    goals.Add(next);
+                    frontier.Enqueue(next, nextCost);
+                }
+            }
+        }
+        if (goals.Contains(first)) return new(PathSearchStatus.Found, [start]);
         // A wall-adjacent straight line can be walkable yet unnecessarily hug
         // the wall. Only bypass A* when the line has no clearance penalty.
-        if (this.LineCost(start, goal) <= Vector2.Distance(start, goal) + 0.001f) return [start, goal];
-        var clock = Stopwatch.StartNew();
+        if (this.LineCost(start, endpoint) <= Vector2.Distance(start, endpoint) + 0.001f)
+            return new(PathSearchStatus.Found, [start, endpoint]);
         var queue = new PriorityQueue<(int x, int y), float>();
         var costs = new Dictionary<(int, int), float> { [first] = 0 };
         var parents = new Dictionary<(int, int), (int, int)>();
@@ -98,13 +180,18 @@ internal sealed class NavigationGrid(byte[] data, int stride, int clearance,
         }
         queue.Enqueue(first, 0);
         var count = 0;
-        while (queue.TryDequeue(out var current, out _) && count++ < maxNodes)
+        while (queue.TryDequeue(out var current, out _))
         {
-            if ((count & 127) == 0 && (cancellation.IsCancellationRequested || clock.ElapsedMilliseconds > maxMilliseconds)) return null;
-            if (!visited.Add(current)) continue;
-            if (current == last)
+            if (count++ >= maxNodes) return new(PathSearchStatus.BudgetExceeded);
+            if ((count & 127) == 0)
             {
-                var route = new List<Vector2> { goal };
+                if (cancellation.IsCancellationRequested) return new(PathSearchStatus.Cancelled);
+                if (clock.ElapsedMilliseconds > maxMilliseconds) return new(PathSearchStatus.BudgetExceeded);
+            }
+            if (!visited.Add(current)) continue;
+            if (goals.Contains(current))
+            {
+                var route = new List<Vector2> { current == last ? endpoint : new(current.x, current.y) };
                 while (current != first)
                 {
                     route.Add(new(current.x, current.y));
@@ -112,24 +199,46 @@ internal sealed class NavigationGrid(byte[] data, int stride, int clearance,
                 }
                 route.Add(start);
                 route.Reverse();
-                return route;
+                return new(PathSearchStatus.Found, route);
             }
-            for (var dx = -1; dx <= 1; dx++)
-            for (var dy = -1; dy <= 1; dy++)
+            foreach (var next in this.Neighbours(current))
             {
-                if (dx == 0 && dy == 0) continue;
-                var next = (x: current.x + dx, y: current.y + dy);
-                if (visited.Contains(next) || !this.Walkable(next.x, next.y)) continue;
-                if (dx != 0 && dy != 0 && (!this.Walkable(current.x + dx, current.y) || !this.Walkable(current.x, current.y + dy))) continue;
-                var cost = costs[current] + (dx == 0 || dy == 0 ? 1 : 1.41421356f) *
+                if (visited.Contains(next)) continue;
+                var cost = costs[current] + (next.x == current.x || next.y == current.y ? 1 : 1.41421356f) *
                     (Weight(current) + Weight(next)) * 0.5f;
                 if (costs.TryGetValue(next, out var old) && old <= cost) continue;
                 costs[next] = cost;
                 parents[next] = current;
-                queue.Enqueue(next, cost + Vector2.Distance(new(next.x, next.y), new(last.Item1, last.Item2)));
+                queue.Enqueue(next, cost + MathF.Max(0, Vector2.Distance(new(next.x, next.y), goal) - MathF.Max(radius, Vector2.Distance(endpoint, goal))));
             }
         }
-        return null;
+        return new(PathSearchStatus.Unreachable);
+    }
+
+    private IEnumerable<(int x, int y)> Neighbours((int x, int y) cell)
+    {
+        for (var dx = -1; dx <= 1; dx++)
+        for (var dy = -1; dy <= 1; dy++)
+        {
+            if (dx == 0 && dy == 0 || !this.Walkable(cell.x + dx, cell.y + dy)) continue;
+            if (dx != 0 && dy != 0 && (!this.Walkable(cell.x + dx, cell.y) || !this.Walkable(cell.x, cell.y + dy))) continue;
+            yield return (cell.x + dx, cell.y + dy);
+        }
+    }
+
+    // Called only when P2 is within the rejoin radius. Bound this local check so
+    // rendering/input freshness never waits on an ordinary long A* search.
+    public bool HasShortConnection(Vector2 from, Vector2 target, float rejoinDistance, Vector2? observedGoalAnchor = null)
+    {
+        if (Vector2.Distance(from, target) > rejoinDistance) return false;
+        if (this.Clear(from, target)) return true;
+        var result = this.SearchPath(from, target, default, observedGoalAnchor: observedGoalAnchor,
+            maxNodes: 1024, maxMilliseconds: 3);
+        var points = result.Route;
+        if (points == null) return false;
+        var length = Vector2.Distance(points[^1], target);
+        for (var i = 1; i < points.Count; i++) length += Vector2.Distance(points[i - 1], points[i]);
+        return length <= rejoinDistance + 2;
     }
 
     public Vector2? Steer(IReadOnlyList<Vector2> route, Vector2 player)
