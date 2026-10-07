@@ -15,6 +15,7 @@
     <Compile Include="../../Plugins/Bloodybot2/Navigation/ParticipantSelection.cs" Link="ParticipantSelection.cs" />
     <Compile Include="../../Plugins/Bloodybot2/Navigation/CoopCoordinator.cs" Link="CoopCoordinator.cs" />
     <Compile Include="../../Plugins/Bloodybot2/Navigation/FollowSession.cs" Link="FollowSession.cs" />
+    <Compile Include="../../Plugins/Bloodybot2/Navigation/FollowPlan.cs" Link="FollowPlan.cs" />
     <Compile Include="../../Plugins/Bloodybot2/Navigation/FollowRunState.cs" Link="FollowRunState.cs" />
     <Compile Include="../../Plugins/Bloodybot2/Navigation/UnstuckRecovery.cs" Link="UnstuckRecovery.cs" />
     <Compile Include="../../Plugins/Bloodybot2/Navigation/FollowSettings.cs" Link="FollowSettings.cs" />

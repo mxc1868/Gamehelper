@@ -233,6 +233,79 @@ Check(thirtySession.NeedsMovement(33, 30, 33) && thirtySession.NeedsMovement(30.
     "resume boundary restarts pursuit until it reaches the stop radius again");
 Check(!thirtySession.NeedsMovement(float.NaN, 30, 33) && !thirtySession.NeedsMovement(31, 30, 33),
     "invalid distance releases pursuit and clears its hysteresis");
+
+// Stop/resume uses the nearest living follower without changing shared steering.
+var formationLeader = new Vector2(100, 100);
+var formationSession = new FollowSession();
+var formation = FollowPlan.Resolve(new(50, 100), true, new(60, 100), true, formationLeader, false)!.Value;
+Check(formation.LeaderDistance == 40 && !formation.UseSecondary && !formation.Rejoining &&
+    formationSession.NeedsMovement(formation.LeaderDistance, 30, 33),
+    "both followers beyond resume use shared WASD steered from P1");
+formation = FollowPlan.Resolve(new(60, 100), true, new(70, 100), true, formationLeader, false)!.Value;
+Check(formation.LeaderDistance == 30 && !formation.UseSecondary &&
+    !formationSession.NeedsMovement(formation.LeaderDistance, 30, 33),
+    "P2 reaching 30 stops shared movement while P1 is still 40 from leader");
+formation = FollowPlan.Resolve(new(50, 100), true, new(67.1f, 100), true, formationLeader, false)!.Value;
+Check(!formationSession.NeedsMovement(formation.LeaderDistance, 30, 33),
+    "distant P1 cannot resume while P2 remains below resume radius");
+formation = FollowPlan.Resolve(new(50, 100), true, new(67, 100), true, formationLeader, false)!.Value;
+Check(formationSession.NeedsMovement(formation.LeaderDistance, 30, 33),
+    "shared movement resumes exactly when both followers reach resume radius");
+formation = FollowPlan.Resolve(new(70, 100), true, new(60, 100), true, formationLeader, false)!.Value;
+Check(formation.LeaderDistance == 30 && !formationSession.NeedsMovement(formation.LeaderDistance, 30, 33),
+    "nearest role can change from P2 to P1 and still stop immediately");
+formation = FollowPlan.Resolve(new(60, 100), true, formationLeader, false, formationLeader, true)!.Value;
+Check(formation.LeaderDistance == 40 && !formation.UseSecondary && !formation.Rejoining &&
+    formationSession.NeedsMovement(formation.LeaderDistance, 30, 33),
+    "dead P2 at the leader neither stops living P1 nor keeps P2 correction active");
+formation = FollowPlan.Resolve(formationLeader, false, new(60, 100), true, formationLeader, true)!.Value;
+Check(formation.LeaderDistance == 40 && formation.UseSecondary && !formation.Rejoining,
+    "dead P1 is excluded and surviving P2 uses arrows toward leader rather than corpse");
+formation = FollowPlan.Resolve(new(float.NaN, float.NaN), false, new(70, 100), true, formationLeader, false)!.Value;
+Check(formation.LeaderDistance == 30 && !formationSession.NeedsMovement(formation.LeaderDistance, 30, 33),
+    "missing or invalid corpse render cannot prevent living P2 stopping at leader radius");
+formation = FollowPlan.Resolve(new(60, 100), true, new(float.NaN, float.NaN), false, formationLeader, false)!.Value;
+Check(formation.LeaderDistance == 40 && !formation.UseSecondary,
+    "single-player following and living P1 need no secondary position");
+Check(FollowPlan.Resolve(formationLeader, false, formationLeader, false, formationLeader, true) == null,
+    "both followers dead provide no actor or movement plan");
+formation = FollowPlan.Resolve(new(60, 100), true, new(float.NaN, 100), true, formationLeader, false)!.Value;
+Check(!float.IsFinite(formation.LeaderDistance), "invalid living position cannot be silently excluded from nearest distance");
+formation = FollowPlan.Resolve(new(80, 100), true, new(20, 100), true, formationLeader, true)!.Value;
+Check(formation.UseSecondary && formation.Rejoining && formation.LeaderDistance == 20,
+    "P2 reunion remains a separate phase even with P1 already in leader radius");
+
+// A death/revival phase releases the old mapping before issuing the new one.
+var survivorEvents = new List<(ushort Key, bool Down)>();
+var survivorArrows = false;
+var survivorLease = new KeyLease((key, down) =>
+{
+    survivorEvents.Add(((ushort)MovementBindings.Get(key, survivorArrows).VirtualKey, down));
+    return true;
+});
+var survivorRun = new FollowRunState();
+survivorRun.Start();
+survivorLease.Renew(MoveKeys.Up, 0, 150);
+formation = FollowPlan.Resolve(formationLeader, false, new(50, 100), true, formationLeader, false)!.Value;
+Check(survivorLease.TryReset(() => survivorArrows = formation.UseSecondary) && survivorRun.Ready(75),
+    "P1 death switches to P2 without revoking the start command");
+survivorLease.Renew(MoveKeys.Up, 75, 150);
+Check(survivorEvents.SequenceEqual(new[] { ((ushort)0x57, true), ((ushort)0x57, false), ((ushort)0x26, true) }),
+    "P1 death releases shared W before P2 arrow down");
+survivorLease.Expire(225, true);
+Check(survivorLease.Held == MoveKeys.None && survivorEvents[^1] == ((ushort)0x26, false),
+    "surviving P2 still releases on the 150 ms stale-input boundary");
+survivorRun.Fail("players_dead", 250);
+Check(survivorRun.IsEnabled && !survivorRun.Ready(499) && survivorRun.Ready(500),
+    "both dead wait and retry rather than disabling Follow");
+formation = FollowPlan.Resolve(new(50, 100), true, new(70, 100), true, formationLeader, false)!.Value;
+formationSession.Reset();
+Check(!formationSession.NeedsMovement(formation.LeaderDistance, 30, 33) &&
+    survivorLease.TryReset(() => survivorArrows = formation.UseSecondary) && !survivorArrows,
+    "revival restores shared mapping and respects revived P2 at the stop radius");
+survivorRun.Stop("stopped");
+Check(!survivorRun.Ready(1000), "revival after an explicit stop cannot restart Follow");
+
 Check(!session.IsStuck(new(2, 2), true, 100, 2500), "start progress monitor");
 Check(session.IsStuck(new(2, 2), true, 2600, 2500), "stationary movement times out");
 Check(!session.IsStuck(new(5, 2), true, 2601, 2500), "movement resets progress timer");
@@ -429,7 +502,7 @@ coopSettings.Normalize();
 Check(coopSettings.P2RejoinDistance == 3 && coopSettings.P2LagDistance == 6, "correction thresholds retain a non-overlapping gap after normalization");
 
 foreach (var reason in new[] { "unfocused", "panel", "settings_open", "frame_gap", "manual", "area_changed",
-    "game_state", "player_invalid", "secondary_invalid", "target_missing", "leader_unavailable", "follower_changed", "target_changed", "terrain_missing", "input_failed", "error" })
+    "game_state", "player_invalid", "secondary_invalid", "players_dead", "players_changed", "target_missing", "leader_unavailable", "follower_changed", "target_changed", "terrain_missing", "input_failed", "error" })
 {
     var run = new FollowRunState();
     run.Start();

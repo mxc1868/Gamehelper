@@ -45,6 +45,8 @@ internal sealed class FollowMode : INavigationMode
     private float distance;
     private float playerGap;
     private bool correctingP2;
+    private bool usingP2;
+    private (bool Primary, bool Secondary)? livingPlayers;
     private MoveKeys planned;
     private string manualKeys = string.Empty;
     private string LeaderName => this.Settings.LeaderName.Trim();
@@ -59,6 +61,9 @@ internal sealed class FollowMode : INavigationMode
         "manual" => "手动按键：" + this.manualKeys,
         "target_missing" => "队长暂不可见，等待重新出现",
         "frame_gap" => "画面更新中断，等待恢复",
+        "players_dead" => "角色已死亡，等待复活后继续跟随",
+        "players_changed" => "角色存活状态变化，重新寻路",
+        "leader_unavailable" => "队长暂不可用，等待恢复",
         "recovering" => "朝目标直走脱困",
         "recovery_explore" => "换方向探索脱困",
         "recovery_route" => "验证脱困后的路线",
@@ -92,6 +97,8 @@ internal sealed class FollowMode : INavigationMode
             this.coop.Reset();
             this.session.Reset();
             this.correctingP2 = false;
+            this.usingP2 = false;
+            this.livingPlayers = null;
         }
         this.distance = this.playerGap = 0;
     }
@@ -126,7 +133,7 @@ internal sealed class FollowMode : INavigationMode
     {
         this.run.Fail(reason, Environment.TickCount64, retryMilliseconds);
         this.ClearNavigation(this.run.IsEnabled && reason is not
-            ("area_changed" or "game_state" or "follower_changed" or "target_changed"));
+            ("area_changed" or "game_state" or "follower_changed" or "target_changed" or "players_changed" or "players_dead"));
     }
 
 
@@ -170,13 +177,19 @@ internal sealed class FollowMode : INavigationMode
         var primary = players[pair.Value.Primary];
         var secondary = pair.Value.Secondary is PlayerIdentity secondaryIdentity ? players[secondaryIdentity] : null;
         var target = players[pair.Value.Leader];
-        if (!primary.TryGetComponent<Life>(out var life) || !life.IsAlive ||
-            !primary.TryGetComponent<Render>(out var primaryRender))
+        if (!primary.TryGetComponent<Life>(out var life))
         { this.Suspend("player_invalid"); return; }
-        Render? secondaryRender = null;
         Life? secondaryLife = null;
-        if (secondary != null && (!secondary.TryGetComponent<Render>(out secondaryRender) ||
-            !secondary.TryGetComponent<Life>(out secondaryLife) || !secondaryLife.IsAlive))
+        if (secondary != null && !secondary.TryGetComponent<Life>(out secondaryLife))
+        { this.Suspend("secondary_invalid"); return; }
+        var primaryAlive = life.IsAlive;
+        var secondaryAlive = secondaryLife?.IsAlive == true;
+        if (!primaryAlive && !secondaryAlive) { this.Suspend("players_dead"); return; }
+        Render? primaryRender = null;
+        Render? secondaryRender = null;
+        if (primaryAlive && !primary.TryGetComponent<Render>(out primaryRender))
+        { this.Suspend("player_invalid"); return; }
+        if (secondaryAlive && !secondary!.TryGetComponent<Render>(out secondaryRender))
         { this.Suspend("secondary_invalid"); return; }
         if (!target.TryGetComponent<Render>(out var targetRender) ||
             !target.TryGetComponent<Life>(out var targetLife) || !targetLife.IsAlive)
@@ -194,37 +207,53 @@ internal sealed class FollowMode : INavigationMode
         { this.Suspend("target_changed"); return; }
         this.targetAddress = target.Address;
         this.targetId = target.Id;
-        var primaryPos = new Vector2(primaryRender.GridPosition.X, primaryRender.GridPosition.Y);
+        if (this.livingPlayers != (primaryAlive, secondaryAlive))
+        {
+            // Death/revival changes the actor and input phase. Never carry an
+            // old correction route, recovery probe or held key into that phase.
+            this.ClearRoute();
+            this.coop.Reset();
+            this.session.Reset();
+            this.primaryTarget.Reset();
+            this.livingPlayers = (primaryAlive, secondaryAlive);
+        }
+        var primaryPos = primaryRender == null ? Vector2.Zero : new Vector2(primaryRender.GridPosition.X, primaryRender.GridPosition.Y);
         var leaderPos = new Vector2(targetRender.GridPosition.X, targetRender.GridPosition.Y);
-        var secondaryPos = secondaryRender == null ? primaryPos : new Vector2(secondaryRender.GridPosition.X, secondaryRender.GridPosition.Y);
-        var leaderDistance = Vector2.Distance(primaryPos, leaderPos);
-        this.playerGap = Vector2.Distance(primaryPos, secondaryPos);
-        if (!float.IsFinite(leaderDistance + this.playerGap) || leaderDistance > 600 || this.playerGap > 600 || area.GridWalkableData.Length == 0)
+        var secondaryPos = secondaryRender == null ? Vector2.Zero : new Vector2(secondaryRender.GridPosition.X, secondaryRender.GridPosition.Y);
+        var bothAlive = primaryAlive && secondaryAlive;
+        this.playerGap = bothAlive ? Vector2.Distance(primaryPos, secondaryPos) : 0;
+        var primaryDistance = primaryAlive ? Vector2.Distance(primaryPos, leaderPos) : 0;
+        var secondaryDistance = secondaryAlive ? Vector2.Distance(secondaryPos, leaderPos) : 0;
+        if (!float.IsFinite(primaryDistance + secondaryDistance + this.playerGap) ||
+            primaryDistance > 600 || secondaryDistance > 600 || this.playerGap > 600 || area.GridWalkableData.Length == 0)
         { this.Suspend("terrain_missing"); return; }
         if (this.grid == null || now >= this.nextDoorRead)
         {
             this.grid = BuildGrid(area, this.Settings.Clearance);
             this.nextDoorRead = now + 150;
         }
-        if (!this.grid.Contains(primaryPos) || !this.grid.Contains(leaderPos) || !this.grid.Contains(secondaryPos))
+        if ((primaryAlive && !this.grid.Contains(primaryPos)) || !this.grid.Contains(leaderPos) ||
+            (secondaryAlive && !this.grid.Contains(secondaryPos)))
         { this.Suspend("terrain_missing"); return; }
-        var primaryAnchor = this.primaryTarget.Observe(this.grid, primaryPos);
+        var primaryAnchor = primaryAlive ? this.primaryTarget.Observe(this.grid, primaryPos) : null;
         var leaderAnchor = this.leaderTarget.Observe(this.grid, leaderPos);
-        var correction = secondary != null && this.coop.Update(primaryPos, secondaryPos,
+        var correction = bothAlive && this.coop.Update(primaryPos, secondaryPos,
             !this.coop.CorrectingP2 || this.grid.HasShortConnection(secondaryPos, primaryPos,
                 this.Settings.P2RejoinDistance, primaryAnchor), this.Settings.P2LagDistance, this.Settings.P2RejoinDistance);
-        if (correction != this.correctingP2)
+        var plan = FollowPlan.Resolve(primaryPos, primaryAlive, secondaryPos, secondaryAlive, leaderPos, correction)!.Value;
+        if (plan.Rejoining != this.correctingP2)
         {
             // Cancel the old actor's search and release its keys before switching
             // actor, route destination, projection height, and physical mapping.
             this.ClearRoute();
-            this.correctingP2 = correction;
+            this.correctingP2 = plan.Rejoining;
         }
-        if (this.input?.SetArrowMode(this.correctingP2) != true) { this.Suspend("input_failed", 500); return; }
-        var player = this.correctingP2 ? secondaryPos : primaryPos;
+        this.usingP2 = plan.UseSecondary;
+        if (this.input?.SetArrowMode(this.usingP2) != true) { this.Suspend("input_failed", 500); return; }
+        var player = this.usingP2 ? secondaryPos : primaryPos;
         var goal = this.correctingP2 ? primaryPos : leaderPos;
         var goalAnchor = this.correctingP2 ? primaryAnchor : leaderAnchor;
-        var actorEntity = this.correctingP2 ? secondary! : primary;
+        var actorEntity = this.usingP2 ? secondary! : primary;
         var goalEntity = this.correctingP2 ? primary : target;
         var identity = (area.Address, area.AreaHash, actorEntity.Address, actorEntity.Id, goalEntity.Address, goalEntity.Id);
         if (this.recoveryIdentity != identity)
@@ -232,9 +261,9 @@ internal sealed class FollowMode : INavigationMode
             this.recovery.Reset();
             this.recoveryIdentity = identity;
         }
-        var playerRender = this.correctingP2 ? secondaryRender! : primaryRender;
+        var playerRender = this.usingP2 ? secondaryRender! : primaryRender!;
         this.followerHeight = playerRender.TerrainHeight;
-        this.distance = Vector2.Distance(player, goal);
+        this.distance = this.correctingP2 ? this.playerGap : plan.LeaderDistance;
         // During correction the coordinator alone decides when P2 has rejoined;
         // the ordinary leader stop distance must not end this phase early.
         var needsMovement = this.correctingP2 || this.session.NeedsMovement(this.distance,
@@ -310,9 +339,12 @@ internal sealed class FollowMode : INavigationMode
                 target.Address != this.targetAddress || target.Id != this.targetId ||
                 !primary.IsValid || primary.Address != this.followerAddress || primary.Id != this.followerId ||
                 (secondary != null && (!secondary.IsValid || secondary.Address != this.secondaryAddress ||
-                    secondary.Id != this.secondaryId || secondaryLife?.IsAlive != true)) ||
-                !life.IsAlive || !targetLife.IsAlive || Core.States.GameCurrentState != GameStateTypes.InGameState || this.IsUiBlocked(ui))
+                    secondary.Id != this.secondaryId)) ||
+                Core.States.GameCurrentState != GameStateTypes.InGameState || this.IsUiBlocked(ui))
             { this.Suspend("target_changed"); return false; }
+            if (life.IsAlive != primaryAlive || (secondaryLife?.IsAlive == true) != secondaryAlive)
+            { this.Suspend("players_changed", 0); return false; }
+            if (!targetLife.IsAlive) { this.Suspend("leader_unavailable"); return false; }
             if (this.input?.Apply(this.planned, Core.Process.Pid, leaseMilliseconds) != true)
             { this.Suspend("input_failed", 500); return false; }
             return true;
@@ -322,7 +354,8 @@ internal sealed class FollowMode : INavigationMode
         {
             // A false terrain block must not veto recovery too. Use the live
             // actor-to-target direction without route or walkability filtering:
-            // shared WASD: P1 -> leader; correction arrows: P2 -> P1.
+            // Shared WASD: P1 -> leader; correction arrows: P2 -> P1;
+            // when P1 is dead, arrows follow P2 -> leader instead.
             var towardTarget = Steering.Choose(goal - player, screenX, screenY, _ => true);
             var routeKeys = this.planned;
             var attempt = this.recovery.Advance(player, now, towardTarget, routeKeys);
@@ -387,7 +420,9 @@ internal sealed class FollowMode : INavigationMode
             ImGui.Begin("Bloodybot2 · Follow##Bloodybot2Status", ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoInputs | ImGuiWindowFlags.NoFocusOnAppearing);
             ImGui.TextUnformatted(this.Status);
             ImGui.TextUnformatted(this.correctingP2 ? $"P2: {this.Settings.P2Name} → P1: {this.Settings.P1Name}" : $"Follow → {this.LeaderName}");
-            ImGui.TextUnformatted($"Distance: {this.distance:0.0} | P1/P2: {this.playerGap:0.0} | {MovementBindings.Describe(this.planned, this.correctingP2)}");
+            ImGui.TextUnformatted($"{(this.correctingP2 ? "Rejoin" : "Nearest alive")}: {this.distance:0.0} | P1/P2: {this.playerGap:0.0} | {MovementBindings.Describe(this.planned, this.usingP2)}");
+            if (this.livingPlayers == (false, true)) ImGui.TextUnformatted("P1 dead · P2 follows leader with arrows");
+            else if (this.Settings.LocalCoopFollow && this.livingPlayers == (true, false)) ImGui.TextUnformatted("P2 dead · P1 follows leader with WASD");
             if (this.pathStatus.HasValue) ImGui.TextUnformatted($"Path: {this.pathStatus}");
             if (!this.correctingP2)
                 ImGui.TextUnformatted($"Stop: {this.Settings.StopDistance:0.0} | Resume: {this.Settings.ResumeDistance:0.0}");
