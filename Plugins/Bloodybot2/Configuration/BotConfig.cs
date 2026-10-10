@@ -60,6 +60,8 @@ public sealed class BotConfig
         Text(this.Follow.P2Name, 128, "P2 名称");
         Range(this.Follow.StopDistance, 3, 100, "停止距离");
         Range(this.Follow.ResumeDistance, this.Follow.StopDistance + 3, 150, "重新跟随距离");
+        Range(this.Follow.DangerRange, 1, 150, "危险检测范围");
+        Range(this.Follow.DangerEliteLimit, 0, 100, "精英数量上限");
         Range(this.Follow.P2LagDistance, 6, 150, "P2 纠偏距离");
         Range(this.Follow.P2RejoinDistance, 3, this.Follow.P2LagDistance - 3, "P2 回归距离");
         Range(this.Follow.Clearance, 0, 2, "离墙间距");

@@ -210,6 +210,27 @@ try {
   );
   await click('[data-follow="localCoopFollow"]');
   await click('[data-tab="general"]');
+  await click('[data-tab="follow"]');
+  check(
+    await evaluate(`!document.querySelector('[data-follow="avoidDanger"]').checked && document.getElementById('follow-danger-fields').hidden`),
+    "danger avoidance defaults off in Follow",
+  );
+  await click('[data-follow="avoidDanger"]');
+  check(
+    await evaluate(`!document.getElementById('follow-danger-fields').hidden`),
+    "danger toggle exposes leader radius and elite limit",
+  );
+  await input('[data-follow="dangerRange"]', "42.5");
+  await input('[data-follow="dangerEliteLimit"]', "2");
+  await save();
+  const dangerSaved = (await bootstrap()).config.follow;
+  check(dangerSaved.avoidDanger && dangerSaved.dangerRange === 42.5 && dangerSaved.dangerEliteLimit === 2,
+    "danger toggle and thresholds save through real HTTP");
+  await click('[data-follow="avoidDanger"]');
+  await save();
+  check(!(await bootstrap()).config.follow.avoidDanger && await evaluate(`document.getElementById('follow-danger-fields').hidden`),
+    "danger can be disabled while retaining saved thresholds");
+  await click('[data-tab="general"]');
   await record("F7", "F7", 118, "#toggle-record");
   check(
     await evaluate(
@@ -449,6 +470,9 @@ try {
   const imported = structuredClone(external);
   imported.name = "导入测试";
   imported.allowControllerWithoutChat = false;
+  delete imported.follow.avoidDanger;
+  delete imported.follow.dangerRange;
+  delete imported.follow.dangerEliteLimit;
   imported.combat.rules[0].name = "<img src=x onerror=alert(1)>";
   const importPath = path.join(output, "import-test.json");
   await writeFile(importPath, JSON.stringify(imported));
@@ -479,6 +503,9 @@ try {
     !("allowControllerWithoutChat" in (await bootstrap()).config),
     "legacy export imports and saves without the retired controller switch",
   );
+  check((await bootstrap()).config.follow.avoidDanger === false &&
+    (await bootstrap()).config.follow.dangerRange === 50 && (await bootstrap()).config.follow.dangerEliteLimit === 3,
+    "old exports import with danger disabled and default thresholds");
   await click(".rule:nth-child(2)");
   await writeFile(
     path.join(output, "combat-desktop.png"),

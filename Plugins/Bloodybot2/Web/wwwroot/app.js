@@ -19,6 +19,11 @@ let draft,
   recording = null,
   captureTimer;
 const pendingOptions = new Map();
+const followDangerDefaults = {
+  avoidDanger: false,
+  dangerRange: 50,
+  dangerEliteLimit: 3,
+};
 const dirty = () => draft && JSON.stringify(draft) !== saved;
 const keyName = (key) =>
   key === 32
@@ -119,6 +124,7 @@ function renderConfig() {
     else element.value = value;
   }
   $("follow-coop-fields").hidden = !draft.follow.localCoopFollow;
+  $("follow-danger-fields").hidden = !draft.follow.avoidDanger;
   $("config-name").value = draft.name;
   $("preview").checked = draft.preview;
   $("combat-enabled").checked = draft.combat.enabled;
@@ -526,6 +532,7 @@ document.querySelectorAll("[data-follow]").forEach((element) =>
           ? Number(element.value)
           : element.value;
     $("follow-coop-fields").hidden = !draft.follow.localCoopFollow;
+    $("follow-danger-fields").hidden = !draft.follow.avoidDanger;
     controls();
   }),
 );
@@ -619,6 +626,7 @@ $("import-file").addEventListener("change", async (e) => {
       imported.mode = "";
       imported.toggleKey = 117;
       imported.follow = {
+        ...followDangerDefaults,
         leaderName: "",
         localCoopFollow: false,
         p1Name: "",
@@ -648,7 +656,11 @@ $("import-file").addEventListener("change", async (e) => {
     )
       throw new Error("不是有效的 Bloodybot2 配置。");
     const sample = newRule();
+    // Older v2 exports omit the new optional danger settings.
+    for (const [key, value] of Object.entries(followDangerDefaults))
+      if (!(key in imported.follow)) imported.follow[key] = value;
     const followSample = {
+      ...followDangerDefaults,
       leaderName: "",
       localCoopFollow: false,
       p1Name: "",

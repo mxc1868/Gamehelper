@@ -28,6 +28,18 @@ try
     var config = Config();
     Check(BotConfig.Parse(config.Serialize()).Combat.Rules[0].Key == 'Q', "round trip preserves combat fields");
     Check(new BotConfig().Preview && new BotConfig().Combat.Rules.Count == 0, "first run is empty and preview only");
+    var dangerConfig = Config();
+    dangerConfig.Follow.AvoidDanger = true; dangerConfig.Follow.DangerRange = 42.5f; dangerConfig.Follow.DangerEliteLimit = 0;
+    Check(BotConfig.Parse(dangerConfig.Serialize()).Follow is { AvoidDanger: true, DangerRange: 42.5f, DangerEliteLimit: 0 },
+        "danger toggle, fractional radius and zero elite limit round trip");
+    var oldFollow = System.Text.Json.Nodes.JsonNode.Parse(config.Serialize())!.AsObject();
+    foreach (var field in new[] { "avoidDanger", "dangerRange", "dangerEliteLimit" }) oldFollow["follow"]!.AsObject().Remove(field);
+    var oldDangerStore = new ConfigStore(Path.Combine(root, "old-danger"));
+    Directory.CreateDirectory(Path.GetDirectoryName(oldDangerStore.FilePath)!);
+    var oldDangerText = oldFollow.ToJsonString(); File.WriteAllText(oldDangerStore.FilePath, oldDangerText);
+    Check(oldDangerStore.Load().Follow is { AvoidDanger: false, DangerRange: 50, DangerEliteLimit: 3 } &&
+        File.ReadAllText(oldDangerStore.FilePath) == oldDangerText,
+        "old v2 config keeps danger disabled without rewriting user file");
     foreach (var version in new[] { 1, 2 })
         foreach (var oldSwitch in new[] { false, true })
         {
@@ -97,6 +109,8 @@ try
         c => c.Combat.Rules[0].PauseMilliseconds = 2001, c => c.Combat.Rules[0].ReadySkill = null!,
         c => c.Mode = "Simulacrum", c => c.Follow = null!, c => c.ToggleKey = 'W',
         c => c.Follow.ResumeDistance = c.Follow.StopDistance, c => c.Follow.RepathMilliseconds = 1,
+        c => c.Follow.DangerRange = float.NaN, c => c.Follow.DangerRange = 0, c => c.Follow.DangerRange = 151,
+        c => c.Follow.DangerEliteLimit = -1, c => c.Follow.DangerEliteLimit = 101,
         c => c.Combat.Rules.Add(c.Combat.Rules[0]), c => c.Combat.Rules = Enumerable.Range(0,33).Select(_ => new CombatRule()).ToList()
     }) { var bad = Config(); invalid(bad); Reject(bad.Validate, "reject invalid config " + checks); }
 

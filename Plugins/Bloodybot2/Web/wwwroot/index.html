@@ -306,6 +306,26 @@
                   距离按离队长最近的存活角色计算：任意一人进入停止距离就停止共同跟随，全部存活角色达到恢复距离才继续，不受墙体判断影响。重新跟随距离须至少多 3 格（例如停止 30、恢复 33），保存并应用后生效。一人死亡时由另一人继续跟队长（P1 用 WASD、P2 用箭头），复活后恢复双人协调；全部死亡则等待复活。无路时先朝目标直走，2 秒无进展就换方向探索；有路但卡住时按上面的时间进入探索。能移动的方向会继续走出墙角，失败方向短期避开。双方存活时 P2 按归队距离和可达性单独判断，纠偏和脱困优先于战斗。
                 </p>
               </article>
+              <article class="card config-card">
+                <h3>躲避危险</h3>
+                <label class="switch-row">
+                  <span><strong>躲避危险</strong><small>队长附近精英过多时暂停跟随，危险解除后自动恢复。</small></span>
+                  <input data-follow="avoidDanger" type="checkbox" />
+                </label>
+                <div id="follow-danger-fields" hidden>
+                  <div class="form-grid">
+                    <label class="field">
+                      <span>队长周围检测范围 / 格</span>
+                      <input data-follow="dangerRange" type="number" min="1" max="150" step="0.5" />
+                    </label>
+                    <label class="field">
+                      <span>精英数量上限 / 个</span>
+                      <input data-follow="dangerEliteLimit" type="number" min="0" max="100" step="1" />
+                    </label>
+                  </div>
+                  <p>统计队长范围内的黄怪和暗金怪。数量超过上限才暂停，例如设为 3 时，4 个及以上暂停，降回 3 个及以下自动恢复。暂停共同跟随、P2 纠偏和脱困；战斗技能仍按独立规则运行。保存并应用后生效。</p>
+                </div>
+              </article>
             </div>
           </section>
           <section id="tab-combat" class="tab-panel page">

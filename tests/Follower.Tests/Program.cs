@@ -317,6 +317,20 @@ var settings = new FollowSettings { StopDistance = float.NaN, ResumeDistance = f
 settings.Normalize();
 Check(settings.StopDistance == 18 && settings.ResumeDistance > 18 && settings.Clearance == 0 && settings.RepathMilliseconds == 150, "invalid settings normalize");
 Check(new Bloodybot2.Configuration.BotConfig().Preview, "new install defaults to preview without input");
+var dangerSettings = new FollowSettings();
+Check(!dangerSettings.IsDangerous(100) && dangerSettings.DangerRange == 50 && dangerSettings.DangerEliteLimit == 3,
+    "danger is opt-in and missing settings preserve existing Follow behavior");
+dangerSettings.AvoidDanger = true;
+Check(!dangerSettings.IsDangerous(3) && dangerSettings.IsDangerous(4),
+    "danger pauses strictly above elite limit and resumes at the limit");
+dangerSettings.DangerEliteLimit = 0;
+Check(!dangerSettings.IsDangerous(0) && dangerSettings.IsDangerous(1), "zero limit pauses on the first elite");
+dangerSettings.AvoidDanger = false;
+Check(!dangerSettings.IsDangerous(1), "disabling danger restores Follow even when elites remain");
+dangerSettings.DangerRange = float.NaN; dangerSettings.DangerEliteLimit = -1; dangerSettings.Normalize();
+Check(dangerSettings.DangerRange == 50 && dangerSettings.DangerEliteLimit == 0, "legacy danger settings normalize safely");
+dangerSettings.DangerRange = 151; dangerSettings.DangerEliteLimit = 101; dangerSettings.Normalize();
+Check(dangerSettings.DangerRange == 150 && dangerSettings.DangerEliteLimit == 100, "danger settings retain bounded scan and count");
 
 // Role selection must not assume that Area.Player always denotes P1 or P2.
 var p1 = new PlayerIdentity(101, 0x1000, "Primary");

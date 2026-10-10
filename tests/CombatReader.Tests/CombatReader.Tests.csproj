@@ -9,5 +9,10 @@
     <ProjectReference Include="../../GameHelper/GameHelper.csproj" />
     <ProjectReference Include="../../Modules/Combat/Combat.csproj" />
     <Compile Include="../../Plugins/Bloodybot2/Game/CombatSnapshotReader.cs" Link="CombatSnapshotReader.cs" />
+    <Compile Include="../../Plugins/Bloodybot2/Game/MonsterReader.cs" Link="MonsterReader.cs" />
+    <Compile Include="../../Plugins/Bloodybot2/Game/FollowDangerReader.cs" Link="FollowDangerReader.cs" />
+    <Compile Include="../../Plugins/Bloodybot2/Navigation/*.cs" Link="Navigation/%(Filename)%(Extension)" />
+    <Compile Include="../../Plugins/Bloodybot2/Configuration/BotConfig.cs" Link="BotConfig.cs" />
+    <Compile Include="../../Plugins/Bloodybot2/Runtime/BotRuntime.cs" Link="BotRuntime.cs" />
   </ItemGroup>
 </Project>

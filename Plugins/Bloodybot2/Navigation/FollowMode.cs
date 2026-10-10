@@ -8,6 +8,7 @@ using GameHelper.RemoteObjects.Components;
 using GameHelper.RemoteObjects.States.InGameStateObjects;
 using ImGuiNET;
 using Bloodybot2.Configuration;
+using Bloodybot2.Game;
 using Bloodybot2.Runtime;
 
 // The former Follower navigation, hosted by Bloodybot2. No plugin lifecycle,
@@ -44,6 +45,7 @@ internal sealed class FollowMode : INavigationMode
     private Vector2 routeGoal;
     private float distance;
     private float playerGap;
+    private int? dangerElites;
     private bool correctingP2;
     private bool usingP2;
     private (bool Primary, bool Secondary)? livingPlayers;
@@ -64,6 +66,7 @@ internal sealed class FollowMode : INavigationMode
         "players_dead" => "角色已死亡，等待复活后继续跟随",
         "players_changed" => "角色存活状态变化，重新寻路",
         "leader_unavailable" => "队长暂不可用，等待恢复",
+        "danger" => $"躲避危险：队长 {this.Settings.DangerRange:0.#} 格内精英 {this.dangerElites} > {this.Settings.DangerEliteLimit}，暂停跟随",
         "recovering" => "朝目标直走脱困",
         "recovery_explore" => "换方向探索脱困",
         "recovery_route" => "验证脱困后的路线",
@@ -101,6 +104,7 @@ internal sealed class FollowMode : INavigationMode
             this.livingPlayers = null;
         }
         this.distance = this.playerGap = 0;
+        this.dangerElites = null;
     }
 
     private void ClearRoute(bool release = true, bool preserveRecovery = false)
@@ -227,6 +231,22 @@ internal sealed class FollowMode : INavigationMode
         if (!float.IsFinite(primaryDistance + secondaryDistance + this.playerGap) ||
             primaryDistance > 600 || secondaryDistance > 600 || this.playerGap > 600 || area.GridWalkableData.Length == 0)
         { this.Suspend("terrain_missing"); return; }
+        if (!preview)
+        {
+            this.manualKeys = this.input.ReadManualInput(this.Settings.LocalCoopFollow);
+            if (this.manualKeys.Length != 0) { this.Suspend("manual"); return; }
+        }
+        this.dangerElites = this.Settings.AvoidDanger
+            ? FollowDangerReader.CountElites(area, leaderPos, this.Settings.DangerRange) : null;
+        if (Environment.TickCount64 - now > 150) { this.Suspend("frame_gap"); return; }
+        if (this.dangerElites is int eliteCount && this.Settings.IsDangerous(eliteCount))
+        {
+            this.usingP2 = !primaryAlive;
+            this.distance = primaryAlive && secondaryAlive ? Math.Min(primaryDistance, secondaryDistance)
+                : primaryAlive ? primaryDistance : secondaryDistance;
+            this.WaitForDanger(combat);
+            return;
+        }
         if (this.grid == null || now >= this.nextDoorRead)
         {
             this.grid = BuildGrid(area, this.Settings.Clearance);
@@ -268,11 +288,6 @@ internal sealed class FollowMode : INavigationMode
         // the ordinary leader stop distance must not end this phase early.
         var needsMovement = this.correctingP2 || this.session.NeedsMovement(this.distance,
             this.Settings.StopDistance, this.Settings.ResumeDistance);
-        if (!preview)
-        {
-            this.manualKeys = this.input?.ReadManualInput(this.Settings.LocalCoopFollow) ?? string.Empty;
-            if (this.manualKeys.Length != 0) { this.Suspend("manual"); return; }
-        }
         if (!needsMovement)
         {
             // This also cancels an ongoing forced advance as soon as we enter
@@ -388,6 +403,23 @@ internal sealed class FollowMode : INavigationMode
         this.run.Status = "following";
     }
 
+    private void WaitForDanger(Func<bool> combat)
+    {
+        // Danger overrides shared movement, P2 correction and unstuck probes.
+        // Keep the start command and combat independent; resume from fresh paths.
+        this.input.StopMovement();
+        this.ClearRoute(release: false);
+        this.session.Reset();
+        this.coop.Reset();
+        this.primaryTarget.Reset();
+        this.leaderTarget.Reset();
+        this.grid = null;
+        this.nextDoorRead = 0;
+        this.correctingP2 = false;
+        this.run.Status = "danger";
+        combat();
+    }
+
     private static NavigationGrid BuildGrid(AreaInstance area, int clearance)
     {
         var opened = new HashSet<(int, int)>();
@@ -426,6 +458,8 @@ internal sealed class FollowMode : INavigationMode
             if (this.pathStatus.HasValue) ImGui.TextUnformatted($"Path: {this.pathStatus}");
             if (!this.correctingP2)
                 ImGui.TextUnformatted($"Stop: {this.Settings.StopDistance:0.0} | Resume: {this.Settings.ResumeDistance:0.0}");
+            if (this.Settings.AvoidDanger)
+                ImGui.TextUnformatted($"Leader elites: {this.dangerElites?.ToString() ?? "?"} | Range: {this.Settings.DangerRange:0.#} | Limit: {this.Settings.DangerEliteLimit}");
             ImGui.End();
         }
         if (!this.run.IsEnabled || !this.Settings.ShowRoute || this.route == null || Core.States.GameCurrentState != GameStateTypes.InGameState) return;
