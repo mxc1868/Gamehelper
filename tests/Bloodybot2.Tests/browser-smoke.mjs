@@ -230,6 +230,20 @@ try {
   await save();
   check(!(await bootstrap()).config.follow.avoidDanger && await evaluate(`document.getElementById('follow-danger-fields').hidden`),
     "danger can be disabled while retaining saved thresholds");
+  check(await evaluate(`!document.querySelector('[data-follow="escapeLowHealth"]').checked && document.getElementById('follow-escape-fields').hidden`),
+    "low-health retreat defaults off for existing configs");
+  await click('[data-follow="escapeLowHealth"]');
+  check(await evaluate(`!document.getElementById('follow-escape-fields').hidden`), "low-health toggle exposes cluster and escape distances");
+  await input('[data-follow="escapeScanRange"]', "60");
+  await input('[data-follow="escapeClusterDistance"]', "12.5");
+  await input('[data-follow="escapeDistance"]', "35");
+  await save();
+  const escapeSaved = (await bootstrap()).config.follow;
+  check(escapeSaved.escapeLowHealth && escapeSaved.escapeScanRange === 60 && escapeSaved.escapeClusterDistance === 12.5 && escapeSaved.escapeDistance === 35,
+    "low health retreat settings persist through HTTP");
+  await writeFile(path.join(output, "follow-escape-desktop.png"), Buffer.from((await send("Page.captureScreenshot", { format: "png", captureBeyondViewport: true })).data, "base64"));
+  await click('[data-follow="escapeLowHealth"]');
+  await save();
   await click('[data-tab="general"]');
   await record("F7", "F7", 118, "#toggle-record");
   check(
@@ -473,6 +487,10 @@ try {
   delete imported.follow.avoidDanger;
   delete imported.follow.dangerRange;
   delete imported.follow.dangerEliteLimit;
+  delete imported.follow.escapeLowHealth;
+  delete imported.follow.escapeScanRange;
+  delete imported.follow.escapeClusterDistance;
+  delete imported.follow.escapeDistance;
   imported.combat.rules[0].name = "<img src=x onerror=alert(1)>";
   const importPath = path.join(output, "import-test.json");
   await writeFile(importPath, JSON.stringify(imported));
@@ -506,6 +524,8 @@ try {
   check((await bootstrap()).config.follow.avoidDanger === false &&
     (await bootstrap()).config.follow.dangerRange === 50 && (await bootstrap()).config.follow.dangerEliteLimit === 3,
     "old exports import with danger disabled and default thresholds");
+  check((await bootstrap()).config.follow.escapeLowHealth === false && (await bootstrap()).config.follow.escapeDistance === 30,
+    "old exports import with low health retreat disabled and default clearance");
   await click(".rule:nth-child(2)");
   await writeFile(
     path.join(output, "combat-desktop.png"),
@@ -561,6 +581,7 @@ try {
     "General fits narrow screens",
   );
   await click('[data-tab="follow"]');
+  await click('[data-follow="escapeLowHealth"]');
   check(
     await evaluate(`document.documentElement.scrollWidth<=window.innerWidth`),
     "Follow fits narrow screens",

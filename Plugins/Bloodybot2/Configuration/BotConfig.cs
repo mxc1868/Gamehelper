@@ -62,6 +62,9 @@ public sealed class BotConfig
         Range(this.Follow.ResumeDistance, this.Follow.StopDistance + 3, 150, "重新跟随距离");
         Range(this.Follow.DangerRange, 1, 150, "危险检测范围");
         Range(this.Follow.DangerEliteLimit, 0, 100, "精英数量上限");
+        Range(this.Follow.EscapeScanRange, 5, 150, "低血黄怪检测范围");
+        Range(this.Follow.EscapeClusterDistance, 3, 50, "黄怪聚类间距");
+        Range(this.Follow.EscapeDistance, 3, this.Follow.EscapeScanRange, "撤离安全距离");
         Range(this.Follow.P2LagDistance, 6, 150, "P2 纠偏距离");
         Range(this.Follow.P2RejoinDistance, 3, this.Follow.P2LagDistance - 3, "P2 回归距离");
         Range(this.Follow.Clearance, 0, 2, "离墙间距");

@@ -13,6 +13,10 @@ public class FollowSettings
     public bool AvoidDanger;
     public float DangerRange = 50;
     public int DangerEliteLimit = 3;
+    public bool EscapeLowHealth;
+    public float EscapeScanRange = 50;
+    public float EscapeClusterDistance = 15;
+    public float EscapeDistance = 30;
     public int Clearance = 1;
     public int RepathMilliseconds = 350;
     public int StuckMilliseconds = 2500;
@@ -32,6 +36,9 @@ public class FollowSettings
         this.ResumeDistance = float.IsFinite(this.ResumeDistance) ? Math.Clamp(this.ResumeDistance, this.StopDistance + 3, 150) : this.StopDistance + 7;
         this.DangerRange = float.IsFinite(this.DangerRange) ? Math.Clamp(this.DangerRange, 1, 150) : 50;
         this.DangerEliteLimit = Math.Clamp(this.DangerEliteLimit, 0, 100);
+        this.EscapeScanRange = float.IsFinite(this.EscapeScanRange) ? Math.Clamp(this.EscapeScanRange, 5, 150) : 50;
+        this.EscapeClusterDistance = float.IsFinite(this.EscapeClusterDistance) ? Math.Clamp(this.EscapeClusterDistance, 3, 50) : 15;
+        this.EscapeDistance = float.IsFinite(this.EscapeDistance) ? Math.Clamp(this.EscapeDistance, 3, this.EscapeScanRange) : Math.Min(30, this.EscapeScanRange);
         this.Clearance = Math.Clamp(this.Clearance, 0, 2);
         this.RepathMilliseconds = Math.Clamp(this.RepathMilliseconds, 150, 1000);
         this.StuckMilliseconds = Math.Clamp(this.StuckMilliseconds, 1000, 10000);

@@ -249,4 +249,97 @@ foreach (var arrows in new[] { false, true })
     Check(!mode.IsActive && pulse.Held == 0 && !run.Ready(long.MaxValue),
         "explicit stop during danger remains stopped and releases skill");
 }
+Set(life, "Health", new VitalStruct { Current = 400, Total = 1000 });
+Set(life, "EnergyShield", new VitalStruct { Current = 600, Total = 1000 });
+Check(LowHealthReader.Percent(life) == 50, "actual Life reader combines current Life and ES at 50 percent");
+Set(life, "EnergyShield", new VitalStruct { Current = 599, Total = 1000 });
+Check(LowHealthReader.Percent(life) < 50, "actual Life reader triggers only below 50 percent");
+Set(life, "Health", new VitalStruct { Current = 800, Total = 1000 });
+Set(life, "EnergyShield", new VitalStruct { Current = 100, Total = 9000 });
+Check(LowHealthReader.Percent(life) == 9, "large ES pool weights the low-health ratio correctly");
+Set(life, "Health", new VitalStruct { Current = 250, Total = 1000, ReservedFlat = 500 });
+Set(life, "EnergyShield", default(VitalStruct));
+Check(LowHealthReader.Percent(life) == 50, "no ES and flat Life reservation use available Life capacity");
+Set(life, "Health", new VitalStruct { Current = 100, Total = 1000, ReservedPercent = 6000 });
+Check(LowHealthReader.Percent(life) == 25, "percentage Life reservation is deducted before combined ratio");
+Set(life, "Health", default(VitalStruct));
+Check(LowHealthReader.Percent(life) == null, "missing Life capacity is unknown rather than healthy or zero");
+Set(life, "Health", new VitalStruct { Current = 100, Total = 1000 });
+Set(life, "EnergyShield", new VitalStruct { Current = -1, Total = 1000 });
+Check(LowHealthReader.Percent(life) == null, "negative ES reading blocks escape decision");
+Set(life, "EnergyShield", new VitalStruct { Current = 1 });
+Check(LowHealthReader.Percent(life) == null, "contradictory zero-capacity ES reading blocks escape decision");
+Set(life, "EnergyShield", default(VitalStruct));
+Set(life, "Health", new VitalStruct { Current = 1, Total = 1000, ReservedPercent = 10001 });
+Check(LowHealthReader.Percent(life) == null, "invalid reservation cannot manufacture low health");
+
+awake.Clear();
+foreach (var (id, rarity) in new[] { (21u, Rarity.Rare), (22u, Rarity.Unique), (23u, Rarity.Magic), (24u, Rarity.Normal) })
+{
+    var monster = Monster(rarity, id);
+    Position((Render)Cache(monster)[nameof(Render)], 25, 20);
+    awake[new EntityNodeKey { id = id }] = monster;
+}
+Check(LowHealthReader.Rares(area, new(20, 20), 50) is { Count: 1 }, "emergency clusters only yellow rares, independently of leader danger rarities");
+enemy = awake.Values.Single(e => e.Id == 21);
+Add<Stats>(enemy).StatsChangedByItems[GameStats.cannot_be_damaged] = 1;
+Check(LowHealthReader.Rares(area, new(20, 20), 50) is { Count: 1 }, "immune visible yellow monster still belongs to escape threat cluster");
+Add<Buffs>(enemy).StatusEffects["hidden_monster"] = default;
+Check(LowHealthReader.Rares(area, new(20, 20), 50) is { Count: 0 }, "hidden yellow monster is not an escape threat");
+awake.Clear();
+for (var i = 0; i <= EscapePlanner.MaximumRares; i++)
+{
+    var monster = Monster(Rarity.Rare, (uint)(100 + i));
+    Position((Render)Cache(monster)[nameof(Render)], 25, 20);
+    awake[new EntityNodeKey { id = monster.Id }] = monster;
+}
+Check(LowHealthReader.Rares(area, new(20, 20), 50) == null, "truncated rare scan is unknown and cannot falsely report safety");
+
+var retreatInput = (MovementInput)RuntimeHelpers.GetUninitializedObject(typeof(MovementInput));
+var physicalEvents = new List<(int Key, bool Down)>();
+var retreatReleaseFails = false;
+var retreatLease = new KeyLease((key, down) =>
+{
+    var arrows = (bool)typeof(MovementInput).GetField("arrows", Hidden)!.GetValue(retreatInput)!;
+    physicalEvents.Add((MovementBindings.Get(key, arrows).VirtualKey, down));
+    return down || !retreatReleaseFails;
+});
+var retreatPulse = new SkillKeyPulse((_, _) => true);
+typeof(MovementInput).GetField("lease", Hidden)!.SetValue(retreatInput, retreatLease);
+typeof(MovementInput).GetField("skill", Hidden)!.SetValue(retreatInput, retreatPulse);
+var retreatMode = new FollowMode(retreatInput);
+var retreatRun = (FollowRunState)typeof(FollowMode).GetField("run", Hidden)!.GetValue(retreatMode)!;
+retreatRun.Start();
+bool BeginRetreat(bool secondary, float health) => (bool)typeof(FollowMode).GetMethod("BeginEscape", Hidden)!
+    .Invoke(retreatMode, [(IntPtr)(secondary ? 2000 : 1000), (uint)(secondary ? 2 : 1), secondary, health, secondary ? "P2" : "P1"])!;
+var oldRetreatSearch = new CancellationTokenSource(); var oldRetreatToken = oldRetreatSearch.Token;
+typeof(FollowMode).GetField("searchCancellation", Hidden)!.SetValue(retreatMode, oldRetreatSearch);
+typeof(FollowMode).GetField("route", Hidden)!.SetValue(retreatMode, new List<Vector2> { new(20, 20), new(30, 20) });
+retreatPulse.TryStart('Q', 80, 1000);
+retreatLease.Renew(MoveKeys.Up, 1000);
+Check(BeginRetreat(false, 40) && retreatLease.Held == MoveKeys.None && oldRetreatToken.IsCancellationRequested &&
+    typeof(FollowMode).GetField("route", Hidden)!.GetValue(retreatMode) == null && retreatPulse.Held == 'Q' && retreatMode.IsActive,
+    "P1 emergency cancels follow search/movement while preserving accepted skill and start");
+retreatPulse.Stop();
+retreatLease.Renew(MoveKeys.Up | MoveKeys.Right, 1100);
+var switchAt = physicalEvents.Count;
+Check(BeginRetreat(true, 25) && physicalEvents.Skip(switchAt).SequenceEqual(new[] { ((int)'W', false), ((int)'D', false) }) &&
+    (bool)typeof(MovementInput).GetField("arrows", Hidden)!.GetValue(retreatInput)! && retreatLease.Held == MoveKeys.None,
+    "lower-health P2 releases shared WASD before switching to arrows");
+retreatLease.Renew(MoveKeys.Left, 1200);
+Check(physicalEvents[^1] == (0x25, true), "P2 emergency sends arrow mapping exclusively");
+switchAt = physicalEvents.Count;
+Check(BeginRetreat(false, 20) && physicalEvents.Skip(switchAt).Single() == (0x25, false) &&
+    !(bool)typeof(MovementInput).GetField("arrows", Hidden)!.GetValue(retreatInput)!,
+    "lower-health P1 releases old P2 arrow before switching back to shared WASD");
+retreatLease.Renew(MoveKeys.Down, 1300);
+retreatReleaseFails = true;
+Check(!BeginRetreat(true, 10) && retreatLease.Held == MoveKeys.Down &&
+    !(bool)typeof(MovementInput).GetField("arrows", Hidden)!.GetValue(retreatInput)!,
+    "failed emergency key-up blocks layout switch and retains original ownership");
+retreatReleaseFails = false; retreatLease.Expire(1301, false);
+Check(retreatLease.Held == MoveKeys.None && physicalEvents[^1] == ((int)'S', false), "emergency release retry uses original WASD mapping");
+retreatMode.Stop();
+Check(!retreatMode.IsActive && !(bool)typeof(FollowMode).GetField("escaping", Hidden)!.GetValue(retreatMode)! && !retreatRun.Ready(long.MaxValue),
+    "explicit stop during emergency cannot be undone by health recovery");
 Console.WriteLine($"All {checks} combat reader checks passed. Cached fixtures only; no game process or input.");

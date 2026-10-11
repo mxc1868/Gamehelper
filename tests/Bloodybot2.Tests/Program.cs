@@ -30,14 +30,18 @@ try
     Check(new BotConfig().Preview && new BotConfig().Combat.Rules.Count == 0, "first run is empty and preview only");
     var dangerConfig = Config();
     dangerConfig.Follow.AvoidDanger = true; dangerConfig.Follow.DangerRange = 42.5f; dangerConfig.Follow.DangerEliteLimit = 0;
+    dangerConfig.Follow.EscapeLowHealth = true; dangerConfig.Follow.EscapeDistance = 28.5f;
     Check(BotConfig.Parse(dangerConfig.Serialize()).Follow is { AvoidDanger: true, DangerRange: 42.5f, DangerEliteLimit: 0 },
         "danger toggle, fractional radius and zero elite limit round trip");
+    Check(BotConfig.Parse(dangerConfig.Serialize()).Follow is { EscapeLowHealth: true, EscapeScanRange: 50, EscapeClusterDistance: 15, EscapeDistance: 28.5f },
+        "low health escape and geometry settings round trip");
     var oldFollow = System.Text.Json.Nodes.JsonNode.Parse(config.Serialize())!.AsObject();
-    foreach (var field in new[] { "avoidDanger", "dangerRange", "dangerEliteLimit" }) oldFollow["follow"]!.AsObject().Remove(field);
+    foreach (var field in new[] { "avoidDanger", "dangerRange", "dangerEliteLimit", "escapeLowHealth", "escapeScanRange", "escapeClusterDistance", "escapeDistance" })
+        oldFollow["follow"]!.AsObject().Remove(field);
     var oldDangerStore = new ConfigStore(Path.Combine(root, "old-danger"));
     Directory.CreateDirectory(Path.GetDirectoryName(oldDangerStore.FilePath)!);
     var oldDangerText = oldFollow.ToJsonString(); File.WriteAllText(oldDangerStore.FilePath, oldDangerText);
-    Check(oldDangerStore.Load().Follow is { AvoidDanger: false, DangerRange: 50, DangerEliteLimit: 3 } &&
+    Check(oldDangerStore.Load().Follow is { AvoidDanger: false, DangerRange: 50, DangerEliteLimit: 3, EscapeLowHealth: false, EscapeDistance: 30 } &&
         File.ReadAllText(oldDangerStore.FilePath) == oldDangerText,
         "old v2 config keeps danger disabled without rewriting user file");
     foreach (var version in new[] { 1, 2 })
@@ -111,6 +115,8 @@ try
         c => c.Follow.ResumeDistance = c.Follow.StopDistance, c => c.Follow.RepathMilliseconds = 1,
         c => c.Follow.DangerRange = float.NaN, c => c.Follow.DangerRange = 0, c => c.Follow.DangerRange = 151,
         c => c.Follow.DangerEliteLimit = -1, c => c.Follow.DangerEliteLimit = 101,
+        c => c.Follow.EscapeScanRange = 4, c => c.Follow.EscapeScanRange = 151, c => c.Follow.EscapeClusterDistance = float.NaN,
+        c => c.Follow.EscapeClusterDistance = 51, c => c.Follow.EscapeDistance = 2, c => c.Follow.EscapeDistance = c.Follow.EscapeScanRange + 1,
         c => c.Combat.Rules.Add(c.Combat.Rules[0]), c => c.Combat.Rules = Enumerable.Range(0,33).Select(_ => new CombatRule()).ToList()
     }) { var bad = Config(); invalid(bad); Reject(bad.Validate, "reject invalid config " + checks); }
 

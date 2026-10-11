@@ -46,6 +46,11 @@ internal sealed class FollowMode : INavigationMode
     private float distance;
     private float playerGap;
     private int? dangerElites;
+    private bool escaping;
+    private float? escapeHealth;
+    private string escapeCharacter = string.Empty;
+    private EscapeRoute? escapePlan;
+    private (IntPtr Address, uint Id, bool Secondary)? escapeIdentity;
     private bool correctingP2;
     private bool usingP2;
     private (bool Primary, bool Secondary)? livingPlayers;
@@ -67,6 +72,13 @@ internal sealed class FollowMode : INavigationMode
         "players_changed" => "角色存活状态变化，重新寻路",
         "leader_unavailable" => "队长暂不可用，等待恢复",
         "danger" => $"躲避危险：队长 {this.Settings.DangerRange:0.#} 格内精英 {this.dangerElites} > {this.Settings.DangerEliteLimit}，暂停跟随",
+        "escaping" => $"低血撤离：{this.escapeCharacter} Life+ES {this.escapeHealth:0.#}% · {(this.usingP2 ? "仅 P2 箭头" : "共享 WASD")}远离黄怪群",
+        "escape_preview" => $"预览低血撤离：{this.escapeCharacter} Life+ES {this.escapeHealth:0.#}%",
+        "low_health_wait" => $"低血等待恢复：{this.escapeCharacter} Life+ES {this.escapeHealth:0.#}% · 已远离黄怪群",
+        "escape_no_path" => "低血撤离：没有可走的远离路线，松键重试",
+        "escape_skill_wait" => "低血撤离：等待已按下的技能键释放",
+        "health_unavailable" => "Life+ES 数据暂不可读，松键等待",
+        "escape_scan_limit" => "黄怪扫描超过上限，松键等待",
         "recovering" => "朝目标直走脱困",
         "recovery_explore" => "换方向探索脱困",
         "recovery_route" => "验证脱困后的路线",
@@ -105,6 +117,11 @@ internal sealed class FollowMode : INavigationMode
         }
         this.distance = this.playerGap = 0;
         this.dangerElites = null;
+        this.escaping = false;
+        this.escapeIdentity = null;
+        this.escapeHealth = null;
+        this.escapePlan = null;
+        this.escapeCharacter = string.Empty;
     }
 
     private void ClearRoute(bool release = true, bool preserveRecovery = false)
@@ -175,6 +192,7 @@ internal sealed class FollowMode : INavigationMode
         var players = ReadPlayers(area);
         var local = players.Keys.Where(p => p.Address == area.Player.Address && p.Id == area.Player.Id)
             .Select(p => (PlayerIdentity?)p).FirstOrDefault();
+        if (this.Settings.EscapeLowHealth && this.TryLowHealthEscape(area, ui, players, local, now, preview, combat)) return;
         var pair = ParticipantSelection.Resolve(players.Keys, local, this.Settings.LocalCoopFollow,
             this.LeaderName, this.Settings.P1Name, this.Settings.P2Name, out var failure);
         if (pair == null) { this.Suspend(failure); return; }
@@ -403,6 +421,127 @@ internal sealed class FollowMode : INavigationMode
         this.run.Status = "following";
     }
 
+    private bool TryLowHealthEscape(AreaInstance area, ImportantUiElements ui, Dictionary<PlayerIdentity, Entity> players,
+        PlayerIdentity? local, long now, bool preview, Func<bool> combat)
+    {
+        var controlled = ParticipantSelection.ResolveControlled(players.Keys, local, this.Settings.LocalCoopFollow,
+            this.Settings.P1Name, this.Settings.P2Name, out var failure);
+        if (controlled == null) { this.Suspend(failure); return true; }
+        var primary = players[controlled.Value.Primary];
+        var secondary = controlled.Value.Secondary is PlayerIdentity p2 ? players[p2] : null;
+        if (!CombatSnapshotReader.ReadComponent(primary, out Life life)) { this.Suspend("health_unavailable"); return true; }
+        Life? secondaryLife = null;
+        if (secondary != null)
+        {
+            if (!CombatSnapshotReader.ReadComponent<Life>(secondary, out var readSecondaryLife))
+            { this.Suspend("health_unavailable"); return true; }
+            secondaryLife = readSecondaryLife;
+        }
+        var primaryAlive = life.IsAlive;
+        var secondaryAlive = secondaryLife?.IsAlive == true;
+        if (!primaryAlive && !secondaryAlive) { this.Suspend("players_dead"); return true; }
+        var primaryHealth = primaryAlive ? LowHealthReader.Percent(life) : null;
+        var secondaryHealth = secondaryAlive ? LowHealthReader.Percent(secondaryLife!) : null;
+        if (primaryAlive && !primaryHealth.HasValue || secondaryAlive && !secondaryHealth.HasValue)
+        { this.Suspend("health_unavailable"); return true; }
+        var useSecondary = EscapePlanner.UseSecondary(primaryHealth ?? 100, primaryAlive, secondaryHealth ?? 100, secondaryAlive);
+        var health = (useSecondary ? secondaryHealth : primaryHealth)!.Value;
+        if (health >= EscapePlanner.HealthThreshold)
+        {
+            if (this.escaping)
+            {
+                this.ClearNavigation();
+                this.areaAddress = area.Address;
+                this.areaHash = area.AreaHash;
+            }
+            return false;
+        }
+        if (!preview)
+        {
+            this.manualKeys = this.input.ReadManualInput(this.Settings.LocalCoopFollow);
+            if (this.manualKeys.Length != 0) { this.Suspend("manual"); return true; }
+        }
+        var actor = useSecondary ? secondary! : primary;
+        if (!CombatSnapshotReader.ReadComponent(actor, out Render render)) { this.Suspend("player_invalid"); return true; }
+        var position = new Vector2(render.GridPosition.X, render.GridPosition.Y);
+        if (area.GridWalkableData.Length == 0) { this.Suspend("terrain_missing"); return true; }
+        if (this.livingPlayers.HasValue && this.livingPlayers != (primaryAlive, secondaryAlive))
+        { this.input.StopMovement(); this.ClearRoute(release: false); this.coop.Reset(); this.session.Reset(); }
+        this.livingPlayers = (primaryAlive, secondaryAlive);
+        if (!this.BeginEscape(actor.Address, actor.Id, useSecondary, health,
+            (useSecondary ? controlled.Value.Secondary!.Value : controlled.Value.Primary).Name)) return true;
+        this.followerHeight = render.TerrainHeight;
+        if (this.grid == null || now >= this.nextDoorRead)
+        { this.grid = BuildGrid(area, this.Settings.Clearance); this.nextDoorRead = now + 150; }
+        if (!this.grid.Contains(position)) { this.Suspend("terrain_missing"); return true; }
+        var rares = LowHealthReader.Rares(area, position, this.Settings.EscapeScanRange);
+        if (rares == null) { this.Suspend("escape_scan_limit"); return true; }
+        this.escapePlan = EscapePlanner.Plan(this.grid, position, rares, this.Settings.EscapeClusterDistance, this.Settings.EscapeDistance);
+        if (Environment.TickCount64 - now > 150) { this.Suspend("frame_gap"); return true; }
+        this.route = this.escapePlan.Route;
+        this.planned = MoveKeys.None;
+        if (this.escapePlan.Safe)
+        {
+            this.input.StopMovement();
+            this.run.Status = "low_health_wait";
+            combat();
+            return true;
+        }
+        var aim = this.route == null ? null : EscapePlanner.Steer(this.grid, position, this.route, rares);
+        var world = Core.States.InGameStateObject.CurrentWorldInstance;
+        var origin = world.WorldToScreen(position * area.WorldToGridConvertor, render.TerrainHeight);
+        var screenX = world.WorldToScreen((position + Vector2.UnitX) * area.WorldToGridConvertor, render.TerrainHeight) - origin;
+        var screenY = world.WorldToScreen((position + Vector2.UnitY) * area.WorldToGridConvertor, render.TerrainHeight) - origin;
+        if (aim is Vector2 target)
+            this.planned = Steering.Choose(target - position, screenX, screenY,
+                step => EscapePlanner.SafeSegment(this.grid, position, position + step, rares));
+        if (preview) { this.input.Stop(); this.run.Status = "escape_preview"; return true; }
+        if (this.planned == MoveKeys.None)
+        { this.input.StopMovement(); this.run.Status = "escape_no_path"; combat(); return true; }
+        if (this.input.SkillHeld)
+        { this.input.StopMovement(); this.planned = MoveKeys.None; this.run.Status = "escape_skill_wait"; return true; }
+        // Emergency input depends on the local actors, not leader availability.
+        // Repeat identity/health checks immediately before renewing the 150 ms lease.
+        var latestPrimary = primaryAlive ? LowHealthReader.Percent(life) : null;
+        var latestSecondary = secondaryAlive ? LowHealthReader.Percent(secondaryLife!) : null;
+        if (!primary.IsValid || primary.Address != controlled.Value.Primary.Address || primary.Id != controlled.Value.Primary.Id ||
+            secondary != null && (!secondary.IsValid || secondary.Address != controlled.Value.Secondary!.Value.Address ||
+                secondary.Id != controlled.Value.Secondary.Value.Id) ||
+            life.IsAlive != primaryAlive || (secondaryLife?.IsAlive == true) != secondaryAlive ||
+            primaryAlive && !latestPrimary.HasValue || secondaryAlive && !latestSecondary.HasValue ||
+            EscapePlanner.UseSecondary(latestPrimary ?? 100, primaryAlive, latestSecondary ?? 100, secondaryAlive) != useSecondary ||
+            (useSecondary ? latestSecondary : latestPrimary) >= EscapePlanner.HealthThreshold)
+        { this.Suspend("players_changed", 0); return true; }
+        if (area.Address != this.areaAddress || area.AreaHash != this.areaHash ||
+            Core.States.GameCurrentState != GameStateTypes.InGameState || this.IsUiBlocked(ui) || Environment.TickCount64 - now > 150)
+        { this.Suspend("frame_gap"); return true; }
+        if (!this.input.Apply(this.planned, Core.Process.Pid, 150)) { this.Suspend("input_failed", 500); return true; }
+        this.run.Status = "escaping";
+        return true;
+    }
+
+    private bool BeginEscape(IntPtr address, uint id, bool secondary, float health, string name)
+    {
+        if (!this.escaping || this.escapeIdentity != (address, id, secondary))
+        {
+            this.input.StopMovement();
+            this.ClearRoute(release: false);
+            this.coop.Reset();
+            this.session.Reset();
+            this.primaryTarget.Reset();
+            this.leaderTarget.Reset();
+            this.correctingP2 = false;
+            this.pathStatus = null;
+        }
+        if (!this.input.SetArrowMode(secondary)) { this.Suspend("input_failed", 500); return false; }
+        this.escaping = true;
+        this.escapeIdentity = (address, id, secondary);
+        this.escapeHealth = health;
+        this.escapeCharacter = name;
+        this.usingP2 = secondary;
+        return true;
+    }
+
     private void WaitForDanger(Func<bool> combat)
     {
         // Danger overrides shared movement, P2 correction and unstuck probes.
@@ -451,12 +590,16 @@ internal sealed class FollowMode : INavigationMode
             ImGui.SetNextWindowPos(new Vector2(30, 180), ImGuiCond.FirstUseEver);
             ImGui.Begin("Bloodybot2 · Follow##Bloodybot2Status", ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoInputs | ImGuiWindowFlags.NoFocusOnAppearing);
             ImGui.TextUnformatted(this.Status);
-            ImGui.TextUnformatted(this.correctingP2 ? $"P2: {this.Settings.P2Name} → P1: {this.Settings.P1Name}" : $"Follow → {this.LeaderName}");
-            ImGui.TextUnformatted($"{(this.correctingP2 ? "Rejoin" : "Nearest alive")}: {this.distance:0.0} | P1/P2: {this.playerGap:0.0} | {MovementBindings.Describe(this.planned, this.usingP2)}");
-            if (this.livingPlayers == (false, true)) ImGui.TextUnformatted("P1 dead · P2 follows leader with arrows");
-            else if (this.Settings.LocalCoopFollow && this.livingPlayers == (true, false)) ImGui.TextUnformatted("P2 dead · P1 follows leader with WASD");
+            ImGui.TextUnformatted(this.escaping ? $"Escape: {this.escapeCharacter} | Life+ES: {this.escapeHealth:0.#}% | {MovementBindings.Describe(this.planned, this.usingP2)}" :
+                this.correctingP2 ? $"P2: {this.Settings.P2Name} → P1: {this.Settings.P1Name}" : $"Follow → {this.LeaderName}");
+            if (!this.escaping)
+                ImGui.TextUnformatted($"{(this.correctingP2 ? "Rejoin" : "Nearest alive")}: {this.distance:0.0} | P1/P2: {this.playerGap:0.0} | {MovementBindings.Describe(this.planned, this.usingP2)}");
+            if (this.escaping && this.escapePlan != null)
+                ImGui.TextUnformatted($"Rare cluster: {this.escapePlan.ClusterSize} | Center: {this.escapePlan.Center} | Target: {this.escapePlan.Target} | Clearance: {this.Settings.EscapeDistance:0.#}");
+            if (this.livingPlayers == (false, true)) ImGui.TextUnformatted("P1 dead · P2 uses arrows");
+            else if (this.Settings.LocalCoopFollow && this.livingPlayers == (true, false)) ImGui.TextUnformatted("P2 dead · P1 uses WASD");
             if (this.pathStatus.HasValue) ImGui.TextUnformatted($"Path: {this.pathStatus}");
-            if (!this.correctingP2)
+            if (!this.correctingP2 && !this.escaping)
                 ImGui.TextUnformatted($"Stop: {this.Settings.StopDistance:0.0} | Resume: {this.Settings.ResumeDistance:0.0}");
             if (this.Settings.AvoidDanger)
                 ImGui.TextUnformatted($"Leader elites: {this.dangerElites?.ToString() ?? "?"} | Range: {this.Settings.DangerRange:0.#} | Limit: {this.Settings.DangerEliteLimit}");

@@ -2,9 +2,35 @@ namespace Bloodybot2.Navigation;
 
 internal readonly record struct PlayerIdentity(uint Id, nint Address, string Name);
 internal readonly record struct FollowParticipants(PlayerIdentity Primary, PlayerIdentity Leader, PlayerIdentity? Secondary = null);
+internal readonly record struct ControlledPlayers(PlayerIdentity Primary, PlayerIdentity? Secondary = null);
 
 internal static class ParticipantSelection
 {
+    // Emergency retreat uses only configured local characters. A missing/dead
+    // leader must not prevent them from moving away from nearby rare monsters.
+    public static ControlledPlayers? ResolveControlled(IEnumerable<PlayerIdentity> players, PlayerIdentity? local,
+        bool localCoop, string primaryName, string secondaryName, out string failure)
+    {
+        var candidates = players.Where(p => p.Address != 0 && !string.IsNullOrWhiteSpace(p.Name))
+            .DistinctBy(p => (p.Address, p.Id)).ToArray();
+        failure = "primary_name";
+        if (localCoop && string.IsNullOrWhiteSpace(primaryName)) return null;
+        failure = "follower_name";
+        if (localCoop && string.IsNullOrWhiteSpace(secondaryName)) return null;
+        failure = "ambiguous_player";
+        if (localCoop && (Ambiguous(candidates, primaryName) || Ambiguous(candidates, secondaryName))) return null;
+        var primary = localCoop ? FindUnique(candidates, primaryName) : local;
+        failure = "player_invalid";
+        if (primary == null || primary.Value.Address == 0) return null;
+        var secondary = localCoop ? FindUnique(candidates, secondaryName) : null;
+        failure = "secondary_invalid";
+        if (localCoop && secondary == null) return null;
+        failure = "same_player";
+        if (secondary is PlayerIdentity p2 && (p2.Address == primary.Value.Address || p2.Id == primary.Value.Id)) return null;
+        failure = string.Empty;
+        return new(primary.Value, secondary);
+    }
+
     public static FollowParticipants? Resolve(IEnumerable<PlayerIdentity> players, PlayerIdentity? local,
         bool localCoop, string leaderName, string primaryName, string secondaryName, out string failure)
     {

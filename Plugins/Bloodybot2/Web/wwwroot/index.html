@@ -326,6 +326,30 @@
                   <p>统计队长范围内的黄怪和暗金怪。数量超过上限才暂停，例如设为 3 时，4 个及以上暂停，降回 3 个及以下自动恢复。暂停共同跟随、P2 纠偏和脱困；战斗技能仍按独立规则运行。保存并应用后生效。</p>
                 </div>
               </article>
+              <article class="card config-card">
+                <h3>低血逃离黄怪群</h3>
+                <label class="switch-row">
+                  <span><strong>低血自动撤离</strong><small>Life+ES 低于 50% 时停止跟随，优先保护血量最低的存活角色。</small></span>
+                  <input data-follow="escapeLowHealth" type="checkbox" />
+                </label>
+                <div id="follow-escape-fields" hidden>
+                  <div class="form-grid">
+                    <label class="field">
+                      <span>自身周围黄怪检测范围 / 格</span>
+                      <input data-follow="escapeScanRange" type="number" min="5" max="150" step="0.5" />
+                    </label>
+                    <label class="field">
+                      <span>黄怪聚类相邻间距 / 格</span>
+                      <input data-follow="escapeClusterDistance" type="number" min="3" max="50" step="0.5" />
+                    </label>
+                    <label class="field">
+                      <span>与黄怪群拉开的安全距离 / 格</span>
+                      <input data-follow="escapeDistance" type="number" min="3" max="150" step="0.5" />
+                    </label>
+                  </div>
+                  <p>血量按（当前 Life + 当前 ES）÷（可用 Life 上限 + 可用 ES 上限）计算。单人监测自己；双人任一存活角色低于 50% 就暂停跟随，优先撤离比例最低者。P1 使用共享 WASD 带双人撤离，P2 使用箭头单独撤离。将相邻黄怪聚成怪群，优先远离最近怪群中心，并与检测范围内所有黄怪至少拉开安全距离；安全距离不能超过检测范围。撤离优先于队长危险暂停、纠偏、脱困和新技能；无可走路线时松键重试，到达安全距离后等血，全部存活角色回到 50% 才恢复正常导航。保存并应用后生效。</p>
+                </div>
+              </article>
             </div>
           </section>
           <section id="tab-combat" class="tab-panel page">

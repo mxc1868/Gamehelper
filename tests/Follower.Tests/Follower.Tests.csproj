@@ -19,6 +19,7 @@
     <Compile Include="../../Plugins/Bloodybot2/Navigation/FollowRunState.cs" Link="FollowRunState.cs" />
     <Compile Include="../../Plugins/Bloodybot2/Navigation/UnstuckRecovery.cs" Link="UnstuckRecovery.cs" />
     <Compile Include="../../Plugins/Bloodybot2/Navigation/FollowSettings.cs" Link="FollowSettings.cs" />
+    <Compile Include="../../Plugins/Bloodybot2/Navigation/EscapePlanner.cs" Link="EscapePlanner.cs" />
     <Compile Include="../../Plugins/Bloodybot2/Configuration/BotConfig.cs" Link="BotConfig.cs" />
   </ItemGroup>
 </Project>

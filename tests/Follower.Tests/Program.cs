@@ -332,11 +332,83 @@ Check(dangerSettings.DangerRange == 50 && dangerSettings.DangerEliteLimit == 0, 
 dangerSettings.DangerRange = 151; dangerSettings.DangerEliteLimit = 101; dangerSettings.Normalize();
 Check(dangerSettings.DangerRange == 150 && dangerSettings.DangerEliteLimit == 100, "danger settings retain bounded scan and count");
 
+Check(EscapePlanner.CombinedPercent(600, 1000, 0, 2000) == 20, "Life and ES are weighted by total capacity rather than averaging percentages");
+Check(EscapePlanner.CombinedPercent(500, 1000, 500, 1000) == 50 && EscapePlanner.CombinedPercent(500, 1000, 499, 1000) < 50,
+    "combined pool preserves the strict 50 percent boundary");
+Check(EscapePlanner.CombinedPercent(499, 1000, 0, 0) == 49.9f, "characters without ES use Life alone");
+Check(EscapePlanner.CombinedPercent(int.MaxValue, int.MaxValue, int.MaxValue, int.MaxValue) == 100,
+    "combined pool cannot overflow int when capacities are added");
+Check(EscapePlanner.CombinedPercent(1, 0, 0, 0) == null && EscapePlanner.CombinedPercent(1, 100, -1, 100) == null,
+    "unknown Life or invalid ES must wait instead of guessing health");
+Check(EscapePlanner.UseSecondary(45, true, 30, true) && !EscapePlanner.UseSecondary(30, true, 45, true),
+    "lowest living combined pool chooses P2 arrows or shared P1 WASD");
+Check(!EscapePlanner.UseSecondary(30, true, 30, true), "equal low health prefers P1 consistently");
+Check(!EscapePlanner.UseSecondary(60, true, 0, false) && EscapePlanner.UseSecondary(0, false, 60, true),
+    "corpses cannot win emergency actor selection");
+var grouped = EscapePlanner.Cluster([new(10, 10), new(13, 10), new(16, 10), new(40, 10), new(42, 10)], 3);
+Check(grouped.Count == 2 && grouped[0].Members.Length == 3 && grouped[0].Center == new Vector2(13, 10) && grouped[1].Center == new Vector2(41, 10),
+    "transitive nearby rares form separate clusters with individual centers");
+Check(EscapePlanner.Cluster([new(13, 10), new(10, 10), new(13, 10), new(float.NaN, 10)], 3).Single().Center == new Vector2(11.5f, 10),
+    "cluster geometry is deterministic and ignores duplicate/invalid positions");
+var escapeBytes = Map(60, 60, (_, _) => true);
+var escapeGrid = new NavigationGrid(escapeBytes, 30, 0, [], []);
+var escapePlayer = new Vector2(20, 20);
+Vector2[] nearbyRares = [new(24, 20), new(26, 20)];
+var escape = EscapePlanner.Plan(escapeGrid, escapePlayer, nearbyRares, 15, 10, maxNodes: 20000, maxMilliseconds: 1000);
+Check(escape.Center == new Vector2(25, 20) && escape.ClusterSize == 2 && escape.Target is Vector2 escapeGoal && escapeGoal.X < 20,
+    "emergency goal moves away from nearest rare cluster center");
+Check(escape.Route != null && EscapePlanner.NearestDistance(escape.Route[^1], nearbyRares) >= 10 &&
+    escape.Route.Zip(escape.Route.Skip(1)).All(p => EscapePlanner.SafeSegment(escapeGrid, p.First, p.Second, nearbyRares)),
+    "escape route reaches configured separation from every rare without crossing a pack");
+var retreatAim = EscapePlanner.Steer(escapeGrid, escapePlayer, escape.Route!, nearbyRares);
+Check(retreatAim.HasValue && Steering.Choose(retreatAim.Value - escapePlayer, Vector2.UnitX, Vector2.UnitY,
+    step => EscapePlanner.SafeSegment(escapeGrid, escapePlayer, escapePlayer + step, nearbyRares)) == MoveKeys.Left,
+    "escape path projects to movement away from the pack");
+Vector2[] twoPacks = [new(10, 20), new(30, 20)];
+escape = EscapePlanner.Plan(escapeGrid, escapePlayer, twoPacks, 5, 15, maxNodes: 20000, maxMilliseconds: 1000);
+Check(escape.ClusterSize == 1 && escape.Target.HasValue && MathF.Abs(escape.Target.Value.Y - 20) > 5 &&
+    EscapePlanner.NearestDistance(escape.Target.Value, twoPacks) >= 15,
+    "separate packs choose a sideways exit instead of their misleading global midpoint");
+Vector2[] centeredPack = [new(18, 20), new(22, 20)];
+escape = EscapePlanner.Plan(escapeGrid, escapePlayer, centeredPack, 8, 12, maxNodes: 20000, maxMilliseconds: 1000);
+Check(escape.Center == escapePlayer && escape.Target.HasValue && float.IsFinite(escape.Target.Value.X + escape.Target.Value.Y) &&
+    EscapePlanner.NearestDistance(escape.Target.Value, centeredPack) >= 12,
+    "standing at pack centroid still finds a finite reachable escape direction");
+var escapeWall = new NavigationGrid(Map(60, 60, (x, y) => x != 17 || y < 12 || y > 28), 30, 0, [], []);
+escape = EscapePlanner.Plan(escapeWall, escapePlayer, nearbyRares, 15, 10, maxNodes: 20000, maxMilliseconds: 1000);
+Check(escape.Route != null && escape.Route.Zip(escape.Route.Skip(1)).All(p => escapeWall.Clear(p.First, p.Second)) &&
+    EscapePlanner.NearestDistance(escape.Route[^1], nearbyRares) >= 10,
+    "blocked radial escape tries a reachable side route without walking through the wall");
+var enclosed = new NavigationGrid(Map(60, 60, (x, y) => x == 20 && y == 20), 30, 0, [], []);
+Check(EscapePlanner.Plan(enclosed, escapePlayer, nearbyRares, 15, 10, maxMilliseconds: 1000) is { Safe: false, Route: null },
+    "enclosed low-health player waits instead of blindly pushing toward monsters");
+Check(!EscapePlanner.SafeSegment(escapeGrid, new(15, 20), new(25, 20), [new(20, 20)]),
+    "safe endpoints cannot hide a segment crossing through the pack");
+Check(EscapePlanner.Plan(escapeGrid, new(5, 20), nearbyRares, 15, 10).Safe &&
+    EscapePlanner.Plan(escapeGrid, escapePlayer, [], 15, 10).Safe,
+    "already separated or absent rares stop escape movement while health remains low");
+Check(EscapePlanner.Plan(escapeGrid, escapePlayer, nearbyRares, 15, 10, maxNodes: 0) is { Limited: true, Route: null },
+    "zero search budget waits without assuming a route exists");
+var partialEscape = EscapePlanner.Plan(escapeGrid, escapePlayer, nearbyRares, 15, 30, maxNodes: 2, maxMilliseconds: 1000);
+Check(partialEscape is { Limited: true, Route: not null } &&
+    EscapePlanner.NearestDistance(partialEscape.Route[^1], nearbyRares) > EscapePlanner.NearestDistance(escapePlayer, nearbyRares),
+    "bounded escape search can advance to a safer intermediate position and retry");
+Check(EscapePlanner.Plan(escapeGrid, escapePlayer, [new(float.NaN, 20)], 15, 10).Route == null,
+    "invalid threat geometry never emits an escape route");
+Check(!new FollowSettings().EscapeLowHealth && new FollowSettings().EscapeDistance == 30, "old settings keep low-health retreat opt-in");
+
 // Role selection must not assume that Area.Player always denotes P1 or P2.
 var p1 = new PlayerIdentity(101, 0x1000, "Primary");
 var p2 = new PlayerIdentity(102, 0x2000, "Secondary");
 var leader = new PlayerIdentity(104, 0x4000, "Leader");
 var stranger = new PlayerIdentity(103, 0x3000, "Other");
+Check(ParticipantSelection.ResolveControlled([p1, p2], p1, true, "Primary", "Secondary", out var emergencyFailure) is
+    { Primary: var emergencyPrimary, Secondary: var emergencySecondary } && emergencyPrimary == p1 && emergencySecondary == p2 && emergencyFailure == "",
+    "low-health actors resolve without a visible leader");
+Check(ParticipantSelection.ResolveControlled([p1, p2], p1, false, "", "", out emergencyFailure)?.Primary == p1,
+    "single-player emergency uses local character without leader lookup");
+Check(ParticipantSelection.ResolveControlled([p1], p1, true, "Primary", "Secondary", out emergencyFailure) == null && emergencyFailure == "secondary_invalid",
+    "missing configured P2 waits instead of choosing a stranger for escape");
 PlayerIdentity[] nearby = [stranger, p2, p1, p1, leader];
 foreach (var local in new[] { p1, p2 })
 {

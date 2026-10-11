@@ -24,6 +24,12 @@ const followDangerDefaults = {
   dangerRange: 50,
   dangerEliteLimit: 3,
 };
+const followEscapeDefaults = {
+  escapeLowHealth: false,
+  escapeScanRange: 50,
+  escapeClusterDistance: 15,
+  escapeDistance: 30,
+};
 const dirty = () => draft && JSON.stringify(draft) !== saved;
 const keyName = (key) =>
   key === 32
@@ -125,6 +131,7 @@ function renderConfig() {
   }
   $("follow-coop-fields").hidden = !draft.follow.localCoopFollow;
   $("follow-danger-fields").hidden = !draft.follow.avoidDanger;
+  $("follow-escape-fields").hidden = !draft.follow.escapeLowHealth;
   $("config-name").value = draft.name;
   $("preview").checked = draft.preview;
   $("combat-enabled").checked = draft.combat.enabled;
@@ -533,6 +540,7 @@ document.querySelectorAll("[data-follow]").forEach((element) =>
           : element.value;
     $("follow-coop-fields").hidden = !draft.follow.localCoopFollow;
     $("follow-danger-fields").hidden = !draft.follow.avoidDanger;
+    $("follow-escape-fields").hidden = !draft.follow.escapeLowHealth;
     controls();
   }),
 );
@@ -627,6 +635,7 @@ $("import-file").addEventListener("change", async (e) => {
       imported.toggleKey = 117;
       imported.follow = {
         ...followDangerDefaults,
+        ...followEscapeDefaults,
         leaderName: "",
         localCoopFollow: false,
         p1Name: "",
@@ -656,11 +665,12 @@ $("import-file").addEventListener("change", async (e) => {
     )
       throw new Error("不是有效的 Bloodybot2 配置。");
     const sample = newRule();
-    // Older v2 exports omit the new optional danger settings.
-    for (const [key, value] of Object.entries(followDangerDefaults))
+    // Older v2 exports omit the new optional safety settings.
+    for (const [key, value] of Object.entries({ ...followDangerDefaults, ...followEscapeDefaults }))
       if (!(key in imported.follow)) imported.follow[key] = value;
     const followSample = {
       ...followDangerDefaults,
+      ...followEscapeDefaults,
       leaderName: "",
       localCoopFollow: false,
       p1Name: "",
