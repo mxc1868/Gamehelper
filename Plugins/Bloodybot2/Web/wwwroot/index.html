@@ -307,24 +307,10 @@
                 </p>
               </article>
               <article class="card config-card">
-                <h3>躲避危险</h3>
-                <label class="switch-row">
-                  <span><strong>躲避危险</strong><small>队长附近精英过多时暂停跟随，危险解除后自动恢复。</small></span>
-                  <input data-follow="avoidDanger" type="checkbox" />
-                </label>
-                <div id="follow-danger-fields" hidden>
-                  <div class="form-grid">
-                    <label class="field">
-                      <span>队长周围检测范围 / 格</span>
-                      <input data-follow="dangerRange" type="number" min="1" max="150" step="0.5" />
-                    </label>
-                    <label class="field">
-                      <span>精英数量上限 / 个</span>
-                      <input data-follow="dangerEliteLimit" type="number" min="0" max="100" step="1" />
-                    </label>
-                  </div>
-                  <p>统计队长范围内的黄怪和暗金怪。数量超过上限才暂停，例如设为 3 时，4 个及以上暂停，降回 3 个及以下自动恢复。暂停共同跟随、P2 纠偏和脱困；战斗技能仍按独立规则运行。保存并应用后生效。</p>
-                </div>
+                <h3>暂停移动 / Park</h3>
+                <label class="field general-hotkey"><span>暂停 / 恢复移动快捷键</span></label>
+                <button id="movement-pause-record" class="key-capture" type="button"><kbd>F7</kbd><small>点击录制</small></button>
+                <p>默认 F7：按一次暂停所有跟随移动，再按一次恢复。暂停共同 WASD、P2 纠偏、脱困及低血撤离，技能继续按原规则检测释放；可以手动选择停车位置。恢复后按当前位置重新寻路。启停键和 Esc 仍会同时停止移动与技能。保存并应用后生效。</p>
               </article>
               <article class="card config-card">
                 <h3>低血逃离黄怪群</h3>
@@ -347,7 +333,7 @@
                       <input data-follow="escapeDistance" type="number" min="3" max="150" step="0.5" />
                     </label>
                   </div>
-                  <p>血量按（当前 Life + 当前 ES）÷（可用 Life 上限 + 可用 ES 上限）计算。单人监测自己；双人任一存活角色低于 50% 就暂停跟随，优先撤离比例最低者。P1 使用共享 WASD 带双人撤离，P2 使用箭头单独撤离。将相邻黄怪聚成怪群，优先远离最近怪群中心，并与检测范围内所有黄怪至少拉开安全距离；安全距离不能超过检测范围。撤离优先于队长危险暂停、纠偏、脱困和新技能；无可走路线时松键重试，到达安全距离后等血，全部存活角色回到 50% 才恢复正常导航。保存并应用后生效。</p>
+                  <p>血量按（当前 Life + 当前 ES）÷（可用 Life 上限 + 可用 ES 上限）计算。单人监测自己；双人任一存活角色低于 50% 就暂停跟随，优先撤离比例最低者。P1 使用共享 WASD 带双人撤离，P2 使用箭头单独撤离。将相邻黄怪聚成怪群，优先远离最近怪群中心，并与检测范围内所有黄怪至少拉开安全距离；安全距离不能超过检测范围。Park 暂停优先于低血撤离；撤离优先于纠偏、脱困和新技能；无可走路线时松键重试，到达安全距离后等血，全部存活角色回到 50% 才恢复正常导航。保存并应用后生效。</p>
                 </div>
               </article>
             </div>

@@ -211,25 +211,13 @@ try {
   await click('[data-follow="localCoopFollow"]');
   await click('[data-tab="general"]');
   await click('[data-tab="follow"]');
-  check(
-    await evaluate(`!document.querySelector('[data-follow="avoidDanger"]').checked && document.getElementById('follow-danger-fields').hidden`),
-    "danger avoidance defaults off in Follow",
-  );
-  await click('[data-follow="avoidDanger"]');
-  check(
-    await evaluate(`!document.getElementById('follow-danger-fields').hidden`),
-    "danger toggle exposes leader radius and elite limit",
-  );
-  await input('[data-follow="dangerRange"]', "42.5");
-  await input('[data-follow="dangerEliteLimit"]', "2");
+  check(await evaluate(`!document.querySelector('[data-follow="avoidDanger"]') && !document.getElementById('follow-danger-fields')`),
+    "retired danger controls are absent");
+  check(await evaluate(`document.querySelector('#movement-pause-record kbd').textContent==='F7'`), "Park defaults to F7");
+  await record("F8", "F8", 119, "#movement-pause-record");
+  check(await evaluate(`document.querySelector('#movement-pause-record kbd').textContent==='F8'`), "Park key uses click recording");
   await save();
-  const dangerSaved = (await bootstrap()).config.follow;
-  check(dangerSaved.avoidDanger && dangerSaved.dangerRange === 42.5 && dangerSaved.dangerEliteLimit === 2,
-    "danger toggle and thresholds save through real HTTP");
-  await click('[data-follow="avoidDanger"]');
-  await save();
-  check(!(await bootstrap()).config.follow.avoidDanger && await evaluate(`document.getElementById('follow-danger-fields').hidden`),
-    "danger can be disabled while retaining saved thresholds");
+  check((await bootstrap()).config.follow.movementPauseKey === 119, "Park key persists through real HTTP");
   check(await evaluate(`!document.querySelector('[data-follow="escapeLowHealth"]').checked && document.getElementById('follow-escape-fields').hidden`),
     "low-health retreat defaults off for existing configs");
   await click('[data-follow="escapeLowHealth"]');
@@ -484,7 +472,8 @@ try {
   const imported = structuredClone(external);
   imported.name = "导入测试";
   imported.allowControllerWithoutChat = false;
-  delete imported.follow.avoidDanger;
+  delete imported.follow.movementPauseKey;
+  imported.follow.avoidDanger = true;
   delete imported.follow.dangerRange;
   delete imported.follow.dangerEliteLimit;
   delete imported.follow.escapeLowHealth;
@@ -521,9 +510,9 @@ try {
     !("allowControllerWithoutChat" in (await bootstrap()).config),
     "legacy export imports and saves without the retired controller switch",
   );
-  check((await bootstrap()).config.follow.avoidDanger === false &&
-    (await bootstrap()).config.follow.dangerRange === 50 && (await bootstrap()).config.follow.dangerEliteLimit === 3,
-    "old exports import with danger disabled and default thresholds");
+  check((await bootstrap()).config.follow.movementPauseKey === 119 &&
+    !Object.hasOwn((await bootstrap()).config.follow, "avoidDanger") && !Object.hasOwn((await bootstrap()).config.follow, "dangerRange"),
+    "old exports import a free Park key and omit retired danger fields");
   check((await bootstrap()).config.follow.escapeLowHealth === false && (await bootstrap()).config.follow.escapeDistance === 30,
     "old exports import with low health retreat disabled and default clearance");
   await click(".rule:nth-child(2)");

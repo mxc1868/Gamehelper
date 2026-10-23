@@ -45,7 +45,6 @@ internal sealed class FollowMode : INavigationMode
     private Vector2 routeGoal;
     private float distance;
     private float playerGap;
-    private int? dangerElites;
     private bool escaping;
     private float? escapeHealth;
     private string escapeCharacter = string.Empty;
@@ -63,7 +62,8 @@ internal sealed class FollowMode : INavigationMode
     public FollowMode(MovementInput input) { this.input = input; }
     public string Name => "Follow";
     public bool IsActive => this.run.IsEnabled;
-    public string Status => this.run.Status switch
+    public bool MovementPaused { get; private set; }
+    public string Status => this.MovementPaused && this.IsActive ? "移动跟随已暂停（Park），技能继续" : this.run.Status switch
     {
         "manual" => "手动按键：" + this.manualKeys,
         "target_missing" => "队长暂不可见，等待重新出现",
@@ -71,7 +71,6 @@ internal sealed class FollowMode : INavigationMode
         "players_dead" => "角色已死亡，等待复活后继续跟随",
         "players_changed" => "角色存活状态变化，重新寻路",
         "leader_unavailable" => "队长暂不可用，等待恢复",
-        "danger" => $"躲避危险：队长 {this.Settings.DangerRange:0.#} 格内精英 {this.dangerElites} > {this.Settings.DangerEliteLimit}，暂停跟随",
         "escaping" => $"低血撤离：{this.escapeCharacter} Life+ES {this.escapeHealth:0.#}% · {(this.usingP2 ? "仅 P2 箭头" : "共享 WASD")}远离黄怪群",
         "escape_preview" => $"预览低血撤离：{this.escapeCharacter} Life+ES {this.escapeHealth:0.#}%",
         "low_health_wait" => $"低血等待恢复：{this.escapeCharacter} Life+ES {this.escapeHealth:0.#}% · 已远离黄怪群",
@@ -87,18 +86,38 @@ internal sealed class FollowMode : INavigationMode
         _ => this.run.Status
     };
     public void Apply(BotConfig config) { this.Stop(); this.Settings = config.Follow; }
-    public void Start() { this.ClearNavigation(); this.input.CaptureManualBaseline(); this.run.Start(); }
+    public void Start() { this.MovementPaused = false; this.ClearNavigation(); this.input.CaptureManualBaseline(); this.run.Start(); }
     public void Stop() => this.Halt("stopped");
     public void Suspend(string reason = "unfocused") => this.Suspend(reason, 250);
     public void CombatAccepted(int milliseconds) { this.DiscardRoute(release: false); this.session.PauseProgress(milliseconds); }
+    public void SetMovementPaused(bool paused)
+    {
+        if (!this.IsActive || this.MovementPaused == paused) return;
+        this.input.StopMovement();
+        // Cancel every movement phase without cutting short an accepted skill.
+        this.ClearNavigation(release: false);
+        this.MovementPaused = paused;
+        this.run.Start();
+        this.run.Status = paused ? "parked" : "waiting";
+    }
+
     public void Tick(long now, bool preview, Func<bool> combat)
     {
+        // Park does not need a visible leader, terrain or Follow participants.
+        // Runtime still enforces foreground/UI/freshness and combat rechecks.
+        if (this.IsActive && this.MovementPaused)
+        {
+            this.input.StopMovement();
+            this.run.Status = "parked";
+            combat();
+            return;
+        }
         if (this.run.Ready(now)) this.TickFollow(now, preview, combat);
     }
-    private void ClearNavigation(bool preserveFollowState = false)
+    private void ClearNavigation(bool preserveFollowState = false, bool release = true)
     {
 
-        this.ClearRoute(preserveRecovery: preserveFollowState);
+        this.ClearRoute(release: release, preserveRecovery: preserveFollowState);
         this.primaryTarget.Reset();
         this.leaderTarget.Reset();
         this.pathStatus = null;
@@ -116,7 +135,6 @@ internal sealed class FollowMode : INavigationMode
             this.livingPlayers = null;
         }
         this.distance = this.playerGap = 0;
-        this.dangerElites = null;
         this.escaping = false;
         this.escapeIdentity = null;
         this.escapeHealth = null;
@@ -146,6 +164,7 @@ internal sealed class FollowMode : INavigationMode
 
     private void Halt(string reason)
     {
+        this.MovementPaused = false;
         this.run.Stop(reason);
         this.ClearNavigation();
     }
@@ -254,17 +273,7 @@ internal sealed class FollowMode : INavigationMode
             this.manualKeys = this.input.ReadManualInput(this.Settings.LocalCoopFollow);
             if (this.manualKeys.Length != 0) { this.Suspend("manual"); return; }
         }
-        this.dangerElites = this.Settings.AvoidDanger
-            ? FollowDangerReader.CountElites(area, leaderPos, this.Settings.DangerRange) : null;
         if (Environment.TickCount64 - now > 150) { this.Suspend("frame_gap"); return; }
-        if (this.dangerElites is int eliteCount && this.Settings.IsDangerous(eliteCount))
-        {
-            this.usingP2 = !primaryAlive;
-            this.distance = primaryAlive && secondaryAlive ? Math.Min(primaryDistance, secondaryDistance)
-                : primaryAlive ? primaryDistance : secondaryDistance;
-            this.WaitForDanger(combat);
-            return;
-        }
         if (this.grid == null || now >= this.nextDoorRead)
         {
             this.grid = BuildGrid(area, this.Settings.Clearance);
@@ -542,23 +551,6 @@ internal sealed class FollowMode : INavigationMode
         return true;
     }
 
-    private void WaitForDanger(Func<bool> combat)
-    {
-        // Danger overrides shared movement, P2 correction and unstuck probes.
-        // Keep the start command and combat independent; resume from fresh paths.
-        this.input.StopMovement();
-        this.ClearRoute(release: false);
-        this.session.Reset();
-        this.coop.Reset();
-        this.primaryTarget.Reset();
-        this.leaderTarget.Reset();
-        this.grid = null;
-        this.nextDoorRead = 0;
-        this.correctingP2 = false;
-        this.run.Status = "danger";
-        combat();
-    }
-
     private static NavigationGrid BuildGrid(AreaInstance area, int clearance)
     {
         var opened = new HashSet<(int, int)>();
@@ -601,8 +593,6 @@ internal sealed class FollowMode : INavigationMode
             if (this.pathStatus.HasValue) ImGui.TextUnformatted($"Path: {this.pathStatus}");
             if (!this.correctingP2 && !this.escaping)
                 ImGui.TextUnformatted($"Stop: {this.Settings.StopDistance:0.0} | Resume: {this.Settings.ResumeDistance:0.0}");
-            if (this.Settings.AvoidDanger)
-                ImGui.TextUnformatted($"Leader elites: {this.dangerElites?.ToString() ?? "?"} | Range: {this.Settings.DangerRange:0.#} | Limit: {this.Settings.DangerEliteLimit}");
             ImGui.End();
         }
         if (!this.run.IsEnabled || !this.Settings.ShowRoute || this.route == null || Core.States.GameCurrentState != GameStateTypes.InGameState) return;

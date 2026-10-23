@@ -67,6 +67,7 @@ public sealed class ConfigStore(string directory, string? legacyFollowerPath = n
                 config.Combat = legacy.Combat ?? new();
                 config.Combat.Normalize();
             }
+            config.Follow.MovementPauseKey = BotConfig.DefaultMovementPauseKey(config);
             config.Validate();
             this.Warning += " 已读取旧 Follower 的跟随设置；请选择 Follow 模式并核对后保存。旧文件未修改。";
             return config;

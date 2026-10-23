@@ -19,6 +19,8 @@ public interface INavigationMode
     string Name { get; }
     string Status { get; }
     bool IsActive { get; }
+    bool MovementPaused { get; }
+    void SetMovementPaused(bool paused);
     void Apply(BotConfig config);
     void Start();
     void Suspend(string reason = "unfocused");
@@ -30,7 +32,7 @@ public interface INavigationMode
 
 public sealed record Observation(CombatSnapshot? Combat, string Character, string Area, string[] Players, string[] Skills);
 public sealed record BotEvent(long At, string Message);
-public sealed record BotStatus(bool Running, bool Preview, string Navigation, string Reason, long UpdatedAt,
+public sealed record BotStatus(bool Running, bool MovementPaused, bool Preview, string Navigation, string Reason, long UpdatedAt,
     string Character, string Area, float? Life, float? Shield, float? Mana,
     int Normal, int Magic, int Rare, int Unique, string[] Players, string[] Buffs, string[] Skills, string[] ReadySkills,
     CombatAction? Action, long AcceptedInputs, BotEvent[] Events);
@@ -69,6 +71,19 @@ public sealed class BotRuntime(IBotInput input, INavigationMode navigation)
     { lock (this.sync) return (this.config.Copy(), this.revision); }
 
     public int ToggleKey { get { lock (this.sync) return this.config.ToggleKey; } }
+
+    public int MovementPauseKey { get { lock (this.sync) return this.config.Follow.MovementPauseKey; } }
+
+    public void ToggleMovementPause()
+    {
+        lock (this.sync)
+        {
+            if (!this.running) return;
+            this.navigation.SetMovementPaused(!this.navigation.MovementPaused);
+            this.reason = this.navigation.MovementPaused ? "移动跟随已暂停（Park），技能继续" : "移动跟随已恢复，等待新路线";
+            this.Log(this.reason);
+        }
+    }
 
     public void Start(long now)
     {
@@ -170,7 +185,7 @@ public sealed class BotRuntime(IBotInput input, INavigationMode navigation)
         if (input.SkillHeld || now < this.busyUntil) { this.reason = "施法停顿"; return true; }
         if (snapshot == null || !snapshot.CanFight || !snapshot.Player.IsAlive) { this.reason = "暂不可战斗"; return false; }
         this.action = this.engine.Evaluate(this.config.Combat, snapshot, now,
-            key => key != this.config.ToggleKey && input.IsKeyAvailable(key));
+            key => key != this.config.ToggleKey && key != this.config.Follow.MovementPauseKey && input.IsKeyAvailable(key));
         if (this.action == null) return false;
         if (this.config.Preview) { this.reason = "预览：" + this.action.Name; return false; }
         if (!recheck()) { input.Release(); this.action = null; this.reason = "游戏状态已改变"; return true; }
@@ -192,7 +207,7 @@ public sealed class BotRuntime(IBotInput input, INavigationMode navigation)
         {
             var player = this.observation?.Combat?.Player;
             var enemies = this.observation?.Combat?.Enemies.Where(e => e.IsCandidate).ToArray() ?? [];
-            return new(this.running, this.config.Preview, this.navigation.Name, this.reason, this.updatedAt,
+            return new(this.running, this.navigation.MovementPaused, this.config.Preview, this.navigation.Name, this.reason, this.updatedAt,
                 this.observation?.Character ?? "", this.observation?.Area ?? "", player?.LifePercent, player?.EnergyShieldPercent, player?.ManaPercent,
                 enemies.Count(e => e.Rarity == EnemyRarity.Normal), enemies.Count(e => e.Rarity == EnemyRarity.Magic),
                 enemies.Count(e => e.Rarity == EnemyRarity.Rare), enemies.Count(e => e.Rarity == EnemyRarity.Unique),

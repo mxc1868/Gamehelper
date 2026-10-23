@@ -19,11 +19,7 @@ let draft,
   recording = null,
   captureTimer;
 const pendingOptions = new Map();
-const followDangerDefaults = {
-  avoidDanger: false,
-  dangerRange: 50,
-  dangerEliteLimit: 3,
-};
+const followMovementDefaults = { movementPauseKey: 118 };
 const followEscapeDefaults = {
   escapeLowHealth: false,
   escapeScanRange: 50,
@@ -124,13 +120,13 @@ function renderConfig() {
   $("toggle-record").querySelector("kbd").textContent = keyName(
     draft.toggleKey,
   );
+  $("movement-pause-record").querySelector("kbd").textContent = keyName(draft.follow.movementPauseKey);
   for (const element of document.querySelectorAll("[data-follow]")) {
     const value = draft.follow[element.dataset.follow];
     if (element.type === "checkbox") element.checked = value;
     else element.value = value;
   }
   $("follow-coop-fields").hidden = !draft.follow.localCoopFollow;
-  $("follow-danger-fields").hidden = !draft.follow.avoidDanger;
   $("follow-escape-fields").hidden = !draft.follow.escapeLowHealth;
   $("config-name").value = draft.name;
   $("preview").checked = draft.preview;
@@ -240,6 +236,12 @@ function cancelRecording() {
       rule?.key === 32 ? "Space" : keyName(rule?.key);
     button.querySelector("small").textContent = "点击录制";
   }
+  const movement = $("movement-pause-record");
+  if (movement) {
+    movement.classList.remove("capturing");
+    movement.querySelector("kbd").textContent = keyName(draft?.follow.movementPauseKey || 118);
+    movement.querySelector("small").textContent = "点击录制";
+  }
   const toggle = $("toggle-record");
   if (toggle) {
     toggle.classList.remove("capturing");
@@ -257,13 +259,13 @@ function startRecording(kind = "skill") {
     return;
   recording = { kind, id: selected };
   $("capture-title").textContent =
-    kind === "skill" ? "请按下技能键" : "请按下启停快捷键";
+    kind === "skill" ? "请按下技能键" : kind === "movement" ? "请按下暂停移动快捷键" : "请按下启停快捷键";
   $("capture-hint").textContent =
     kind === "skill"
       ? "支持字母（除 WASD）、数字和空格。Esc 取消。"
-      : "支持功能键或单个非移动键，推荐 F6。Esc 取消。";
+      : `支持功能键或单个非移动键，推荐 ${kind === "movement" ? "F7" : "F6"}。Esc 取消。`;
   $("capture-toast").hidden = false;
-  const button = $(kind === "skill" ? "key-record" : "toggle-record");
+  const button = $(kind === "skill" ? "key-record" : kind === "movement" ? "movement-pause-record" : "toggle-record");
   button.classList.add("capturing");
   button.querySelector("kbd").textContent = "…";
   button.querySelector("small").textContent = "等待按键 · Esc 取消";
@@ -327,6 +329,7 @@ document.addEventListener(
       return;
     }
     if (recording.kind === "toggle") draft.toggleKey = key;
+    else if (recording.kind === "movement") draft.follow.movementPauseKey = key;
     else {
       const rule = draft.combat.rules.find((r) => r.id === recording.id);
       if (rule) rule.key = key;
@@ -340,12 +343,13 @@ document.addEventListener(
 document.addEventListener("pointerdown", (e) => {
   if (
     recording &&
-    !e.target.closest("#key-record,#toggle-record,#capture-toast")
+    !e.target.closest("#key-record,#toggle-record,#movement-pause-record,#capture-toast")
   )
     cancelRecording();
 });
 $("cancel-capture").addEventListener("click", cancelRecording);
 $("toggle-record").addEventListener("click", () => startRecording("toggle"));
+$("movement-pause-record").addEventListener("click", () => startRecording("movement"));
 window.addEventListener("blur", cancelRecording);
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) cancelRecording();
@@ -539,7 +543,6 @@ document.querySelectorAll("[data-follow]").forEach((element) =>
           ? Number(element.value)
           : element.value;
     $("follow-coop-fields").hidden = !draft.follow.localCoopFollow;
-    $("follow-danger-fields").hidden = !draft.follow.avoidDanger;
     $("follow-escape-fields").hidden = !draft.follow.escapeLowHealth;
     controls();
   }),
@@ -634,7 +637,7 @@ $("import-file").addEventListener("change", async (e) => {
       imported.mode = "";
       imported.toggleKey = 117;
       imported.follow = {
-        ...followDangerDefaults,
+        ...followMovementDefaults,
         ...followEscapeDefaults,
         leaderName: "",
         localCoopFollow: false,
@@ -665,11 +668,14 @@ $("import-file").addEventListener("change", async (e) => {
     )
       throw new Error("不是有效的 Bloodybot2 配置。");
     const sample = newRule();
-    // Older v2 exports omit the new optional safety settings.
-    for (const [key, value] of Object.entries({ ...followDangerDefaults, ...followEscapeDefaults }))
+    for (const field of ["avoidDanger", "dangerRange", "dangerEliteLimit"]) delete imported.follow[field];
+    if (!("movementPauseKey" in imported.follow))
+      imported.follow.movementPauseKey = imported.toggleKey === 118 ? 119 : 118;
+    // Older v2 exports omit the optional Follow settings.
+    for (const [key, value] of Object.entries({ ...followMovementDefaults, ...followEscapeDefaults }))
       if (!(key in imported.follow)) imported.follow[key] = value;
     const followSample = {
-      ...followDangerDefaults,
+      ...followMovementDefaults,
       ...followEscapeDefaults,
       leaderName: "",
       localCoopFollow: false,

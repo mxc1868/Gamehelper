@@ -34,7 +34,11 @@ public sealed class BotConfig
         if (node["schemaVersion"] is JsonValue schema && schema.TryGetValue<int>(out var version) && version == 1) node["schemaVersion"] = 2;
         // Retired switch: accept old v1/v2 files, but never write it back.
         node.Remove("allowControllerWithoutChat");
+        if (node["follow"] is JsonObject follow)
+            foreach (var field in new[] { "avoidDanger", "dangerRange", "dangerEliteLimit" }) follow.Remove(field);
         var config = node.Deserialize<BotConfig>(Json) ?? throw new ArgumentException("配置不能为空。");
+        if (config.Follow != null && (node["follow"] is not JsonObject fields || !fields.ContainsKey("movementPauseKey")))
+            config.Follow.MovementPauseKey = DefaultMovementPauseKey(config);
         config.Validate();
         return config;
     }
@@ -60,8 +64,8 @@ public sealed class BotConfig
         Text(this.Follow.P2Name, 128, "P2 名称");
         Range(this.Follow.StopDistance, 3, 100, "停止距离");
         Range(this.Follow.ResumeDistance, this.Follow.StopDistance + 3, 150, "重新跟随距离");
-        Range(this.Follow.DangerRange, 1, 150, "危险检测范围");
-        Range(this.Follow.DangerEliteLimit, 0, 100, "精英数量上限");
+        if (!IsToggleKeyAllowed(this.Follow.MovementPauseKey) || this.Follow.MovementPauseKey == this.ToggleKey)
+            throw new ArgumentException("移动暂停键须为单个非移动键，且不能与启停键相同。");
         Range(this.Follow.EscapeScanRange, 5, 150, "低血黄怪检测范围");
         Range(this.Follow.EscapeClusterDistance, 3, 50, "黄怪聚类间距");
         Range(this.Follow.EscapeDistance, 3, this.Follow.EscapeScanRange, "撤离安全距离");
@@ -81,6 +85,7 @@ public sealed class BotConfig
             if (!ids.Add(r.Id)) throw new ArgumentException("技能规则 ID 重复。");
             Text(r.Name, 80, "技能名称", true);
             if (r.Key != 0 && !CombatRule.IsKeyAllowed(r.Key)) throw new ArgumentException($"{r.Name}：按键仅支持字母（除 WASD）、数字及空格。");
+            if (r.Key == this.Follow.MovementPauseKey) throw new ArgumentException($"{r.Name}：技能键不能与移动暂停键相同。");
             if ((r.Rarities & ~EnemyRarity.All) != 0 || r.RequireEnemy && r.Rarities == EnemyRarity.None)
                 throw new ArgumentException($"{r.Name}：请选择有效的敌人稀有度。");
             Range(r.Range, 1, 150, "敌人距离");
@@ -113,6 +118,10 @@ public sealed class BotConfig
             this.Follow.P2Name.Trim().Equals(this.Follow.LeaderName.Trim(), StringComparison.OrdinalIgnoreCase)))
             throw new ArgumentException("P2 必须与 P1 和队长是不同角色。");
     }
+
+    // Older profiles may already use F7 for start/stop. Keep that binding intact.
+    public static int DefaultMovementPauseKey(BotConfig config) =>
+        config.ToggleKey == 0x76 ? 0x77 : 0x76;
 
     public static bool IsToggleKeyAllowed(int key) => key is >= 0x08 and <= 0xFE &&
         key is not (0x0D or 0x10 or 0x11 or 0x12 or 0x1B or 0x25 or 0x26 or 0x27 or 0x28 or 0x41 or 0x44 or 0x53 or 0x57 or

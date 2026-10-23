@@ -1,6 +1,15 @@
 # GameHelper 插件：TODO 与接手上下文
 
-更新日期：2026-10-10。后续 agent 请先读本文，再读 [插件说明](Plugins/ShowMeWisp/README.md) 和 [Windows 调试说明](Plugins/ShowMeWisp/WINDOWS-DEBUG.zh-CN.md)。
+更新日期：2026-10-23。后续 agent 请先读本文，再读 [插件说明](Plugins/ShowMeWisp/README.md) 和 [Windows 调试说明](Plugins/ShowMeWisp/WINDOWS-DEBUG.zh-CN.md)。
+
+## Bloodybot2 Follow：一键暂停移动 / Park，移除队长精英计数停止（2026-10-23）
+
+- [x] 用户认为自动躲避效果不好，明确移除“按队长周围怪物数量停止跟随”，改为可手动停车的一键移动暂停。Follow 页新增点击录制的暂停/恢复键，默认 F7；按一次只暂停移动，再按一次恢复，F6 / Esc / Web 停止仍停止整套运行。
+- [x] Park 立即释放共享 WASD / P2 箭头，清空寻路、旧路线、P2 纠偏、脱困及低血撤离状态。暂停优先于全部自动移动；已接受技能正常释放，战斗仍按原监测角色、映射、条件和冷却独立运行，不依赖队长可见或导航地形。手动选停车位置后保持 Park；恢复从新鲜位置重新寻路。预览、150 ms 释放、失焦/面板/聊天、配置版本和发键前复核、断更及主动停止保护保留。
+- [x] 删除队长精英扫描与危险停止逻辑/UI/持久化字段，旧 avoidDanger / dangerRange / dangerEliteLimit 读取和导入时忽略，加载不改写个人文件；显式保存备份原文件并移除旧字段。缺少暂停键的旧配置默认 F7，原启停已用 F7 则自动选 F8；保留旧 Follower 迁移、原文件、Bloodybot1 样式和稳定/延后 datalist。暂停键不得与移动、启停或技能键冲突。
+- [x] 最终回归通过：141 项配置/运行/真实 HTTP、344 项 Follow、77 项真实适配器夹具、80 项 Combat、48 项无头 Chrome（含录制/保存/旧导入/布局）；包含 Park 覆盖低血撤离/P2 纠偏、松键失败重试、保持已接受技能、预览、断更、Esc/配置应用停止。均使用模拟数据和输入，未连接游戏。Chrome 截图人工检查通过，证据：`artifacts/bloodybot2/park-20261023`；最终截图：`artifacts/bloodybot2/ui-1792792798015`。仅修改插件内部接口，无核心、offsets 或公共框架 API 添加。
+- [x] 整套 `rebuild-test.ps1` 成功更新 Test，最终 0 错误、56 条既有 NU1900 包审计网络警告；首轮重建另有 4 条既有 WorldDrawing nullable 警告，修改的插件源码无新增编译警告。Test 的 13 项实际插件发现/加载/API 检查通过，Bloodybot2 DLL 与构建输出 SHA-256 一致。37 个个人配置/布局与独立备份逐一核对；`plugins.json` 仅格式变化，经 JSON 语义一致检查后恢复原字节。保留脚本配置归档，无强杀进程或绕过文件锁。已核对远端用户 fork main 与修改前本地一致；提交推送目标仅 `mxc1868/Gamehelper` 的 main，不创建 ZIP/Release。
+- [ ] 实机确认 F7 暂停/恢复、手动停车、P1/P2 松键、队长离开画面后继续施法及原技能规则/映射；离线、Chrome 和加载检查不等于游戏验证。低血撤离保留为独立的可选功能，Park 期间不执行。
 
 ## Bloodybot2 Follow：Life+ES 低于 50% 时逃离黄怪群（2026-10-10）
 

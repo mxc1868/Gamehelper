@@ -9,7 +9,7 @@ using GameHelper.RemoteObjects.States.InGameStateObjects;
 
 internal readonly record struct MonsterInfo(uint Id, EnemyRarity Rarity, Vector2 Position, bool Immune, bool Hidden);
 
-// Shared Radar-compatible monster classification for combat and Follow danger.
+// Shared Radar-compatible monster classification for combat and low-health retreat.
 // Invulnerable monsters can still threaten the leader, even when combat skips them.
 internal static class MonsterReader
 {

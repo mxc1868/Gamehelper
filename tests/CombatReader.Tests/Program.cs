@@ -145,70 +145,9 @@ Check(CombatSnapshotReader.Read(area, player, 1000, true)?.CanFight == false, "e
 Set(life, "IsAlive", false);
 Check(CombatSnapshotReader.Read(area, player, 1000, true) == null, "player death still blocks snapshot");
 
-// Invoke the actual danger reader using host entity fixtures. The center is the
-// leader, far beyond the combat monitor's scan radius; combat and Life are irrelevant.
-var leaderPosition = new Vector2(300, 200);
 Set(life, "IsAlive", true);
-int Danger(Entity monster, float range = 50)
-{
-    awake.Clear(); awake[new EntityNodeKey { id = monster.Id }] = monster;
-    return FollowDangerReader.CountElites(area, leaderPosition, range);
-}
-foreach (var rarity in new[] { Rarity.Normal, Rarity.Magic, Rarity.Rare, Rarity.Unique, (Rarity)99 })
-{
-    enemy = Monster(rarity);
-    Position((Render)Cache(enemy)[nameof(Render)], 330, 240);
-    Check(Danger(enemy) == (rarity is Rarity.Rare or Rarity.Unique ? 1 : 0),
-        "leader danger rarity at inclusive 50-grid diagonal boundary: " + rarity);
-}
-enemy = Monster(Rarity.Rare);
-Position((Render)Cache(enemy)[nameof(Render)], 350.01f, 200);
-Check(Danger(enemy) == 0, "elite just outside leader radius does not pause Follow");
-Position((Render)Cache(enemy)[nameof(Render)], 350, 200);
-Check(Danger(enemy) == 1 && Read(enemy).Enemies.Count == 0,
-    "danger uses leader position even beyond combat monitor scan bubble");
-Position((Render)Cache(enemy)[nameof(Render)], 20);
-Check(Danger(enemy) == 0, "elite near follower but far from leader is not danger");
-Position((Render)Cache(enemy)[nameof(Render)], 300, 200);
-Set(Add<Life>(enemy), "IsAlive", false);
-Check(Danger(enemy, 1) == 1, "danger follows Radar core state instead of monster Life");
-foreach (var state in new[] { EntityStates.Useless, EntityStates.MonsterFriendly, EntityStates.PinnacleBossHidden })
-{
-    Set(enemy, "EntityState", state);
-    Check(Danger(enemy) == 0, "leader danger excludes core state: " + state);
-}
-Set(enemy, "EntityState", EntityStates.None);
-var enemyStats = Add<Stats>(enemy);
-enemyStats.StatsChangedByBuffAndActions[GameStats.is_hidden_monster] = 1;
-Check(Danger(enemy) == 0, "leader danger excludes hidden monster stats");
-enemyStats.StatsChangedByBuffAndActions.Clear();
-enemyStats.StatsChangedByItems[GameStats.cannot_be_damaged] = 1;
-Check(Danger(enemy) == 1, "invulnerable visible elite remains dangerous");
-Add<Buffs>(enemy).StatusEffects["hidden_monster"] = default;
-Check(Danger(enemy) == 0, "leader danger excludes hidden monster buff");
-Cache(enemy).Remove(nameof(Buffs), out _);
-enemy.IsValid = false;
-Check(Danger(enemy) == 0, "leader danger excludes invalid elite");
-enemy.IsValid = true;
-Position((Render)Cache(enemy)[nameof(Render)], float.NaN, 200);
-Check(Danger(enemy) == 0, "leader danger excludes nonfinite position");
-Position((Render)Cache(enemy)[nameof(Render)], 300, 200);
-typeof(ComponentBase).GetField("OwnerEntityAddress", Hidden)!.SetValue(Cache(enemy)[nameof(ObjectMagicProperties)], (IntPtr)99);
-Check(Danger(enemy) == 0, "leader danger excludes stale rarity component");
-awake.Clear();
-foreach (var (id, rarity, x) in new[] { (10u, Rarity.Rare, 300f), (11u, Rarity.Unique, 320f),
-    (12u, Rarity.Rare, 350f), (13u, Rarity.Magic, 300f), (14u, Rarity.Rare, 351f) })
-{
-    var monster = Monster(rarity, id);
-    Position((Render)Cache(monster)[nameof(Render)], x, 200);
-    awake[new EntityNodeKey { id = id }] = monster;
-}
-Check(FollowDangerReader.CountElites(area, leaderPosition, 50) == 3,
-    "leader danger counts each in-range rare and unique, ignoring magic and outside elites");
-awake.Clear();
-Check(FollowDangerReader.CountElites(area, leaderPosition, 50) == 0, "danger clears when elites disappear");
 
-// Exercise Follow's actual danger transition without constructing the Win32 input
+// Exercise Follow's actual Park transition without constructing the Win32 input
 // backend or its watchdog. Only fake lease/skill delegates can run in this fixture.
 foreach (var arrows in new[] { false, true })
 {
@@ -221,6 +160,7 @@ foreach (var arrows in new[] { false, true })
     typeof(MovementInput).GetField("skill", Hidden)!.SetValue(movement, pulse);
     typeof(MovementInput).GetField("arrows", Hidden)!.SetValue(movement, arrows);
     var mode = new FollowMode(movement);
+    mode.Apply(new() { Follow = new() { EscapeLowHealth = true } });
     var run = (FollowRunState)typeof(FollowMode).GetField("run", Hidden)!.GetValue(mode)!;
     run.Start();
     var cancel = new CancellationTokenSource(); var cancelToken = cancel.Token;
@@ -231,23 +171,41 @@ foreach (var arrows in new[] { false, true })
     lease.Renew(MoveKeys.Up | MoveKeys.Right, 1000);
     pulse.TryStart('Q', 80, 1000);
     var combatCalls = 0;
-    void Pause() => typeof(FollowMode).GetMethod("WaitForDanger", Hidden)!.Invoke(mode, [(Func<bool>)(() => { combatCalls++; return true; })]);
+    typeof(FollowMode).GetField("escaping", Hidden)!.SetValue(mode, true);
+    typeof(FollowMode).GetField("correctingP2", Hidden)!.SetValue(mode, true);
+    mode.SetMovementPaused(true);
+    Check(!(bool)typeof(FollowMode).GetField("escaping", Hidden)!.GetValue(mode)! &&
+        !(bool)typeof(FollowMode).GetField("correctingP2", Hidden)!.GetValue(mode)!,
+        "Park clears low-health retreat and P2 correction");
+    void Pause() => mode.Tick(1001, false, () => { combatCalls++; return true; });
     Pause();
     Check(lease.Held == MoveKeys.None && sent.Count(e => !e.Down) == 2,
-        "danger immediately releases actual " + (arrows ? "P2 arrow" : "shared WASD") + " lease");
+        "Park immediately releases actual " + (arrows ? "P2 arrow" : "shared WASD") + " lease");
     Check(cancelToken.IsCancellationRequested && typeof(FollowMode).GetField("route", Hidden)!.GetValue(mode) == null && !recovery.Active,
-        "danger cancels search, route and unstuck for " + (arrows ? "P2" : "P1"));
-    Check(mode.IsActive && run.Ready(1001) && run.Status == "danger" && pulse.Held == 'Q' && combatCalls == 1,
-        "danger retains start and independent active skill without sending movement");
+        "Park cancels search, route and unstuck for " + (arrows ? "P2" : "P1"));
+    Check(mode.IsActive && run.Ready(1001) && run.Status == "parked" && pulse.Held == 'Q' && combatCalls == 1,
+        "Park retains start and independent active skill without sending movement");
     Pause();
-    Check(sent.Count == 4 && combatCalls == 2, "repeated dangerous observations remain stationary");
+    Check(sent.Count == 4 && combatCalls == 2, "repeated parked observations remain stationary");
     releaseFails = true; lease.Renew(MoveKeys.Up, 1100); Pause();
-    Check(lease.Held == MoveKeys.Up, "danger keeps failed key-up ownership for retry");
+    Check(lease.Held == MoveKeys.Up, "Park keeps failed key-up ownership for retry");
     releaseFails = false; lease.Expire(1101, false);
-    Check(lease.Held == MoveKeys.None, "watchdog can retry the danger release");
+    Check(lease.Held == MoveKeys.None, "watchdog can retry the Park release");
+    mode.SetMovementPaused(false);
+    Check(!mode.MovementPaused && mode.IsActive && pulse.Held == 'Q' &&
+        typeof(FollowMode).GetField("route", Hidden)!.GetValue(mode) == null,
+        "resuming Park keeps the accepted skill and requires a fresh route");
+    mode.SetMovementPaused(true);
+    mode.Suspend("frame_gap");
+    Check(mode.MovementPaused && mode.IsActive, "frame gap preserves Park selection");
+    mode.Tick(1002, true, () => { combatCalls++; return true; });
+    Check(run.Status == "parked" && lease.Held == MoveKeys.None, "Park preview skips leader/terrain and sends no movement");
     mode.Stop();
+    Check(!mode.MovementPaused, "explicit stop clears Park");
+    mode.SetMovementPaused(true);
+    Check(!mode.MovementPaused, "Park key cannot start a stopped mode");
     Check(!mode.IsActive && pulse.Held == 0 && !run.Ready(long.MaxValue),
-        "explicit stop during danger remains stopped and releases skill");
+        "explicit stop during Park remains stopped and releases skill");
 }
 Set(life, "Health", new VitalStruct { Current = 400, Total = 1000 });
 Set(life, "EnergyShield", new VitalStruct { Current = 600, Total = 1000 });
@@ -280,7 +238,7 @@ foreach (var (id, rarity) in new[] { (21u, Rarity.Rare), (22u, Rarity.Unique), (
     Position((Render)Cache(monster)[nameof(Render)], 25, 20);
     awake[new EntityNodeKey { id = id }] = monster;
 }
-Check(LowHealthReader.Rares(area, new(20, 20), 50) is { Count: 1 }, "emergency clusters only yellow rares, independently of leader danger rarities");
+Check(LowHealthReader.Rares(area, new(20, 20), 50) is { Count: 1 }, "emergency clusters only yellow rares, excluding unique and magic monsters");
 enemy = awake.Values.Single(e => e.Id == 21);
 Add<Stats>(enemy).StatsChangedByItems[GameStats.cannot_be_damaged] = 1;
 Check(LowHealthReader.Rares(area, new(20, 20), 50) is { Count: 1 }, "immune visible yellow monster still belongs to escape threat cluster");

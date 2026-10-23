@@ -26,10 +26,12 @@ public sealed class Bloodybot2Core : PCore<Bloodybot2Settings>
     private ActiveCoroutine? areaChanged;
     private ActiveCoroutine? gameClosed;
     private bool toggleWasDown;
+    private int movementPauseKey;
+    private bool movementPauseWasDown;
     private long nextRead;
     private string error = "";
     private string lastArea = "";
-    public override string GetDescription() => "Bloodybot2 · Follow 导航与独立战斗模块，在 Chrome 配置。默认 F6 启停，Esc 停止。";
+    public override string GetDescription() => "Bloodybot2 · Follow 导航与独立战斗模块，在 Chrome 配置。默认 F6 启停，F7 暂停/恢复移动，Esc 停止。";
     // The loader supersedes old Follower binaries; this also protects mixed hosts.
     public override IReadOnlyCollection<string> ConflictsWith => ["Follower"];
 
@@ -47,6 +49,8 @@ public sealed class Bloodybot2Core : PCore<Bloodybot2Settings>
                 Path.Combine(Path.GetDirectoryName(this.DllDirectory)!, "Follower", "config", "settings.txt")), runtime);
             this.web.Start();
             this.toggleWasDown = MovementInput.IsDown(runtime.ReadConfig().Config.ToggleKey);
+            this.movementPauseKey = runtime.MovementPauseKey;
+            this.movementPauseWasDown = MovementInput.IsDown(this.movementPauseKey);
             this.watchdog = new(_ => runtime.Watchdog(Environment.TickCount64, input.Foreground,
                 input.Foreground && (MovementInput.IsDown(0x1B) || input.ConsumeStopRequest())), null, 25, 25);
             this.areaChanged = CoroutineHandler.Start(this.WaitOn(RemoteEvents.AreaChanged, "区域已改变，请重新启动"));
@@ -73,7 +77,7 @@ public sealed class Bloodybot2Core : PCore<Bloodybot2Settings>
 
     public override void DrawSettings()
     {
-        ImGui.TextWrapped("Configure Bloodybot2 in Chrome. Start/stop hotkey: General (default F6). Esc: stop.");
+        ImGui.TextWrapped("Configure Bloodybot2 in Chrome. Start/stop hotkey: General (default F6). F7: park/resume movement (Follow tab). Esc: stop.");
         if (this.web != null)
         {
             ImGui.TextUnformatted(this.web.Url);
@@ -104,6 +108,13 @@ public sealed class Bloodybot2Core : PCore<Bloodybot2Settings>
                 if (this.runtime.Status().Running) this.runtime.Stop("快捷键已停止");
                 else this.runtime.Start(now);
             }
+            var pauseKey = this.runtime.MovementPauseKey;
+            var pauseDown = MovementInput.IsDown(pauseKey);
+            var pausePressed = pauseKey == this.movementPauseKey && pauseDown && !this.movementPauseWasDown;
+            this.movementPauseKey = pauseKey;
+            this.movementPauseWasDown = pauseDown;
+            if (!togglePressed && pausePressed && this.Blocked().Length == 0)
+                this.runtime.ToggleMovementPause();
             if (now < this.nextRead) return;
             this.nextRead = now + 75;
             var (config, revision) = this.runtime.ReadConfig();

@@ -28,22 +28,29 @@ try
     var config = Config();
     Check(BotConfig.Parse(config.Serialize()).Combat.Rules[0].Key == 'Q', "round trip preserves combat fields");
     Check(new BotConfig().Preview && new BotConfig().Combat.Rules.Count == 0, "first run is empty and preview only");
-    var dangerConfig = Config();
-    dangerConfig.Follow.AvoidDanger = true; dangerConfig.Follow.DangerRange = 42.5f; dangerConfig.Follow.DangerEliteLimit = 0;
-    dangerConfig.Follow.EscapeLowHealth = true; dangerConfig.Follow.EscapeDistance = 28.5f;
-    Check(BotConfig.Parse(dangerConfig.Serialize()).Follow is { AvoidDanger: true, DangerRange: 42.5f, DangerEliteLimit: 0 },
-        "danger toggle, fractional radius and zero elite limit round trip");
-    Check(BotConfig.Parse(dangerConfig.Serialize()).Follow is { EscapeLowHealth: true, EscapeScanRange: 50, EscapeClusterDistance: 15, EscapeDistance: 28.5f },
-        "low health escape and geometry settings round trip");
+    var parkConfig = Config();
+    parkConfig.Follow.MovementPauseKey = 119;
+    parkConfig.Follow.EscapeLowHealth = true; parkConfig.Follow.EscapeDistance = 28.5f;
+    Check(BotConfig.Parse(parkConfig.Serialize()).Follow is { MovementPauseKey: 119, EscapeLowHealth: true, EscapeDistance: 28.5f },
+        "Park key and retained low-health settings round trip");
     var oldFollow = System.Text.Json.Nodes.JsonNode.Parse(config.Serialize())!.AsObject();
-    foreach (var field in new[] { "avoidDanger", "dangerRange", "dangerEliteLimit", "escapeLowHealth", "escapeScanRange", "escapeClusterDistance", "escapeDistance" })
-        oldFollow["follow"]!.AsObject().Remove(field);
+    oldFollow["follow"]!.AsObject().Remove("movementPauseKey");
+    oldFollow["follow"]!["avoidDanger"] = true;
+    oldFollow["follow"]!["dangerRange"] = 42.5;
+    oldFollow["follow"]!["dangerEliteLimit"] = 0;
     var oldDangerStore = new ConfigStore(Path.Combine(root, "old-danger"));
     Directory.CreateDirectory(Path.GetDirectoryName(oldDangerStore.FilePath)!);
     var oldDangerText = oldFollow.ToJsonString(); File.WriteAllText(oldDangerStore.FilePath, oldDangerText);
-    Check(oldDangerStore.Load().Follow is { AvoidDanger: false, DangerRange: 50, DangerEliteLimit: 3, EscapeLowHealth: false, EscapeDistance: 30 } &&
-        File.ReadAllText(oldDangerStore.FilePath) == oldDangerText,
-        "old v2 config keeps danger disabled without rewriting user file");
+    var retired = oldDangerStore.Load();
+    Check(retired.Follow.MovementPauseKey == 118 && oldDangerStore.Warning.Length == 0 &&
+        File.ReadAllText(oldDangerStore.FilePath) == oldDangerText && !retired.Serialize().Contains("avoidDanger"),
+        "retired danger settings load without activating or rewriting user config");
+    oldFollow["toggleKey"] = 118;
+    Check(BotConfig.Parse(oldFollow.ToJsonString()).Follow.MovementPauseKey == 119,
+        "old F7 start binding remains usable with an unused Park default");
+    oldDangerStore.Save(retired);
+    Check(File.ReadAllText(oldDangerStore.FilePath + ".bak") == oldDangerText && !File.ReadAllText(oldDangerStore.FilePath).Contains("dangerRange"),
+        "explicit save removes retired fields and preserves original backup");
     foreach (var version in new[] { 1, 2 })
         foreach (var oldSwitch in new[] { false, true })
         {
@@ -113,8 +120,8 @@ try
         c => c.Combat.Rules[0].PauseMilliseconds = 2001, c => c.Combat.Rules[0].ReadySkill = null!,
         c => c.Mode = "Simulacrum", c => c.Follow = null!, c => c.ToggleKey = 'W',
         c => c.Follow.ResumeDistance = c.Follow.StopDistance, c => c.Follow.RepathMilliseconds = 1,
-        c => c.Follow.DangerRange = float.NaN, c => c.Follow.DangerRange = 0, c => c.Follow.DangerRange = 151,
-        c => c.Follow.DangerEliteLimit = -1, c => c.Follow.DangerEliteLimit = 101,
+        c => c.Follow.MovementPauseKey = 'W', c => c.Follow.MovementPauseKey = 0,
+        c => c.Follow.MovementPauseKey = c.ToggleKey, c => c.Follow.MovementPauseKey = 'Q',
         c => c.Follow.EscapeScanRange = 4, c => c.Follow.EscapeScanRange = 151, c => c.Follow.EscapeClusterDistance = float.NaN,
         c => c.Follow.EscapeClusterDistance = 51, c => c.Follow.EscapeDistance = 2, c => c.Follow.EscapeDistance = c.Follow.EscapeScanRange + 1,
         c => c.Combat.Rules.Add(c.Combat.Rules[0]), c => c.Combat.Rules = Enumerable.Range(0,33).Select(_ => new CombatRule()).ToList()
@@ -282,6 +289,31 @@ try
     Check(resumeRuntime.Status().Running && resumeRuntime.Status().Action != null && resumeInput.Presses == 2,
         "preview automatically resumes evaluation without sending input");
 
+    var parkInput = new FakeInput(); var parkNav = new FakeNavigation();
+    var parkRuntime = new BotRuntime(parkInput, parkNav);
+    parkRuntime.Apply(Config(false), 1);
+    parkRuntime.ToggleMovementPause();
+    Check(!parkRuntime.Status().Running && !parkNav.MovementPaused, "Park key does not start a stopped runtime");
+    parkRuntime.Start(20000); parkRuntime.Tick(Frame(20000), "", 1, 20000, () => true);
+    parkRuntime.ToggleMovementPause();
+    Check(parkInput.Held && parkRuntime.Status() is { Running: true, MovementPaused: true }, "Park preserves an accepted skill and running state");
+    parkRuntime.Tick(Frame(21000), "", 1, 21000, () => true);
+    Check(parkInput.Presses == 2 && parkNav.Moves == 0, "Park still evaluates and sends skills without navigation movement");
+    parkRuntime.Tick(Frame(22000), "chat", 1, 22000, () => true);
+    Check(parkInput.Presses == 2 && !parkInput.Held && parkNav.MovementPaused, "chat blocks Park skills without clearing Park");
+    parkRuntime.Watchdog(22500, true, false);
+    parkRuntime.Tick(Frame(23000), "", 1, 23000, () => true);
+    Check(parkRuntime.Status().MovementPaused && parkInput.Presses == 3 && parkNav.Moves == 0, "frame-gap recovery stays parked with skills active");
+    parkRuntime.ToggleMovementPause();
+    Check(!parkNav.MovementPaused && parkRuntime.Status().Running, "second Park key resumes movement only");
+    parkRuntime.ToggleMovementPause(); parkRuntime.Watchdog(23001, true, true);
+    parkRuntime.ToggleMovementPause(); parkRuntime.Tick(Frame(24000), "", 1, 24000, () => true);
+    Check(!parkRuntime.Status().Running && !parkNav.MovementPaused && parkInput.Presses == 3, "Esc stops Park and skills until explicit restart");
+    parkRuntime.Start(25000); parkRuntime.ToggleMovementPause(); parkRuntime.Apply(Config(), 2);
+    Check(!parkRuntime.Status().MovementPaused && !parkRuntime.Status().Running, "config application clears Park and stops the runtime");
+    parkRuntime.Start(26000); parkRuntime.ToggleMovementPause(); parkRuntime.Tick(Frame(26000), "", 2, 26000, () => true);
+    Check(parkInput.Presses == 3 && parkRuntime.Status().Action != null && parkRuntime.Status().MovementPaused, "Park preview evaluates without input");
+
     var webStore = new ConfigStore(Path.Combine(root, "web"));
     var webRuntime = new BotRuntime(new FakeInput(), new FakeNavigation());
     using var server = new WebConfigServer(webStore, webRuntime);
@@ -369,6 +401,8 @@ sealed class FakeInput : IBotInput
 sealed class FakeNavigation : INavigationMode
 {
     public bool Allow = true;
+    public bool MovementPaused { get; private set; }
+    public void SetMovementPaused(bool paused) { if (this.IsActive) this.MovementPaused = paused; }
     public bool EndOnTick;
     public int Ticks, Moves, PausedMilliseconds, Draws, Suspends;
     public string LastSuspension = "";
@@ -376,15 +410,16 @@ sealed class FakeNavigation : INavigationMode
     public string Status => "跟随中";
     public bool IsActive { get; private set; }
     public void Apply(BotConfig config) { this.Stop(); }
-    public void Start() { this.IsActive = true; }
+    public void Start() { this.IsActive = true; this.MovementPaused = false; }
     public void Suspend(string reason = "unfocused") { this.Suspends++; this.LastSuspension = reason; }
     public void Tick(long now, bool preview, Func<bool> combat)
     {
         this.Ticks++;
         if (this.EndOnTick) this.IsActive = false;
+        else if (this.MovementPaused) combat();
         else if (!this.Allow || !combat()) this.Moves++;
     }
     public void DrawOverlay() { this.Draws++; }
     public void CombatAccepted(int milliseconds) { this.PausedMilliseconds += milliseconds; }
-    public void Stop() { this.IsActive = false; }
+    public void Stop() { this.IsActive = false; this.MovementPaused = false; }
 }
