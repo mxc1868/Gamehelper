@@ -258,6 +258,7 @@ namespace GameHelper.RemoteObjects.States.InGameStateObjects
 
             if (hasAddressChanged)
             {
+                using var diagnosticTerrain = Diagnostics.RuntimeDiagnostics.Measure("core:AreaInstance.terrain");
                 this.Cleanup(true);
                 this.TerrainMetadata = data.TerrainMetadata;
                 this.CurrentAreaLevel = data.CurrentAreaLevel;
@@ -283,11 +284,17 @@ namespace GameHelper.RemoteObjects.States.InGameStateObjects
                 }
             }
 
-            this.UpdateEnvironmentAndCaches(data.Environments);
-            this.ServerDataObject.Address = data.PlayerInfo.ServerDataPtr;
-            this.Player.Address = data.PlayerInfo.LocalPlayerPtr;
-            this.UpdateEntities(data.Entities.AwakeEntities, this.AwakeEntities, true);
-            this.AddEntityBackedPlayerBuffs();
+            using (Diagnostics.RuntimeDiagnostics.Measure("core:AreaInstance.environments"))
+                this.UpdateEnvironmentAndCaches(data.Environments);
+            using (Diagnostics.RuntimeDiagnostics.Measure("core:AreaInstance.server_and_player"))
+            {
+                this.ServerDataObject.Address = data.PlayerInfo.ServerDataPtr;
+                this.Player.Address = data.PlayerInfo.LocalPlayerPtr;
+            }
+            using (Diagnostics.RuntimeDiagnostics.Measure("core:AreaInstance.awake_entities"))
+                this.UpdateEntities(data.Entities.AwakeEntities, this.AwakeEntities, true);
+            using (Diagnostics.RuntimeDiagnostics.Measure("core:AreaInstance.entity_backed_buffs"))
+                this.AddEntityBackedPlayerBuffs();
         }
 
         private void AddEntityBackedPlayerBuffs()
@@ -1261,6 +1268,7 @@ namespace GameHelper.RemoteObjects.States.InGameStateObjects
             while (true)
             {
                 yield return new Wait(GameHelperEvents.PerFrameDataUpdate);
+                using var diagnosticPhase = Diagnostics.RuntimeDiagnostics.Measure("core:AreaInstance");
                 try
                 {
                     if (this.Address != IntPtr.Zero)

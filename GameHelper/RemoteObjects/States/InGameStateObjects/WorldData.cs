@@ -180,6 +180,7 @@ namespace GameHelper.RemoteObjects.States.InGameStateObjects
             while (true)
             {
                 yield return new Wait(GameHelperEvents.PostPerFrameDataUpdate);
+                using var diagnosticPhase = Diagnostics.RuntimeDiagnostics.Measure("core:WorldData");
                 if (this.Address != IntPtr.Zero)
                 {
                     this.UpdateData(false);

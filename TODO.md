@@ -1,6 +1,15 @@
 # GameHelper 插件：TODO 与接手上下文
 
-更新日期：2026-10-23。后续 agent 请先读本文，再读 [插件说明](Plugins/ShowMeWisp/README.md) 和 [Windows 调试说明](Plugins/ShowMeWisp/WINDOWS-DEBUG.zh-CN.md)。
+更新日期：2026-10-25。后续 agent 请先读本文，再读 [插件说明](Plugins/ShowMeWisp/README.md) 和 [Windows 调试说明](Plugins/ShowMeWisp/WINDOWS-DEBUG.zh-CN.md)。
+
+## 实时数据/画面冻结：自动运行日志（2026-10-25）
+
+- [x] 用户报告插件/实体看起来停更、F12 无法呼出菜单、重启和切窗仅短暂恢复，普通窗口模式；明确授权增加日志，再重启后反馈。现场采样没有确认最终根因：部分采样间有切窗恢复干扰；后续持续前台区间缓存、坐标和协程仍推进，DXGI 提交返回成功，但不能把正常采样当成排除间歇故障的证据。只读调查产物在本机 `artifacts/diagnostics/`，该目录通过本地 Git exclude 排除，不提交堆快照、截图或工具。
+- [x] 增加本 fork 内部 `GameHelper/Diagnostics`：默认后台写入运行目录 `diagnostics/runtime-current.log`，每 5 秒心跳，当前 + 两份轮换日志各约 2 MiB，保留跨重启证据；队列、控制台错误频率和单条长度有上限，文件错误退避，不阻塞主线程。捕获原有 Console 异常；独立 50 ms 观察线程记录实际前台窗口和菜单键按下，3 秒没有完成 Render 时记录阶段与旧快照年龄，恢复和超过 250 ms 的操作另行记录。
+- [x] 接入宿主 Tick/更新/渲染、核心状态/实体/地形/UI/库存、插件 DrawUI 和菜单处理。每秒在宿主线程读取已有缓存（含实体数、角色坐标、协程计数、宿主焦点、窗口和配置列表数量），后台只读已发布快照；内存失败只做原子分类计数，不增加堆栈解析。新增组件缓存读取助手为 internal；没有新增公共框架 API、改动 offsets、修改游戏输入或续租 Bloodybot2 看门狗。只记录配置膨胀：现有特殊路径 612 行/9 个不同项、怪物忽略 816 行/12 个不同项；未清理或改写个人配置，尚不能归因为冻结原因。
+- [x] 修改 `scripts/build.ps1` 的既有配置备份/恢复函数以保留 `diagnostics`；仅日志的备份不影响缺少设置时的原有回退。31 项模拟日志检查通过（主线程停止时持续日志、阶段/恢复、原始热键、限流、轮换、跨重启、文件错误与恢复等），包含监测与写盘线程独立于实体读取线程池的验证；另 4 项实际构建核心的无头日志/停更/恢复/构建身份检查通过，总计 35 项。7 项实际备份/恢复夹具通过，原配置与三份日志逐字节一致。源码整套 Release 构建成功，0 错误、63 条既有警告（56 条 NU1900 网络审计及 7 条核心/WorldDrawing 警告）；构建输出的 13 项实际插件发现/加载/API 检查通过。没有启动 overlay、连接游戏或发送输入来验证新日志功能。
+- [x] 首轮被 `Test/Coobbifg Ycbmduv.exe`（PID 51428）占用保护阻止，未覆盖文件；用户明确关闭整个 GameHelper 并要求编译后，独立备份及哈希核对当前 37 个配置/布局，成功运行 `rebuild-test.ps1` 更新整套 Test，0 错误、56 条既有 NU1900 网络审计警告。Test 的 13 项实际插件发现/加载/API 与 35 项日志检查全部通过；日志检查直接加载部署核心，覆盖会话、控制台捕获、模拟停更/恢复和 MVID 身份，未启动 overlay 或发送输入。部署核心 SHA-256 与构建输出一致，37 个配置/布局全部与备份字节一致；`plugins.json` 仅格式改变，先确认 JSON 语义完全一致后恢复原字节。保留脚本配置归档；本机独立备份位置见 `artifacts/diagnostics/runtime-logger-backup-location.txt`，构建/部署/验证日志见同目录的 `runtime-logger-*.log`。不强杀进程、不绕过文件锁，提交推送目标仅用户 fork main，不制作 ZIP/Release。
+- [ ] 实机复现后收集 `Test/diagnostics/runtime-current.log` 和两份 `runtime-previous-*.log`；记录冻结时间，可在游戏前台按一次 F12 作标记。诊断不是冻结修复；后台心跳和 Render 退出并不能证明 GPU 实际显示了新帧。
 
 ## Bloodybot2 Follow：一键暂停移动 / Park，移除队长精英计数停止（2026-10-23）
 

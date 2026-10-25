@@ -45,6 +45,8 @@ namespace GameHelper
                 }
             }
 
+            using var diagnostics = Diagnostics.RuntimeDiagnostics.Start(AppContext.BaseDirectory);
+
             AppDomain.CurrentDomain.UnhandledException += (sender, exceptionArgs) =>
             {
                 var errorText = "Program exited with message:\n " + exceptionArgs.ExceptionObject;

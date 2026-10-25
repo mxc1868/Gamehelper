@@ -638,6 +638,7 @@ namespace GameHelper.Plugin
                     {
                         try
                         {
+                            using var diagnosticPhase = Diagnostics.RuntimeDiagnostics.Measure($"plugin:{container.Name}.DrawUI");
                             using var _ = PerformanceProfiler.Profile(container.Plugin.GetType().FullName ?? string.Empty, "DrawUI");
                             container.Plugin.DrawUI();
                         }

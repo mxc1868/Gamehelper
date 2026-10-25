@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <RuntimeIdentifier></RuntimeIdentifier>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../GameHelper/Diagnostics/RuntimeDiagnosticSession.cs" Link="RuntimeDiagnosticSession.cs" />
+    <Compile Include="../../GameHelper/Diagnostics/DiagnosticConsoleWriter.cs" Link="DiagnosticConsoleWriter.cs" />
+  </ItemGroup>
+</Project>

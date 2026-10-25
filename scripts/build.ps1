@@ -43,6 +43,12 @@ function Save-DeployUserData {
         Invoke-Robocopy $configs, (Join-Path $BackupDir "configs"), "/E", "/NFL", "/NDL", "/NJH", "/NJS"
     }
 
+    # Keep freeze evidence across runtime rebuilds as well as ordinary restarts.
+    $diagnostics = Join-Path $SourceDir "diagnostics"
+    if (Test-Path -LiteralPath $diagnostics) {
+        Invoke-Robocopy $diagnostics, (Join-Path $BackupDir "diagnostics"), "/E", "/NFL", "/NDL", "/NJH", "/NJS"
+    }
+
     foreach ($extra in @("imgui.ini", "migration-notice.dismissed")) {
         $src = Join-Path $SourceDir $extra
         if (Test-Path $src) {
@@ -81,6 +87,10 @@ function Restore-DeployUserData {
     }
 
     $restored = $false
+    $diagnostics = Join-Path $BackupDir "diagnostics"
+    if (Test-Path -LiteralPath $diagnostics) {
+        Invoke-Robocopy $diagnostics, (Join-Path $TargetDir "diagnostics"), "/E", "/NFL", "/NDL", "/NJH", "/NJS"
+    }
     $configs = Join-Path $BackupDir "configs"
     if (Test-Path $configs) {
         $dstConfigs = Join-Path $TargetDir "configs"
