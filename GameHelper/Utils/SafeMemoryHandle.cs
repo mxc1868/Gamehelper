@@ -145,7 +145,6 @@ namespace GameHelper.Utils
         /// <param name="address">the address that failed.</param>
         private static void RecordDiagnosticFailure(string typeName, IntPtr address)
         {
-            Diagnostics.RuntimeDiagnostics.CountMemoryFailure(IsValidAddress(address));
             if (!Core.GHSettings.ShowMemoryDiagnostics)
             {
                 return;

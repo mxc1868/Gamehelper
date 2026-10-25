@@ -1036,15 +1036,8 @@ namespace GameHelper.Settings
             while (true)
             {
                 yield return new Wait(GameHelperEvents.OnRender);
-                using var diagnosticPhase = Diagnostics.RuntimeDiagnostics.Measure("ui:Settings");
                 if (Utils.IsKeyPressedAndNotTimeout(Core.GHSettings.MainMenuHotKey))
                 {
-                    Diagnostics.RuntimeDiagnostics.Record("menu_hotkey_handled", new
-                    {
-                        key = (int)Core.GHSettings.MainMenuHotKey,
-                        wasVisible = isSettingsWindowVisible,
-                        closeFlag = isOverlayRunningLocal,
-                    });
                     if (isSettingsWindowVisible)
                     {
                         HideSettingsWindow();

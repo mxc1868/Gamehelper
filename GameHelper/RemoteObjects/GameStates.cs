@@ -148,7 +148,6 @@ namespace GameHelper.RemoteObjects
             while (true)
             {
                 yield return new Wait(GameHelperEvents.PerFrameDataUpdate);
-                using var diagnosticPhase = Diagnostics.RuntimeDiagnostics.Measure("core:GameStates");
                 try
                 {
                     if (this.Address != IntPtr.Zero)

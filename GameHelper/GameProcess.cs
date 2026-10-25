@@ -276,7 +276,6 @@ namespace GameHelper
                 bool shouldClose = false;
                 try
                 {
-                    using var diagnosticPhase = Diagnostics.RuntimeDiagnostics.Measure("core:GameProcess.Monitor");
                     // Have to check MainWindowHandle because
                     // sometime HasExited returns false even when game isn't running..
                     if (this.Information == null ||

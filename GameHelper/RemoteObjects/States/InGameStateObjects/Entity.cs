@@ -291,13 +291,6 @@ namespace GameHelper.RemoteObjects.States.InGameStateObjects
             return this.componentAddresses.Keys;
         }
 
-        // Inspect cached state without creating/refreshing components or reading game memory.
-        internal bool TryGetCachedComponent<T>([NotNullWhen(true)] out T? component) where T : ComponentBase
-        {
-            component = this.componentCache.TryGetValue(typeof(T).Name, out var cached) ? cached as T : null;
-            return component != null;
-        }
-
         /// <summary>
         ///     Gets the entity's component name -> component memory address pairs. Used by the
         ///     OffsetHelper to bind component offset structs to live addresses for verification.

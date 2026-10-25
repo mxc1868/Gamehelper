@@ -2,24 +2,11 @@
 
 更新日期：2026-10-25。后续 agent 请先读本文，再读 [插件说明](Plugins/ShowMeWisp/README.md) 和 [Windows 调试说明](Plugins/ShowMeWisp/WINDOWS-DEBUG.zh-CN.md)。
 
-## 冻结现场确认 DXGI Present 阻塞及非阻塞提交修补（2026-10-25）
+## 按用户要求撤回冻结排查改动（2026-10-25）
 
-- [x] 新日志确实抓到停更：例如 15:40:58–15:41:04 约 6.37 秒、15:41:09–15:41:19 约 9.59 秒，后续还有 20–43 秒停顿；阶段始终为 `between_frames`，进入/退出 Render 计数相等且冻结，核心与插件已返回，独立日志仍工作。期间读取失败计数也不增加。原始日志快照在本机 `artifacts/diagnostics/freeze-evidence-20261025-154202`，后续实机日志仍在 Test。
-- [x] 追加只读 DXGI ETW 与自动栈采样，目标为用户正常启动的 `Test/Adidympp.exe`（PID 46132），并非此前 PID 51428。采到同一渲染线程（native 47360 / managed 6）的 Present 调用 15:45:41.204–15:45:49.527，实际阻塞 8322.823 ms；另一次 4471.079 ms，均最终返回成功。同期栈位于 CTO `Overlay.RunInfiniteLoop` 的 native 调用，不是实体/插件代码。证据：本机 `artifacts/diagnostics/present-20261025-154511.txt`、`native-freeze-20261025-154511`。这解释了 F12 和全部实体一起停更；成功返回码不能排除提交内部阻塞。
-- [x] 用户补充最近把游戏 DX12 改为 Vulkan；它是很重要的触发线索，尚未进行 DX12/Vulkan 对照，不宣称 Vulkan 或特定驱动已被证明有普遍缺陷。此轮不改用户游戏/驱动配置。
-- [x] 增加无外部包依赖的构建工具 `tools/OverlayPresentPatch`：对指定、未签名的 CTO 11.1.0 DLL，仅将非 VSync 的两个 `Present(0, None)` 标志常量改为 `DO_NOT_WAIT`；原 VSync 分支、帧率限制和所有元数据/其他代码逐字节保持不变。严格规范化 SHA-256 白名单，拒绝未知/半修补文件、拒绝 NuGet 缓存目标；临时文件原子替换，DLL 有锁则正常失败。原 DLL SHA-256 `B60BDF884B48949AB9376C8CD390A6E5E5D2D6F7DB0804C0ED77E59ED50AE89A`；修补后 `8C0353939A682A00A4EE12040C7407DF5E42D3CB031DF700624CCD31A56A81FD`。这属于本 fork 的依赖修补，不是新的上游 API 或游戏 offsets。
-- [x] `GameHelper.csproj` 自动构建工具并修补 build/publish 输出；`scripts/build.ps1` 在接触 Test/配置之前验证最终依赖，插件加载检查增加到 14 项并核对宿主声明的修补哈希。启动增加 `overlay_present_policy` 以核对实际加载的 DLL。18 项修补检查、构建目录的 14 项实际插件/API/依赖检查和 35 项日志检查通过；源码整套 Release 构建成功，0 错误、63 条既有警告。没有启动新 overlay 或发送游戏输入来验证修补。
-- [x] 首轮 `rebuild-test.ps1` 被 `Test/Adidympp.exe`（PID 46132）占用保护阻止；用户正常退出并明确要求重新编译后，独立备份 37 个配置/布局文件及 1 份现有运行日志，再成功运行正式脚本，整套 Test 已更新，0 错误、56 条既有 NU1900 网络审计警告。实际 Test 的 14 项插件/API/依赖与 35 项日志检查全部通过，加上 18 项修补检查共 67 项。38 个备份文件全部逐字节核对一致；`plugins.json` 仅格式改变，先确认 JSON 语义完全一致后恢复原字节。部署核心 SHA-256 `289F50819BDB6B184EEB5A852B05D556F7E93AB15BCC08510AF514614D7965B7` 与构建输出一致，CTO 为上述修补哈希，NuGet 原件保持原哈希，当前 GH VSync 为关闭。保留脚本配置归档和进程/文件锁保护，没有启动 overlay 或发送游戏输入。本机证据：`artifacts/diagnostics/nonblocking-present-verification.json`、`nonblocking-present-backup-location.txt`、`nonblocking-present-test-deploy-final.log`、`nonblocking-present-deployed-*-tests.log` 及 `overlay-present-patch-tests.log`。提交推送目标仅用户 fork main。
-- [ ] 用户重启后实测是否仍停更，结合 `overlay_present_policy` 和新心跳核对；当前修补适用于关闭 GH VSync 的现有设置。若仍异常，继续区分驱动未按非阻塞标志返回、其他图形调用阻塞、以及图像显示停止但后台推进；不要去改实体 offsets 或无关插件。
-
-## 实时数据/画面冻结：自动运行日志（2026-10-25）
-
-- [x] 用户报告插件/实体看起来停更、F12 无法呼出菜单、重启和切窗仅短暂恢复，普通窗口模式；明确授权增加日志，再重启后反馈。现场采样没有确认最终根因：部分采样间有切窗恢复干扰；后续持续前台区间缓存、坐标和协程仍推进，DXGI 提交返回成功，但不能把正常采样当成排除间歇故障的证据。只读调查产物在本机 `artifacts/diagnostics/`，该目录通过本地 Git exclude 排除，不提交堆快照、截图或工具。
-- [x] 增加本 fork 内部 `GameHelper/Diagnostics`：默认后台写入运行目录 `diagnostics/runtime-current.log`，每 5 秒心跳，当前 + 两份轮换日志各约 2 MiB，保留跨重启证据；队列、控制台错误频率和单条长度有上限，文件错误退避，不阻塞主线程。捕获原有 Console 异常；独立 50 ms 观察线程记录实际前台窗口和菜单键按下，3 秒没有完成 Render 时记录阶段与旧快照年龄，恢复和超过 250 ms 的操作另行记录。
-- [x] 接入宿主 Tick/更新/渲染、核心状态/实体/地形/UI/库存、插件 DrawUI 和菜单处理。每秒在宿主线程读取已有缓存（含实体数、角色坐标、协程计数、宿主焦点、窗口和配置列表数量），后台只读已发布快照；内存失败只做原子分类计数，不增加堆栈解析。新增组件缓存读取助手为 internal；没有新增公共框架 API、改动 offsets、修改游戏输入或续租 Bloodybot2 看门狗。只记录配置膨胀：现有特殊路径 612 行/9 个不同项、怪物忽略 816 行/12 个不同项；未清理或改写个人配置，尚不能归因为冻结原因。
-- [x] 修改 `scripts/build.ps1` 的既有配置备份/恢复函数以保留 `diagnostics`；仅日志的备份不影响缺少设置时的原有回退。31 项模拟日志检查通过（主线程停止时持续日志、阶段/恢复、原始热键、限流、轮换、跨重启、文件错误与恢复等），包含监测与写盘线程独立于实体读取线程池的验证；另 4 项实际构建核心的无头日志/停更/恢复/构建身份检查通过，总计 35 项。7 项实际备份/恢复夹具通过，原配置与三份日志逐字节一致。源码整套 Release 构建成功，0 错误、63 条既有警告（56 条 NU1900 网络审计及 7 条核心/WorldDrawing 警告）；构建输出的 13 项实际插件发现/加载/API 检查通过。没有启动 overlay、连接游戏或发送输入来验证新日志功能。
-- [x] 首轮被 `Test/Coobbifg Ycbmduv.exe`（PID 51428）占用保护阻止，未覆盖文件；用户明确关闭整个 GameHelper 并要求编译后，独立备份及哈希核对当前 37 个配置/布局，成功运行 `rebuild-test.ps1` 更新整套 Test，0 错误、56 条既有 NU1900 网络审计警告。Test 的 13 项实际插件发现/加载/API 与 35 项日志检查全部通过；日志检查直接加载部署核心，覆盖会话、控制台捕获、模拟停更/恢复和 MVID 身份，未启动 overlay 或发送输入。部署核心 SHA-256 与构建输出一致，37 个配置/布局全部与备份字节一致；`plugins.json` 仅格式改变，先确认 JSON 语义完全一致后恢复原字节。保留脚本配置归档；本机独立备份位置见 `artifacts/diagnostics/runtime-logger-backup-location.txt`，构建/部署/验证日志见同目录的 `runtime-logger-*.log`。不强杀进程、不绕过文件锁，提交推送目标仅用户 fork main，不制作 ZIP/Release。
-- [ ] 实机复现后收集 `Test/diagnostics/runtime-current.log` 和两份 `runtime-previous-*.log`；记录冻结时间，可在游戏前台按一次 F12 作标记。诊断不是冻结修复；后台心跳和 Render 退出并不能证明 GPU 实际显示了新帧。
+- [x] 用户明确要求撤回本轮全部改动，并自行切回 DX12、不再用 Vulkan；停止后续渲染方案研究。以 `git revert --no-commit e06e17b 8f1cf9a` 撤回自动运行日志、Present 依赖修补及其构建接入/专用测试。核对应用源码与排查前 `5580616` 完全一致，本节仅记录回退交接。不改游戏或 NVIDIA 设置，个人配置和此前插件功能保留；独立诊断程序均已自行结束，本地证据/配置备份留在忽略目录 `artifacts/diagnostics`。
+- [x] 先完整 clean，再整套 Release 编译成功，0 错误、63 条既有警告；构建输出的 13 项实际插件发现/加载/API 检查通过。CTO 依赖恢复为 NuGet 原版，SHA-256 `B60BDF884B48949AB9376C8CD390A6E5E5D2D6F7DB0804C0ED77E59ED50AE89A`，没有残留修补工具输出。证据：本机 `artifacts/diagnostics/revert-freeze-clean.log`、`revert-freeze-solution-build.log`、`revert-freeze-built-plugin-tests.log`。
+- [x] 首轮 Test 回退被 `Ocndec Mrvafwtyhp Hysdmdip.exe`（PID 53600）占用保护阻止；用户正常关闭并确认后，独立备份 37 个配置/布局及 1 份运行日志，再通过 `rebuild-test.ps1` 成功更新整套 Test，0 错误、56 条既有 NU1900 网络审计警告。实际 Test 的 13 项插件检查通过，原版 CTO 哈希匹配，部署核心与构建输出哈希一致，修补工具没有残留；37 个配置/布局与备份逐字节一致（`plugins.json` 仅格式改变，经 JSON 语义一致检查后恢复原字节）。原日志归档至独立备份；回退后的正式脚本不再含本轮新增的日志保留逻辑。证据：`artifacts/diagnostics/revert-freeze-verification.json`、`revert-freeze-backup-location.txt`、`revert-freeze-test-deploy-final.log`、`revert-freeze-deployed-plugin-tests.log`。保留历史，通过普通回退提交同步用户 fork main；没有强杀进程或启动 GameHelper/发送游戏输入。
 
 ## Bloodybot2 Follow：一键暂停移动 / Park，移除队长精英计数停止（2026-10-23）
 

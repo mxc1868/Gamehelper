@@ -204,7 +204,6 @@ namespace GameHelper.RemoteObjects.States.InGameStateObjects
             while (true)
             {
                 yield return new Wait(0.02d);
-                using var diagnosticPhase = Diagnostics.RuntimeDiagnostics.Measure("core:Inventory");
                 try
                 {
                     if (this.Address != IntPtr.Zero)

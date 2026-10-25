@@ -43,12 +43,6 @@ function Save-DeployUserData {
         Invoke-Robocopy $configs, (Join-Path $BackupDir "configs"), "/E", "/NFL", "/NDL", "/NJH", "/NJS"
     }
 
-    # Keep freeze evidence across runtime rebuilds as well as ordinary restarts.
-    $diagnostics = Join-Path $SourceDir "diagnostics"
-    if (Test-Path -LiteralPath $diagnostics) {
-        Invoke-Robocopy $diagnostics, (Join-Path $BackupDir "diagnostics"), "/E", "/NFL", "/NDL", "/NJH", "/NJS"
-    }
-
     foreach ($extra in @("imgui.ini", "migration-notice.dismissed")) {
         $src = Join-Path $SourceDir $extra
         if (Test-Path $src) {
@@ -87,10 +81,6 @@ function Restore-DeployUserData {
     }
 
     $restored = $false
-    $diagnostics = Join-Path $BackupDir "diagnostics"
-    if (Test-Path -LiteralPath $diagnostics) {
-        Invoke-Robocopy $diagnostics, (Join-Path $TargetDir "diagnostics"), "/E", "/NFL", "/NDL", "/NJH", "/NJS"
-    }
     $configs = Join-Path $BackupDir "configs"
     if (Test-Path $configs) {
         $dstConfigs = Join-Path $TargetDir "configs"
@@ -423,12 +413,6 @@ try {
     if (-not (Test-Path $outDir)) {
         throw "Build-Ausgabe nicht gefunden: $outDir"
     }
-
-    # Fail before touching the runtime/configuration if a later project copy has
-    # replaced the host's nonblocking presentation dependency with the stock DLL.
-    $overlayPatchTool = Join-Path $Root "tools\OverlayPresentPatch\bin\$Configuration\net10.0\OverlayPresentPatch.dll"
-    & dotnet $overlayPatchTool --verify (Join-Path $outDir "ClickableTransparentOverlay.dll")
-    if ($LASTEXITCODE -ne 0) { throw "Nonblocking overlay presentation verification failed." }
 
     $defaultPublish = Join-Path $Root "publish"
     $testUserBackup = Join-Path $Root "test-runtime-backup"

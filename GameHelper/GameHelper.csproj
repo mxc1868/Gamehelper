@@ -53,19 +53,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\GameOffsets\GameOffsets.csproj" />
-    <ProjectReference Include="..\tools\OverlayPresentPatch\OverlayPresentPatch.csproj"
-                      ReferenceOutputAssembly="false" PrivateAssets="all"
-                      GlobalPropertiesToRemove="RuntimeIdentifier;SelfContained;PublishSingleFile;PublishReadyToRun" />
   </ItemGroup>
-  <PropertyGroup>
-    <OverlayPresentPatchTool>$(MSBuildProjectDirectory)\..\tools\OverlayPresentPatch\bin\$(Configuration)\net10.0\OverlayPresentPatch.dll</OverlayPresentPatchTool>
-  </PropertyGroup>
-  <Target Name="PatchNonblockingOverlayPresent" AfterTargets="CopyFilesToOutputDirectory" Condition="'$(DesignTimeBuild)' != 'true'">
-    <Exec Command="dotnet &quot;$(OverlayPresentPatchTool)&quot; &quot;$(TargetDir)ClickableTransparentOverlay.dll&quot;" />
-  </Target>
-  <Target Name="PatchPublishedOverlayPresent" AfterTargets="Publish" Condition="'$(DesignTimeBuild)' != 'true' And Exists('$(PublishDir)ClickableTransparentOverlay.dll')">
-    <Exec Command="dotnet &quot;$(OverlayPresentPatchTool)&quot; &quot;$(PublishDir)ClickableTransparentOverlay.dll&quot;" />
-  </Target>
   <Target Name="DeleteDebugSymbolFiles" AfterTargets="Build" Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <Delete Files="$(OutDir)GameHelper.xml;$(OutDir)GameHelper.runtimeconfig.dev.json;$(OutDir)GameOffsets.pdb;" />
   </Target>
