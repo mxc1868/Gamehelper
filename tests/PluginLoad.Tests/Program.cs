@@ -26,6 +26,19 @@ var managerType = host.GetType("GameHelper.Plugin.PManager", throwOnError: true)
 var loadPlugin = managerType.GetMethod("LoadPlugin", BindingFlags.NonPublic | BindingFlags.Static,
     [typeof(Assembly), alcType, typeof(string)])!;
 var failed = false;
+try
+{
+    var overlay = GameHelper.Build.OverlayPresentPatcher.Inspect(File.ReadAllBytes(Path.Combine(root, "ClickableTransparentOverlay.dll")));
+    var expectedHash = host.GetType("GameHelper.GameOverlay", throwOnError: true)!
+        .GetField("NonBlockingPresentLibraryHash", BindingFlags.NonPublic | BindingFlags.Static)!.GetRawConstantValue() as string;
+    if (!overlay.Patched || overlay.Hash != expectedHash) throw new InvalidDataException("Blocking or unrecognized presentation library.");
+    Console.WriteLine("PASS overlay dependency: nonblocking Present(0), unchanged VSync/FPS code and matching host policy hash");
+}
+catch (Exception ex)
+{
+    failed = true;
+    Console.Error.WriteLine("FAIL overlay presentation dependency: " + ex.Message);
+}
 var discover = managerType.GetMethod("GetPluginsDirectories", BindingFlags.NonPublic | BindingFlags.Static)!;
 var directories = (IEnumerable<DirectoryInfo>)discover.Invoke(null, null)!;
 var names = directories.Select(directory => directory.Name).ToArray();
@@ -95,5 +108,5 @@ foreach (var (typeName, methodName, parameterCount) in new[]
     Console.WriteLine($"{(found ? "PASS" : "FAIL")} core API: {typeName}.{methodName}");
 }
 
-Console.WriteLine(failed ? "Plugin load checks failed." : "All 13 plugin discovery/load/API checks passed. Game rendering is not tested.");
+Console.WriteLine(failed ? "Plugin load checks failed." : "All 14 plugin discovery/load/API/presentation checks passed. Game rendering is not tested.");
 return failed ? 1 : 0;

@@ -20,6 +20,7 @@ namespace GameHelper
     /// <inheritdoc />
     public sealed class GameOverlay : Overlay
     {
+        private const string NonBlockingPresentLibraryHash = "8C0353939A682A00A4EE12040C7407DF5E42D3CB031DF700624CCD31A56A81FD";
         /// <summary>
         ///     Initializes a new instance of the <see cref="GameOverlay" /> class.
         /// </summary>
@@ -48,6 +49,18 @@ namespace GameHelper
         /// <inheritdoc />
         public override async Task Run()
         {
+            try
+            {
+                var hash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(
+                    System.IO.File.ReadAllBytes(typeof(Overlay).Assembly.Location)));
+                Diagnostics.RuntimeDiagnostics.Record("overlay_present_policy", new
+                {
+                    librarySha256 = hash,
+                    nonblockingWithoutVsync = hash == NonBlockingPresentLibraryHash,
+                    vsyncBranchUnchanged = true,
+                });
+            }
+            catch (Exception ex) { Diagnostics.RuntimeDiagnostics.Record("overlay_present_policy_error", ex.ToString()); }
             Core.Initialize();
             Core.InitializeCororutines();
             this.VSync = Core.GHSettings.Vsync;

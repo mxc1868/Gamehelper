@@ -33,6 +33,8 @@ dotnet run --project tests/PluginLoad.Tests/PluginLoad.Tests.csproj -c Release -
 
 日志后台写入，最多保留当前文件及两份轮换文件（每份约 2 MiB），重启及 `rebuild-test.ps1` 更新时保留。再次出现冻结时记下时间；若方便，可在游戏前台按一次 F12 作为标记，再反馈问题，暂时不用删除日志。内存读取失败计数包含正常的瞬时失效，不能仅凭计数断定 offsets 错误。本次增加的是本 fork 的内部诊断设施，并非上游原有公共 API，也尚未解决冻结根因。
 
+本 fork 对 `ClickableTransparentOverlay 11.1.0` 的构建输出增加了定向提交修补：关闭 GH 的 VSync 时，两个 `Present(0, None)` 调用使用 `DXGI_PRESENT_DO_NOT_WAIT`，GPU 忙时允许跳过本次提交，让同线程的数据更新、消息处理和 F12 继续运行。原 FPS 限制和启用 VSync 时的分支保持原样。此为本 fork 的依赖修补，不是上游公共 API；工具只接受指定 SHA-256 的原版 DLL，仅改两个托管 IL 常量，不修改 NuGet 缓存。构建和 publish 自动应用修补，Test 部署前校验最终依赖；启动日志的 `overlay_present_policy` 记录实际加载依赖的哈希。现场已确认原提交阻塞，但修补后的游戏行为仍需实测；用户从 DX12 切到 Vulkan 的触发关系尚待同场景对照，不能据此宣称 Vulkan 普遍不兼容。
+
 原项目与作者信息保留如下；其中上游下载与自动更新说明不适用于本 fork 的配套构建。
 
 ---

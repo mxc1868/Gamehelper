@@ -2,6 +2,16 @@
 
 更新日期：2026-10-25。后续 agent 请先读本文，再读 [插件说明](Plugins/ShowMeWisp/README.md) 和 [Windows 调试说明](Plugins/ShowMeWisp/WINDOWS-DEBUG.zh-CN.md)。
 
+## 冻结现场确认 DXGI Present 阻塞及非阻塞提交修补（2026-10-25）
+
+- [x] 新日志确实抓到停更：例如 15:40:58–15:41:04 约 6.37 秒、15:41:09–15:41:19 约 9.59 秒，后续还有 20–43 秒停顿；阶段始终为 `between_frames`，进入/退出 Render 计数相等且冻结，核心与插件已返回，独立日志仍工作。期间读取失败计数也不增加。原始日志快照在本机 `artifacts/diagnostics/freeze-evidence-20261025-154202`，后续实机日志仍在 Test。
+- [x] 追加只读 DXGI ETW 与自动栈采样，目标为用户正常启动的 `Test/Adidympp.exe`（PID 46132），并非此前 PID 51428。采到同一渲染线程（native 47360 / managed 6）的 Present 调用 15:45:41.204–15:45:49.527，实际阻塞 8322.823 ms；另一次 4471.079 ms，均最终返回成功。同期栈位于 CTO `Overlay.RunInfiniteLoop` 的 native 调用，不是实体/插件代码。证据：本机 `artifacts/diagnostics/present-20261025-154511.txt`、`native-freeze-20261025-154511`。这解释了 F12 和全部实体一起停更；成功返回码不能排除提交内部阻塞。
+- [x] 用户补充最近把游戏 DX12 改为 Vulkan；它是很重要的触发线索，尚未进行 DX12/Vulkan 对照，不宣称 Vulkan 或特定驱动已被证明有普遍缺陷。此轮不改用户游戏/驱动配置。
+- [x] 增加无外部包依赖的构建工具 `tools/OverlayPresentPatch`：对指定、未签名的 CTO 11.1.0 DLL，仅将非 VSync 的两个 `Present(0, None)` 标志常量改为 `DO_NOT_WAIT`；原 VSync 分支、帧率限制和所有元数据/其他代码逐字节保持不变。严格规范化 SHA-256 白名单，拒绝未知/半修补文件、拒绝 NuGet 缓存目标；临时文件原子替换，DLL 有锁则正常失败。原 DLL SHA-256 `B60BDF884B48949AB9376C8CD390A6E5E5D2D6F7DB0804C0ED77E59ED50AE89A`；修补后 `8C0353939A682A00A4EE12040C7407DF5E42D3CB031DF700624CCD31A56A81FD`。这属于本 fork 的依赖修补，不是新的上游 API 或游戏 offsets。
+- [x] `GameHelper.csproj` 自动构建工具并修补 build/publish 输出；`scripts/build.ps1` 在接触 Test/配置之前验证最终依赖，插件加载检查增加到 14 项并核对宿主声明的修补哈希。启动增加 `overlay_present_policy` 以核对实际加载的 DLL。18 项修补检查、构建目录的 14 项实际插件/API/依赖检查和 35 项日志检查通过；源码整套 Release 构建成功，0 错误、63 条既有警告。没有启动新 overlay 或发送游戏输入来验证修补。
+- [x] 首轮 `rebuild-test.ps1` 被 `Test/Adidympp.exe`（PID 46132）占用保护阻止；用户正常退出并明确要求重新编译后，独立备份 37 个配置/布局文件及 1 份现有运行日志，再成功运行正式脚本，整套 Test 已更新，0 错误、56 条既有 NU1900 网络审计警告。实际 Test 的 14 项插件/API/依赖与 35 项日志检查全部通过，加上 18 项修补检查共 67 项。38 个备份文件全部逐字节核对一致；`plugins.json` 仅格式改变，先确认 JSON 语义完全一致后恢复原字节。部署核心 SHA-256 `289F50819BDB6B184EEB5A852B05D556F7E93AB15BCC08510AF514614D7965B7` 与构建输出一致，CTO 为上述修补哈希，NuGet 原件保持原哈希，当前 GH VSync 为关闭。保留脚本配置归档和进程/文件锁保护，没有启动 overlay 或发送游戏输入。本机证据：`artifacts/diagnostics/nonblocking-present-verification.json`、`nonblocking-present-backup-location.txt`、`nonblocking-present-test-deploy-final.log`、`nonblocking-present-deployed-*-tests.log` 及 `overlay-present-patch-tests.log`。提交推送目标仅用户 fork main。
+- [ ] 用户重启后实测是否仍停更，结合 `overlay_present_policy` 和新心跳核对；当前修补适用于关闭 GH VSync 的现有设置。若仍异常，继续区分驱动未按非阻塞标志返回、其他图形调用阻塞、以及图像显示停止但后台推进；不要去改实体 offsets 或无关插件。
+
 ## 实时数据/画面冻结：自动运行日志（2026-10-25）
 
 - [x] 用户报告插件/实体看起来停更、F12 无法呼出菜单、重启和切窗仅短暂恢复，普通窗口模式；明确授权增加日志，再重启后反馈。现场采样没有确认最终根因：部分采样间有切窗恢复干扰；后续持续前台区间缓存、坐标和协程仍推进，DXGI 提交返回成功，但不能把正常采样当成排除间歇故障的证据。只读调查产物在本机 `artifacts/diagnostics/`，该目录通过本地 Git exclude 排除，不提交堆快照、截图或工具。

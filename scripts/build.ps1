@@ -424,6 +424,12 @@ try {
         throw "Build-Ausgabe nicht gefunden: $outDir"
     }
 
+    # Fail before touching the runtime/configuration if a later project copy has
+    # replaced the host's nonblocking presentation dependency with the stock DLL.
+    $overlayPatchTool = Join-Path $Root "tools\OverlayPresentPatch\bin\$Configuration\net10.0\OverlayPresentPatch.dll"
+    & dotnet $overlayPatchTool --verify (Join-Path $outDir "ClickableTransparentOverlay.dll")
+    if ($LASTEXITCODE -ne 0) { throw "Nonblocking overlay presentation verification failed." }
+
     $defaultPublish = Join-Path $Root "publish"
     $testUserBackup = Join-Path $Root "test-runtime-backup"
     if ($PublishDir -ne $defaultPublish -and (Test-Path $PublishDir)) {
